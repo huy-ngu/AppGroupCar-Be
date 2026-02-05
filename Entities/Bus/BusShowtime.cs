@@ -1,0 +1,71 @@
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
+
+namespace AppGroupCar.Entities.Bus
+{
+    [Table("BusShowtimes")]
+    [Index(nameof(CompanyVehicleId), nameof(DepartureDate), nameof(DepartureTime), IsUnique = true)]
+    public class BusShowtime
+    {
+        [Key]
+        public Guid ShowtimeId { get; set; } = Guid.NewGuid();
+
+        // FK
+        [Required]
+        public Guid CompanyId { get; set; }
+
+        [Required]
+        public Guid CompanyVehicleId { get; set; }
+
+        [Required]
+        public Guid RouteId { get; set; }
+
+        // Thời gian
+        [Required]
+        [Column(TypeName = "date")]
+        public DateOnly DepartureDate { get; set; }
+
+        [Required]
+        [Column(TypeName = "time")]
+        public TimeOnly DepartureTime { get; set; }
+
+        // Giá
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal Price { get; set; }
+
+        // Trạng thái
+        [Required]
+        public BusShowtimeStatus Status { get; set; }
+
+        // Audit
+        [Required]
+        public Guid CreatedBy { get; set; }
+
+        [Required]
+        public DateTime CreatedAt { get; set; }
+
+        // Navigation
+        [ForeignKey(nameof(CompanyId))]
+        public Company Company { get; set; } = null!;
+
+        [ForeignKey(nameof(CompanyVehicleId))]
+        public CompanyVehicle CompanyVehicle { get; set; } = null!;
+
+        [ForeignKey(nameof(RouteId))]
+        public BusRoute Route { get; set; } = null!;
+
+        public ICollection<ShowtimeLog> Logs { get; set; } = new List<ShowtimeLog>();
+    }
+
+    public enum BusShowtimeStatus
+    {
+        Scheduled = 1,
+        Active = 2,
+        Delayed = 3,
+        Cancelled = 4,
+        Hidden = 5
+    }
+
+}
