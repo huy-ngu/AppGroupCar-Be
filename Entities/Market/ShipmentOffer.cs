@@ -13,7 +13,7 @@ namespace AppGroupCar.Entities.Market
         public Guid RequestId { get; set; }
 
         [Required]
-        public Guid DriverId { get; set; }
+        public string? DriverId { get; set; }
 
         [Required]
         public Guid VehicleId { get; set; }

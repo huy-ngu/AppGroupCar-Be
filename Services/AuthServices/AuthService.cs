@@ -2,8 +2,8 @@
 using System.Linq;
 using System.Security.Claims;
 using AppGroupCar.DTO.RequestDTO;
+using AppGroupCar.Entities;
 using AppGroupCar.Exceptions;
-using AppGroupCar.Models;
 using AppGroupCar.Repositories.RefreshTokensRepo;
 using AppGroupCar.Repositories.UserRepo;
 using AppGroupCar.Services.TokenServices;

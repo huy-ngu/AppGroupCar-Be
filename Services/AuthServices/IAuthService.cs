@@ -1,5 +1,4 @@
 using AppGroupCar.DTO.RequestDTO;
-using AppGroupCar.Models;
 
 namespace AppGroupCar.Services.AuthServices
 {

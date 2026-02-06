@@ -3,8 +3,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using AppGroupCar.DTO.RequestDTO;
 using AppGroupCar.DTO.ResponseDTO;
+using AppGroupCar.Entities;
 using AppGroupCar.Exceptions;
-using AppGroupCar.Models;
 using Microsoft.AspNetCore.Identity;
 
 namespace AppGroupCar.Services.UserServices

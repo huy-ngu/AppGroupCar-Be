@@ -1,7 +1,8 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using AppGroupCar.Data;
+using AppGroupCar.Entities;
 using AppGroupCar.Middleware;
-using AppGroupCar.Models;
 using AppGroupCar.Repositories.RefreshTokensRepo;
 using AppGroupCar.Repositories.UserRepo;
 using AppGroupCar.Services.AuthServices;
@@ -49,13 +50,27 @@ namespace AppGroupCar
                 });
             });
 
+            //thêm cầu hình cho địa lý
+            var connectionString =
+    builder.Configuration.GetConnectionString("AzureConnection")
+    ?? throw new InvalidOperationException("AzureConnection is missing");
+
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
-                    builder.Configuration.GetConnectionString("AzureConnection")
-                    //builder.Configuration.GetConnectionString("DefaultConnection")
+                    connectionString,
+                    sql =>
+                    {
+                        sql.UseNetTopologySuite();
+                        sql.EnableRetryOnFailure(
+                            maxRetryCount: 5,
+                            maxRetryDelay: TimeSpan.FromSeconds(10),
+                            errorNumbersToAdd: null
+                        );
+                    }
+                )
+            );
 
-                    )
-                );
+
 
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {

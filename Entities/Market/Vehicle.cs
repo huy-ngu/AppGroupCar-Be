@@ -11,7 +11,7 @@ namespace AppGroupCar.Entities.Market
 
         // FK
         [Required]
-        public Guid DriverId { get; set; }
+        public string? DriverId { get; set; }
 
         // Thông tin xe
         [Required]

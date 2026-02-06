@@ -4,7 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography; // Cần cái này để tạo Refresh Token chuẩn
 using System.Text;
-using AppGroupCar.Models;
+using AppGroupCar.Entities;
 using AppGroupCar.Services.TokenServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;

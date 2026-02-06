@@ -13,7 +13,7 @@ namespace AppGroupCar.Entities.Market
         public Guid OfferId { get; set; }
 
         [Required]
-        public Guid CustomerId { get; set; }
+        public string? CustomerId { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
@@ -33,7 +33,7 @@ namespace AppGroupCar.Entities.Market
         public Offer Offer { get; set; } = null!;
 
         [ForeignKey(nameof(CustomerId))]
-        public User Customer { get; set; } = null!;
+        public ApplicationUser Customer { get; set; } = null!;
 
         public ICollection<BookingItem> Items { get; set; }
             = new List<BookingItem>();

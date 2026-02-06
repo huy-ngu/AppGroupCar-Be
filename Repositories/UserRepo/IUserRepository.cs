@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using AppGroupCar.Models;
+using AppGroupCar.Entities;
 using Microsoft.AspNetCore.Identity;
 
 namespace AppGroupCar.Repositories.UserRepo

@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using AppGroupCar.Models;
+using AppGroupCar.Entities;
 
 namespace AppGroupCar.Services.TokenServices
 {

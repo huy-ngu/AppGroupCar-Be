@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace AppGroupCar.Entities
+namespace AppGroupCar.Entities.Bus
 {
     [Table("VehicleSeatLayouts")]
     public class VehicleSeatLayout

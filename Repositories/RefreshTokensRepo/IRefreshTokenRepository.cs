@@ -1,5 +1,5 @@
 ﻿using AppGroupCar.DTO.RequestDTO;
-using AppGroupCar.Models;
+using AppGroupCar.Entities;
 
 namespace AppGroupCar.Repositories.RefreshTokensRepo
 {

@@ -8,7 +8,7 @@ namespace AppGroupCar.Entities.Market
     {
         [Key]
         [ForeignKey(nameof(User))]
-        public Guid UserId { get; set; }
+        public string? UserId { get; set; }
 
         [Required]
         [MaxLength(200)]
@@ -30,7 +30,7 @@ namespace AppGroupCar.Entities.Market
         public DriverVerificationStatus VerificationStatus { get; set; }
 
         // Navigation
-        public User User { get; set; } = null!;
+        public ApplicationUser User { get; set; } = null!;
 
         public ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
     }

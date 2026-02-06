@@ -10,7 +10,7 @@ namespace AppGroupCar.Entities.Market
         public Guid RequestId { get; set; }
 
         [Required]
-        public Guid CustomerId { get; set; }
+        public string? CustomerId { get; set; }
 
         [Required]
         public Guid FromLocationId { get; set; }
@@ -32,7 +32,7 @@ namespace AppGroupCar.Entities.Market
 
         // Navigation
         [ForeignKey(nameof(CustomerId))]
-        public User Customer { get; set; } = null!;
+        public ApplicationUser Customer { get; set; } = null!;
 
         [ForeignKey(nameof(FromLocationId))]
         public Location FromLocation { get; set; } = null!;

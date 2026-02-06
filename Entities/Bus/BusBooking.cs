@@ -14,7 +14,7 @@ namespace AppGroupCar.Entities.Bus
         public Guid ShowtimeId { get; set; }
 
         [Required]
-        public Guid UserId { get; set; }
+        public string? UserId { get; set; }
 
         // Giá
         [Required]
@@ -34,7 +34,7 @@ namespace AppGroupCar.Entities.Bus
         public BusShowtime Showtime { get; set; } = null!;
 
         [ForeignKey(nameof(UserId))]
-        public User User { get; set; } = null!;
+        public ApplicationUser User { get; set; } = null!;
 
         public ICollection<BusBookingSeat> Seats { get; set; } = new List<BusBookingSeat>();
     }

@@ -10,7 +10,7 @@ namespace AppGroupCar.Entities.Market
         public Guid OfferId { get; set; }
 
         [Required]
-        public Guid DriverId { get; set; }
+        public string? DriverId { get; set; }
 
         [ForeignKey(nameof(DriverId))]
         public Driver Driver { get; set; } = null!;

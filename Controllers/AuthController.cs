@@ -1,7 +1,6 @@
 ﻿using System.Security.Claims;
 using AppGroupCar.DTO.RequestDTO;
 using AppGroupCar.DTO.ResponseDTO;
-using AppGroupCar.Models;
 using AppGroupCar.Services.AuthServices;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authorization;

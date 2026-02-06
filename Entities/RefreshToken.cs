@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace AppGroupCar.Models
+namespace AppGroupCar.Entities
 {
     public class RefreshToken
     {

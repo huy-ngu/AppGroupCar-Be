@@ -1,7 +1,7 @@
 ﻿using AppGroupCar.Data;
 using AppGroupCar.DTO.RequestDTO;
+using AppGroupCar.Entities;
 using AppGroupCar.Exceptions;
-using AppGroupCar.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace AppGroupCar.Repositories.RefreshTokensRepo
