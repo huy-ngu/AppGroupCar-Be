@@ -2,9 +2,11 @@
 using AppGroupCar.Entities;
 using AppGroupCar.Entities.Identity;
 using AppGroupCar.Middleware;
+using AppGroupCar.Repositories.BaseRepo;
 using AppGroupCar.Repositories.RefreshTokensRepo;
 using AppGroupCar.Repositories.UserRepo;
 using AppGroupCar.Services.AuthServices;
+using AppGroupCar.Services.LocationServices;
 using AppGroupCar.Services.RoleServices;
 using AppGroupCar.Services.TokenServices;
 using AppGroupCar.Services.UserServices;
@@ -128,12 +130,15 @@ namespace AppGroupCar
             // repositories
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+            builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 
             // services
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IRoleService, RoleService>();
+            builder.Services.AddScoped<LocationService>();
+
 
             builder.Services.AddAuthorization();
 
