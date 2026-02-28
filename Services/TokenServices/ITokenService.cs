@@ -7,6 +7,6 @@ namespace AppGroupCar.Services.TokenServices
     {
         // returns (token string, expiry DateTime)
         public string CreateToken(ApplicationUser user, IList<string> roles);
-        public RefreshToken CreateRefreshToken(string userId, string jwtId);
+        public RefreshToken CreateRefreshToken(Guid userId, string jwtId);
     }
 }

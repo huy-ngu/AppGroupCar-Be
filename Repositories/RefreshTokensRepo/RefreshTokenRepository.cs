@@ -54,7 +54,7 @@ namespace AppGroupCar.Repositories.RefreshTokensRepo
             await _context.SaveChangesAsync();
         }
 
-        public async Task<bool> RevokeAllDevicesAsync(string userId)
+        public async Task<bool> RevokeAllDevicesAsync(Guid userId)
         {
             var userActive = _context.RefreshTokens.Where(x => x.UserId == userId && !x.Invalidated).ToList();
             if (!userActive.Any())

@@ -1,19 +1,18 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using AppGroupCar.Entities.Base;
 
 namespace AppGroupCar.Entities.Market
 {
     [Table("Bookings")]
-    public class Booking
+    public class Booking : BaseEntity
     {
-        [Key]
-        public Guid BookingId { get; set; }
 
         [Required]
         public Guid OfferId { get; set; }
 
         [Required]
-        public string? CustomerId { get; set; }
+        public Guid CustomerId { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
@@ -27,6 +26,7 @@ namespace AppGroupCar.Entities.Market
 
         [Required]
         public DateTime CreatedAt { get; set; }
+
 
         // Navigation
         [ForeignKey(nameof(OfferId))]
@@ -42,7 +42,7 @@ namespace AppGroupCar.Entities.Market
     public enum BookingStatus
     {
         Pending = 1,
-        Paid = 2,
+        Confirmed = 2,
         Cancelled = 3
     }
 

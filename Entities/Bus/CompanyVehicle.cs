@@ -1,13 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using AppGroupCar.Entities.Base;
 
 namespace AppGroupCar.Entities.Bus
 {
     [Table("CompanyVehicles")]
-    public class CompanyVehicle
+    public class CompanyVehicle : BaseEntity
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid CompanyVehicleId { get; set; }
 
         [Required]
@@ -28,9 +27,6 @@ namespace AppGroupCar.Entities.Bus
 
         [Required]
         public int Status { get; set; }
-
-        [Required]
-        public DateTime CreatedAt { get; set; }
 
         // Navigation
         [ForeignKey(nameof(CompanyId))]

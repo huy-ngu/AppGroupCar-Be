@@ -28,7 +28,7 @@ namespace AppGroupCar.Controllers
             return Ok(new ApiResponse<string> { });
         }
         [HttpDelete("Id")]
-        public async Task<IActionResult> DeleteRole(string Id)
+        public async Task<IActionResult> DeleteRole(Guid Id)
         {
             await _roleService.DeleteRole(Id);
             return Ok(new ApiResponse<string> { });

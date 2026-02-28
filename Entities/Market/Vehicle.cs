@@ -1,17 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using AppGroupCar.Entities.Base;
 
 namespace AppGroupCar.Entities.Market
 {
     [Table("Vehicles")]
-    public class Vehicle
+    public class Vehicle : BaseEntity
     {
-        [Key]
-        public Guid VehicleId { get; set; } = Guid.NewGuid();
-
-        // FK
         [Required]
-        public string? DriverId { get; set; }
+        public Guid DriverId { get; set; }
 
         // Thông tin xe
         [Required]
@@ -30,13 +27,6 @@ namespace AppGroupCar.Entities.Market
 
         [Required]
         public VehicleStatus Status { get; set; }
-
-        // System
-        [Required]
-        public bool IsDeleted { get; set; }
-
-        [Required]
-        public DateTime CreatedAt { get; set; }
 
         // Navigation
         [ForeignKey(nameof(DriverId))]

@@ -1,13 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using AppGroupCar.Entities.Base;
 
 namespace AppGroupCar.Entities.Market
 {
     [Table("Shipments")]
-    public class Shipment
+    public class Shipment : BaseEntity
     {
-        [Key]
-        public Guid ShipmentId { get; set; }
 
         [Required]
         public Guid ShipmentOfferId { get; set; }
@@ -17,12 +16,6 @@ namespace AppGroupCar.Entities.Market
 
         [Required]
         public PaymentStatus PaymentStatus { get; set; }
-
-        [Required]
-        public DateTime CreatedAt { get; set; }
-
-        [Required]
-        public DateTime UpdatedAt { get; set; }
 
         // Navigation
         [ForeignKey(nameof(ShipmentOfferId))]

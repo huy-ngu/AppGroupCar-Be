@@ -10,6 +10,6 @@ namespace AppGroupCar.Repositories.RefreshTokensRepo
         Task Used(RefreshToken token);
         Task SaveAsync();
         Task<RefreshToken> GetByTokenAsync(string token);
-        Task<bool> RevokeAllDevicesAsync(string userId);
+        Task<bool> RevokeAllDevicesAsync(Guid userId);
     }
 }

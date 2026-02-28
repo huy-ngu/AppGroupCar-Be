@@ -1,13 +1,12 @@
 ﻿namespace AppGroupCar.Entities.Bus
 {
+    using AppGroupCar.Entities.Base;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
     [Table("ShowtimeLogs")]
-    public class ShowtimeLog
+    public class ShowtimeLog : BaseEntity
     {
-        [Key]
-        public Guid LogId { get; set; } = Guid.NewGuid();
 
         [Required]
         public Guid ShowtimeId { get; set; }
@@ -19,9 +18,6 @@
         public BusShowtimeStatus? OldStatus { get; set; }
 
         public BusShowtimeStatus? NewStatus { get; set; }
-
-        [Required]
-        public DateTime CreatedAt { get; set; }
 
         [Required]
         public Guid CreatedBy { get; set; }

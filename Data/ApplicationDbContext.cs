@@ -1,5 +1,6 @@
 ﻿using AppGroupCar.Entities;
 using AppGroupCar.Entities.Bus;
+using AppGroupCar.Entities.Identity;
 using AppGroupCar.Entities.Market;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -7,7 +8,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AppGroupCar.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser,
+    ApplicationRole,
+    Guid,
+    ApplicationUserClaim,
+    ApplicationUserRole,
+    ApplicationUserLogin,
+    ApplicationRoleClaim,
+    ApplicationUserToken>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
@@ -51,12 +59,12 @@ namespace AppGroupCar.Data
 
             // Đổi tên các bảng
             builder.Entity<ApplicationUser>(b => b.ToTable("Users"));
-            builder.Entity<IdentityRole>(b => b.ToTable("Roles"));
-            builder.Entity<IdentityUserRole<string>>(b => b.ToTable("UserRoles"));
-            builder.Entity<IdentityUserClaim<string>>(b => b.ToTable("UserClaims"));
-            builder.Entity<IdentityUserLogin<string>>(b => b.ToTable("UserLogins"));
-            builder.Entity<IdentityRoleClaim<string>>(b => b.ToTable("RoleClaims"));
-            builder.Entity<IdentityUserToken<string>>(b => b.ToTable("UserTokens"));
+            builder.Entity<ApplicationRole>(b => b.ToTable("Roles"));
+            builder.Entity<ApplicationUserRole>(b => b.ToTable("UserRoles"));
+            builder.Entity<ApplicationUserClaim>(b => b.ToTable("UserClaims"));
+            builder.Entity<ApplicationUserLogin>(b => b.ToTable("UserLogins"));
+            builder.Entity<ApplicationRoleClaim>(b => b.ToTable("RoleClaims"));
+            builder.Entity<ApplicationUserToken>(b => b.ToTable("UserTokens"));
 
             // Đổi tên bảng domain
             builder.Entity<RefreshToken>(b => b.ToTable("RefreshTokens"));
@@ -193,13 +201,13 @@ namespace AppGroupCar.Data
                     .HasForeignKey(x => x.BookingId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
-            // Driver: key = UserId, 1-1 với ApplicationUser
+            // Driver: key = UserId,1-1 với ApplicationUser
             builder.Entity<Driver>(b =>
             {
-                b.HasKey(x => x.UserId);
+                b.HasKey(x => x.Id);
                 b.HasOne(x => x.User)
                     .WithMany()
-                    .HasForeignKey(x => x.UserId)
+                    .HasForeignKey(x => x.Id)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
@@ -234,21 +242,21 @@ namespace AppGroupCar.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // SharedRideOfferDetail 1-1 Offer
+            // SharedRideOfferDetail1-1 Offer
             builder.Entity<SharedRideOfferDetail>(b =>
             {
                 b.HasOne(x => x.Offer)
                     .WithOne(o => o.SharedRideDetail)
-                    .HasForeignKey<SharedRideOfferDetail>(x => x.OfferId)
+                    .HasForeignKey<SharedRideOfferDetail>(x => x.Id)
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // CargoOfferDetail 1-1 Offer
+            // CargoOfferDetail1-1 Offer
             builder.Entity<CargoOfferDetail>(b =>
             {
                 b.HasOne(x => x.Offer)
                     .WithOne(o => o.CargoDetail)
-                    .HasForeignKey<CargoOfferDetail>(x => x.OfferId)
+                    .HasForeignKey<CargoOfferDetail>(x => x.Id)
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
@@ -332,7 +340,7 @@ namespace AppGroupCar.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // Shipment 1-1 ShipmentOffer
+            // Shipment1-1 ShipmentOffer
             builder.Entity<Shipment>(b =>
             {
                 b.HasOne(x => x.ShipmentOffer)

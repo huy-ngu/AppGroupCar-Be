@@ -1,16 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using AppGroupCar.Entities.Base;
 
 namespace AppGroupCar.Entities.Market
 {
     [Table("Offers")]
-    public class Offer
+    public class Offer : BaseEntity
     {
-        [Key]
-        public Guid OfferId { get; set; }
-
         [Required]
-        public string? DriverId { get; set; }
+        public Guid DriverId { get; set; }
 
         [ForeignKey(nameof(DriverId))]
         public Driver Driver { get; set; } = null!;
@@ -32,10 +30,6 @@ namespace AppGroupCar.Entities.Market
 
         [Required]
         public OfferStatus Status { get; set; }
-
-        [Required]
-        public DateTime CreatedAt { get; set; }
-
         public ICollection<OfferRoutePoint> RoutePoints { get; set; }
             = new List<OfferRoutePoint>();
 

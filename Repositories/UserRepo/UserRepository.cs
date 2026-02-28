@@ -53,9 +53,9 @@ namespace AppGroupCar.Repositories.UserRepo
         {
             return await _userManager.AddLoginAsync(user, loginInfo);
         }
-        public async Task<ApplicationUser> FindByIdAsync(string id)
+        public async Task<ApplicationUser> FindByIdAsync(Guid id)
         {
-            return await _userManager.FindByIdAsync(id);
+            return await _userManager.FindByIdAsync(id.ToString());
         }
     }
 }

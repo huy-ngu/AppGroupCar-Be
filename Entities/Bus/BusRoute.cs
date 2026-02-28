@@ -1,19 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using AppGroupCar.Entities.Base;
 
 namespace AppGroupCar.Entities.Bus
 {
     [Table("BusRoutes")]
-    public class BusRoute
+    public class BusRoute : BaseEntity
     {
-        [Key]
-        public Guid RouteId { get; set; } = Guid.NewGuid();
-
         [MaxLength(200)]
         public string? Name { get; set; }
-
-        [Required]
-        public DateTime CreatedAt { get; set; }
 
         // Navigation
         public ICollection<BusRoutePoint> RoutePoints { get; set; } = new List<BusRoutePoint>();

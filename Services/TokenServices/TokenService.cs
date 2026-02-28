@@ -26,7 +26,7 @@ public class TokenService : ITokenService
 
         var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), // Quan trọng: Thêm Jti để định danh token
             new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
             new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
@@ -59,14 +59,13 @@ public class TokenService : ITokenService
         return tokenHandler.WriteToken(token);
     }
 
-    public RefreshToken CreateRefreshToken(string userId, string jwtId)
+    public RefreshToken CreateRefreshToken(Guid userId, string jwtId)
     {
         var refreshToken = new RefreshToken
         {
             Token = GetRandomString(32), // Tạo chuỗi ngẫu nhiên 32 byte (base64)
             UserId = userId,
             JwtId = jwtId, // Link với AccessToken vừa tạo
-            CreationDate = DateTime.UtcNow,
             ExpiryDate = DateTime.UtcNow.AddDays(7), // Refresh token sống 7 ngày
             Used = false,
             Invalidated = false

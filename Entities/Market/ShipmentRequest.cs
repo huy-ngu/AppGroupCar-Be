@@ -1,16 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using AppGroupCar.Entities.Base;
 
 namespace AppGroupCar.Entities.Market
 {
     [Table("ShipmentRequests")]
-    public class ShipmentRequest
+    public class ShipmentRequest : BaseEntity
     {
-        [Key]
-        public Guid RequestId { get; set; }
-
         [Required]
-        public string? CustomerId { get; set; }
+        public Guid CustomerId { get; set; }
 
         [Required]
         public Guid PickupLocationId { get; set; }
@@ -47,9 +45,6 @@ namespace AppGroupCar.Entities.Market
 
         [Required]
         public ShipmentRequestStatus Status { get; set; }
-
-        [Required]
-        public DateTime CreatedAt { get; set; }
 
         // Navigation
         [ForeignKey(nameof(CustomerId))]

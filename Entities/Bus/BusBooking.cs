@@ -1,20 +1,18 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using AppGroupCar.Entities.Base;
 
 namespace AppGroupCar.Entities.Bus
 {
     [Table("BusBookings")]
-    public class BusBooking
+    public class BusBooking : BaseEntity
     {
-        [Key]
-        public Guid BookingId { get; set; } = Guid.NewGuid();
-
         // FK
         [Required]
         public Guid ShowtimeId { get; set; }
 
         [Required]
-        public string? UserId { get; set; }
+        public Guid? UserId { get; set; }
 
         // Giá
         [Required]
@@ -24,10 +22,6 @@ namespace AppGroupCar.Entities.Bus
         // Trạng thái
         [Required]
         public BusBookingStatus Status { get; set; }
-
-        // Audit
-        [Required]
-        public DateTime CreatedAt { get; set; }
 
         // Navigation
         [ForeignKey(nameof(ShowtimeId))]

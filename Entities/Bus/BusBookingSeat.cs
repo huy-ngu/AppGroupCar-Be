@@ -1,17 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using AppGroupCar.Entities.Base;
 
 namespace AppGroupCar.Entities.Bus
 {
     [Table("BusBookingSeats")]
     [Index(nameof(BookingId), nameof(SeatNumber), IsUnique = true)]
     [Index(nameof(TicketCode), IsUnique = true)]
-    public class BusBookingSeat
+    public class BusBookingSeat : BaseEntity
     {
-        [Key]
-        public Guid BookingSeatId { get; set; } = Guid.NewGuid();
-
         // FK
         [Required]
         public Guid BookingId { get; set; }

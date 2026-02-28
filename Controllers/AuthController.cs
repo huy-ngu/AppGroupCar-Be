@@ -62,11 +62,13 @@ namespace AppGroupCar.Controllers
         [HttpPost("logout_AllDevices")]
         public async Task<IActionResult> LogoutAllDevices()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
+            var Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (Id == null)
             {
                 return Unauthorized("Sai token");
             }
+            Guid userId = new Guid(Id);
+
             await _authService.LogoutAllDevices(userId);
             return Ok(new ApiResponse<string> { });
         }

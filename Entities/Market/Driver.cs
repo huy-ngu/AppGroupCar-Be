@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using AppGroupCar.Entities.Base;
 
 namespace AppGroupCar.Entities.Market
 {
@@ -7,8 +8,8 @@ namespace AppGroupCar.Entities.Market
     public class Driver
     {
         [Key]
-        [ForeignKey(nameof(User))]
-        public string? UserId { get; set; }
+        [Column("UserId")]
+        public Guid Id { get; set; }
 
         [Required]
         [MaxLength(200)]
@@ -30,6 +31,7 @@ namespace AppGroupCar.Entities.Market
         public DriverVerificationStatus VerificationStatus { get; set; }
 
         // Navigation
+        [ForeignKey(nameof(Id))]
         public ApplicationUser User { get; set; } = null!;
 
         public ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();

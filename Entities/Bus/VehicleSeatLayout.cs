@@ -1,14 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using AppGroupCar.Entities.Base;
 
 namespace AppGroupCar.Entities.Bus
 {
     [Table("VehicleSeatLayouts")]
-    public class VehicleSeatLayout
+    public class VehicleSeatLayout : BaseEntity
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public Guid SeatLayoutId { get; set; }
 
         [Required]
         public int SeatCapacity { get; set; } // 16, 29, 45
@@ -22,8 +20,6 @@ namespace AppGroupCar.Entities.Bus
         [Required]
         public bool IsActive { get; set; }
 
-        [Required]
-        public DateTime CreatedAt { get; set; }
     }
 
 }

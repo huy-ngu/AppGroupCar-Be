@@ -1,16 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
+using AppGroupCar.Entities.Base;
 
 namespace AppGroupCar.Entities.Bus
 {
     [Table("BusRoutePoints")]
     [Index(nameof(RouteId), nameof(Sequence), IsUnique = true)]
-    public class BusRoutePoint
+    public class BusRoutePoint : BaseEntity
     {
-        [Key]
-        public Guid RoutePointId { get; set; } = Guid.NewGuid();
-
         [Required]
         public Guid RouteId { get; set; }
 

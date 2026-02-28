@@ -1,10 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using AppGroupCar.Entities.Base;
 
 namespace AppGroupCar.Entities.Market
 {
     [Table("OfferRoutePoints")]
-    public class OfferRoutePoint
+    public class OfferRoutePoint : BaseEntity
     {
         [Required]
         public Guid OfferId { get; set; }

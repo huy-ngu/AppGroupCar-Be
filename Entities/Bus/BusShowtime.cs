@@ -1,16 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using AppGroupCar.Entities.Base;
 
 namespace AppGroupCar.Entities.Bus
 {
     [Table("BusShowtimes")]
     [Index(nameof(CompanyVehicleId), nameof(DepartureDate), nameof(DepartureTime), IsUnique = true)]
-    public class BusShowtime
+    public class BusShowtime : BaseEntity
     {
-        [Key]
-        public Guid ShowtimeId { get; set; } = Guid.NewGuid();
-
         // FK
         [Required]
         public Guid CompanyId { get; set; }
@@ -42,9 +40,6 @@ namespace AppGroupCar.Entities.Bus
         // Audit
         [Required]
         public Guid CreatedBy { get; set; }
-
-        [Required]
-        public DateTime CreatedAt { get; set; }
 
         // Navigation
         [ForeignKey(nameof(CompanyId))]

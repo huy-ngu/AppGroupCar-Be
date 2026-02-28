@@ -235,7 +235,7 @@ namespace AppGroupCar.Services.AuthServices
             await _refreshTokenRepository.Revoke(tokenDb);
         }
 
-        public async Task LogoutAllDevices(string userId)
+        public async Task LogoutAllDevices(Guid userId)
         {
             var rs = await _refreshTokenRepository.RevokeAllDevicesAsync(userId);
             if (!rs)

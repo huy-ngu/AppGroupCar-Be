@@ -1,13 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using AppGroupCar.Entities.Base;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AppGroupCar.Entities.Bus
 {
     [Table("Companies")]
-    public class Company
+    public class Company : BaseEntity
     {
-        [Key]
-        public Guid CompanyId { get; set; }
 
         // Thông tin cơ bản
         [Required]
@@ -60,19 +59,11 @@ namespace AppGroupCar.Entities.Bus
         [Required]
         public int Status { get; set; }
 
-        // Thông tin hệ thống
-        [Required]
-        public DateTime CreatedAt { get; set; }
-
         [Required]
         public Guid CreatedBy { get; set; }
 
         public DateTime? ApprovedAt { get; set; }
         public Guid? ApprovedBy { get; set; }
-
-        // Cờ hệ thống
-        [Required]
-        public bool IsDeleted { get; set; } = false;
 
         // Navigation
         public ICollection<CompanyUser> CompanyUsers { get; set; } = new List<CompanyUser>();

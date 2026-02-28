@@ -1,15 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using AppGroupCar.Entities.Bus;
+using AppGroupCar.Entities.Base;
 
 namespace AppGroupCar.Entities
 {
     [Table("Locations")]
-    public class Location
+    public class Location : BaseEntity
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public Guid LocationId { get; set; }
 
         [Required]
         [MaxLength(200)]
@@ -28,9 +26,6 @@ namespace AppGroupCar.Entities
 
         [Required]
         public bool IsActive { get; set; } = true;
-
-        [Required]
-        public DateTime CreatedAt { get; set; }
 
         /// <summary>
         /// Tọa độ không gian (SQL Server geography)

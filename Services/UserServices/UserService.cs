@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using AppGroupCar.DTO.RequestDTO;
 using AppGroupCar.DTO.ResponseDTO;
 using AppGroupCar.Entities;
+using AppGroupCar.Entities.Identity;
 using AppGroupCar.Exceptions;
 using Microsoft.AspNetCore.Identity;
 
@@ -12,9 +13,9 @@ namespace AppGroupCar.Services.UserServices
     public class UserService : IUserService
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly RoleManager<ApplicationRole> _roleManager;
 
-        public UserService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+        public UserService(UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager)
         {
             _userManager = userManager;
             _roleManager = roleManager;

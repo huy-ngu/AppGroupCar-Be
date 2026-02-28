@@ -7,6 +7,6 @@ namespace AppGroupCar.Services.RoleServices
     {
         Task<List<RoleResponseDTO>> GetAllRole();
         Task CreateRole(string RoleName);
-        Task DeleteRole(string Id);
+        Task DeleteRole(Guid Id);
     }
 }

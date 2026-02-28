@@ -15,7 +15,7 @@ namespace AppGroupCar.Repositories.UserRepo
         Task<IList<string>> GetRolesAsync(ApplicationUser user);
         Task<IdentityResult> AddToRolesAsync(ApplicationUser user, IEnumerable<string> roles);
         Task<IdentityResult> AddLoginAsync(ApplicationUser user, UserLoginInfo loginInfo);
-        Task<ApplicationUser> FindByIdAsync(string id);
+        Task<ApplicationUser> FindByIdAsync(Guid id);
 
     }
 }

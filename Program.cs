@@ -1,7 +1,6 @@
-﻿using System;
-using System.Text;
-using AppGroupCar.Data;
+﻿using AppGroupCar.Data;
 using AppGroupCar.Entities;
+using AppGroupCar.Entities.Identity;
 using AppGroupCar.Middleware;
 using AppGroupCar.Repositories.RefreshTokensRepo;
 using AppGroupCar.Repositories.UserRepo;
@@ -13,6 +12,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Text;
 
 namespace AppGroupCar
 {
@@ -50,10 +51,11 @@ namespace AppGroupCar
                 });
             });
 
-            //thêm cầu hình cho địa lý
+            //var connectionString =
+            //    builder.Configuration.GetConnectionString("AzureConnection")
+            //    ?? throw new InvalidOperationException("AzureConnection is missing");
             var connectionString =
-    builder.Configuration.GetConnectionString("AzureConnection")
-    ?? throw new InvalidOperationException("AzureConnection is missing");
+                builder.Configuration.GetConnectionString("DefaultConnection");
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
@@ -72,7 +74,7 @@ namespace AppGroupCar
 
 
 
-            builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+            builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
             {
                 // Password
                 options.Password.RequiredLength = 6;
@@ -91,6 +93,7 @@ namespace AppGroupCar
                 // SignIn
                 options.SignIn.RequireConfirmedEmail = false;
             })
+            .AddRoles<ApplicationRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
@@ -144,7 +147,7 @@ namespace AppGroupCar
                 {
                     // Lấy các Manager từ hệ thống DI
                     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-                    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+                    var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();
 
                     // Chạy hàm Seed
                     await IdentityDataInitializer.SeedDataAsync(userManager, roleManager);
@@ -174,7 +177,7 @@ namespace AppGroupCar
     }
     public static class IdentityDataInitializer
     {
-        public static async Task SeedDataAsync(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+        public static async Task SeedDataAsync(UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager)
         {
             // 1. Khởi tạo Roles
             string[] roleNames = { "Admin", "User" };
@@ -182,7 +185,7 @@ namespace AppGroupCar
             {
                 if (!await roleManager.RoleExistsAsync(roleName))
                 {
-                    await roleManager.CreateAsync(new IdentityRole(roleName));
+                    await roleManager.CreateAsync(new ApplicationRole(roleName));
                 }
             }
 

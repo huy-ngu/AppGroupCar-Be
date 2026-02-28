@@ -25,8 +25,9 @@ namespace AppGroupCar.Migrations
 
             modelBuilder.Entity("AppGroupCar.Entities.ApplicationUser", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
@@ -44,8 +45,10 @@ namespace AppGroupCar.Migrations
                     b.Property<int>("CustomerRatingCount")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
@@ -56,8 +59,8 @@ namespace AppGroupCar.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -77,7 +80,6 @@ namespace AppGroupCar.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("PhoneNumberConfirmed")
@@ -114,11 +116,17 @@ namespace AppGroupCar.Migrations
 
             modelBuilder.Entity("AppGroupCar.Entities.Bus.BusBooking", b =>
                 {
-                    b.Property<Guid>("BookingId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastUpdateAt")
                         .HasColumnType("datetime2");
 
                     b.Property<Guid>("ShowtimeId")
@@ -130,11 +138,11 @@ namespace AppGroupCar.Migrations
                     b.Property<decimal>("TotalPrice")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("UserId")
+                    b.Property<Guid?>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("BookingId");
+                    b.HasKey("Id");
 
                     b.HasIndex("ShowtimeId");
 
@@ -145,7 +153,7 @@ namespace AppGroupCar.Migrations
 
             modelBuilder.Entity("AppGroupCar.Entities.Bus.BusBookingSeat", b =>
                 {
-                    b.Property<Guid>("BookingSeatId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
@@ -155,8 +163,17 @@ namespace AppGroupCar.Migrations
                     b.Property<DateTime?>("CheckedInAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("IsCheckedIn")
                         .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("SeatNumber")
                         .HasColumnType("int");
@@ -166,7 +183,7 @@ namespace AppGroupCar.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.HasKey("BookingSeatId");
+                    b.HasKey("Id");
 
                     b.HasIndex("TicketCode")
                         .IsUnique();
@@ -179,30 +196,45 @@ namespace AppGroupCar.Migrations
 
             modelBuilder.Entity("AppGroupCar.Entities.Bus.BusRoute", b =>
                 {
-                    b.Property<Guid>("RouteId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Name")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.HasKey("RouteId");
+                    b.HasKey("Id");
 
                     b.ToTable("BusRoutes", (string)null);
                 });
 
             modelBuilder.Entity("AppGroupCar.Entities.Bus.BusRoutePoint", b =>
                 {
-                    b.Property<Guid>("RoutePointId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("DropoffAllowed")
                         .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid>("LocationId")
                         .HasColumnType("uniqueidentifier");
@@ -219,7 +251,7 @@ namespace AppGroupCar.Migrations
                     b.Property<int>("Sequence")
                         .HasColumnType("int");
 
-                    b.HasKey("RoutePointId");
+                    b.HasKey("Id");
 
                     b.HasIndex("LocationId");
 
@@ -233,7 +265,7 @@ namespace AppGroupCar.Migrations
 
             modelBuilder.Entity("AppGroupCar.Entities.Bus.BusShowtime", b =>
                 {
-                    b.Property<Guid>("ShowtimeId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
@@ -249,11 +281,17 @@ namespace AppGroupCar.Migrations
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateOnly>("DepartureDate")
                         .HasColumnType("date");
 
                     b.Property<TimeOnly>("DepartureTime")
                         .HasColumnType("time");
+
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
@@ -264,7 +302,7 @@ namespace AppGroupCar.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.HasKey("ShowtimeId");
+                    b.HasKey("Id");
 
                     b.HasIndex("CompanyId");
 
@@ -278,7 +316,7 @@ namespace AppGroupCar.Migrations
 
             modelBuilder.Entity("AppGroupCar.Entities.Bus.Company", b =>
                 {
-                    b.Property<Guid>("CompanyId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
@@ -317,6 +355,9 @@ namespace AppGroupCar.Migrations
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Description")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -329,8 +370,8 @@ namespace AppGroupCar.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("LicenseIssuedBy")
                         .HasMaxLength(200)
@@ -356,19 +397,28 @@ namespace AppGroupCar.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.HasKey("CompanyId");
+                    b.HasKey("Id");
 
                     b.ToTable("Companies", (string)null);
                 });
 
             modelBuilder.Entity("AppGroupCar.Entities.Bus.CompanyDriver", b =>
                 {
-                    b.Property<Guid>("CompanyDriverId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("CompanyId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("LicenseClass")
                         .IsRequired()
@@ -380,9 +430,8 @@ namespace AppGroupCar.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("VerificationStatus")
                         .HasColumnType("int");
@@ -393,7 +442,7 @@ namespace AppGroupCar.Migrations
                     b.Property<Guid?>("VerifiedBy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("CompanyDriverId");
+                    b.HasKey("Id");
 
                     b.HasIndex("CompanyId");
 
@@ -404,26 +453,34 @@ namespace AppGroupCar.Migrations
 
             modelBuilder.Entity("AppGroupCar.Entities.Bus.CompanyUser", b =>
                 {
-                    b.Property<Guid>("CompanyUserId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("CompanyId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("RoleId")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("CompanyUserId");
+                    b.HasKey("Id");
 
                     b.HasIndex("CompanyId");
 
@@ -434,14 +491,23 @@ namespace AppGroupCar.Migrations
 
             modelBuilder.Entity("AppGroupCar.Entities.Bus.CompanyVehicle", b =>
                 {
-                    b.Property<Guid>("CompanyVehicleId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("CompanyId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("CompanyVehicleId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastUpdateAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("PlateNumber")
@@ -461,7 +527,7 @@ namespace AppGroupCar.Migrations
                     b.Property<int>("VehicleType")
                         .HasColumnType("int");
 
-                    b.HasKey("CompanyVehicleId");
+                    b.HasKey("Id");
 
                     b.HasIndex("CompanyId");
 
@@ -472,7 +538,7 @@ namespace AppGroupCar.Migrations
 
             modelBuilder.Entity("AppGroupCar.Entities.Bus.ShowtimeLog", b =>
                 {
-                    b.Property<Guid>("LogId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
@@ -487,6 +553,12 @@ namespace AppGroupCar.Migrations
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int?>("NewStatus")
                         .HasColumnType("int");
 
@@ -496,7 +568,7 @@ namespace AppGroupCar.Migrations
                     b.Property<Guid>("ShowtimeId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("LogId");
+                    b.HasKey("Id");
 
                     b.HasIndex("ShowtimeId");
 
@@ -505,11 +577,14 @@ namespace AppGroupCar.Migrations
 
             modelBuilder.Entity("AppGroupCar.Entities.Bus.VehicleSeatLayout", b =>
                 {
-                    b.Property<Guid>("SeatLayoutId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeleteAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
@@ -519,6 +594,9 @@ namespace AppGroupCar.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("LayoutJson")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -526,14 +604,145 @@ namespace AppGroupCar.Migrations
                     b.Property<int>("SeatCapacity")
                         .HasColumnType("int");
 
-                    b.HasKey("SeatLayoutId");
+                    b.HasKey("Id");
 
                     b.ToTable("VehicleSeatLayouts", (string)null);
                 });
 
+            modelBuilder.Entity("AppGroupCar.Entities.Identity.ApplicationRole", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex")
+                        .HasFilter("[NormalizedName] IS NOT NULL");
+
+                    b.ToTable("Roles", (string)null);
+                });
+
+            modelBuilder.Entity("AppGroupCar.Entities.Identity.ApplicationRoleClaim", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("RoleClaims", (string)null);
+                });
+
+            modelBuilder.Entity("AppGroupCar.Entities.Identity.ApplicationUserClaim", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserClaims", (string)null);
+                });
+
+            modelBuilder.Entity("AppGroupCar.Entities.Identity.ApplicationUserLogin", b =>
+                {
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("LoginProvider", "ProviderKey");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserLogins", (string)null);
+                });
+
+            modelBuilder.Entity("AppGroupCar.Entities.Identity.ApplicationUserRole", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("UserRoles", (string)null);
+                });
+
+            modelBuilder.Entity("AppGroupCar.Entities.Identity.ApplicationUserToken", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("UserId", "LoginProvider", "Name");
+
+                    b.ToTable("UserTokens", (string)null);
+                });
+
             modelBuilder.Entity("AppGroupCar.Entities.Location", b =>
                 {
-                    b.Property<Guid>("LocationId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
@@ -551,12 +760,18 @@ namespace AppGroupCar.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("GooglePlaceId")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("LocationType")
                         .HasColumnType("int");
@@ -569,7 +784,7 @@ namespace AppGroupCar.Migrations
                     b.Property<Guid?>("ParentLocationId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("LocationId");
+                    b.HasKey("Id");
 
                     b.HasIndex("ParentLocationId");
 
@@ -578,16 +793,21 @@ namespace AppGroupCar.Migrations
 
             modelBuilder.Entity("AppGroupCar.Entities.Market.Booking", b =>
                 {
-                    b.Property<Guid>("BookingId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("CustomerId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid>("OfferId")
                         .HasColumnType("uniqueidentifier");
@@ -601,7 +821,7 @@ namespace AppGroupCar.Migrations
                     b.Property<decimal>("TotalPrice")
                         .HasColumnType("decimal(18,2)");
 
-                    b.HasKey("BookingId");
+                    b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
 
@@ -612,12 +832,21 @@ namespace AppGroupCar.Migrations
 
             modelBuilder.Entity("AppGroupCar.Entities.Market.BookingItem", b =>
                 {
-                    b.Property<Guid>("BookingItemId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("BookingId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
@@ -625,7 +854,7 @@ namespace AppGroupCar.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.HasKey("BookingItemId");
+                    b.HasKey("Id");
 
                     b.HasIndex("BookingId");
 
@@ -634,11 +863,21 @@ namespace AppGroupCar.Migrations
 
             modelBuilder.Entity("AppGroupCar.Entities.Market.CargoOfferDetail", b =>
                 {
-                    b.Property<Guid>("OfferId")
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("AcceptFragile")
                         .HasColumnType("bit");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<decimal>("MaxVolume")
                         .HasColumnType("decimal(10,2)");
@@ -646,15 +885,16 @@ namespace AppGroupCar.Migrations
                     b.Property<decimal>("MaxWeight")
                         .HasColumnType("decimal(10,2)");
 
-                    b.HasKey("OfferId");
+                    b.HasKey("Id");
 
                     b.ToTable("CargoOfferDetails", (string)null);
                 });
 
             modelBuilder.Entity("AppGroupCar.Entities.Market.Driver", b =>
                 {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("UserId");
 
                     b.Property<string>("IdentityNumber")
                         .IsRequired()
@@ -679,14 +919,14 @@ namespace AppGroupCar.Migrations
                     b.Property<int>("VerificationStatus")
                         .HasColumnType("int");
 
-                    b.HasKey("UserId");
+                    b.HasKey("Id");
 
                     b.ToTable("Drivers", (string)null);
                 });
 
             modelBuilder.Entity("AppGroupCar.Entities.Market.Offer", b =>
                 {
-                    b.Property<Guid>("OfferId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
@@ -696,12 +936,17 @@ namespace AppGroupCar.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("DepartureTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("DriverId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("DriverId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("ServiceType")
                         .HasColumnType("int");
@@ -712,7 +957,7 @@ namespace AppGroupCar.Migrations
                     b.Property<Guid>("VehicleId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("OfferId");
+                    b.HasKey("Id");
 
                     b.HasIndex("DriverId");
 
@@ -729,8 +974,21 @@ namespace AppGroupCar.Migrations
                     b.Property<int>("Sequence")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("DropoffAllowed")
                         .HasColumnType("bit");
+
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid>("LocationId")
                         .HasColumnType("uniqueidentifier");
@@ -747,22 +1005,27 @@ namespace AppGroupCar.Migrations
 
             modelBuilder.Entity("AppGroupCar.Entities.Market.RideRequest", b =>
                 {
-                    b.Property<Guid>("RequestId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("CustomerId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("DesiredDepartureTime")
                         .HasColumnType("datetime2");
 
                     b.Property<Guid>("FromLocationId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("SeatsRequired")
                         .HasColumnType("int");
@@ -773,7 +1036,7 @@ namespace AppGroupCar.Migrations
                     b.Property<Guid>("ToLocationId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("RequestId");
+                    b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
 
@@ -786,27 +1049,43 @@ namespace AppGroupCar.Migrations
 
             modelBuilder.Entity("AppGroupCar.Entities.Market.SharedRideOfferDetail", b =>
                 {
-                    b.Property<Guid>("OfferId")
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("AvailableSeats")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("TotalSeats")
                         .HasColumnType("int");
 
-                    b.HasKey("OfferId");
+                    b.HasKey("Id");
 
                     b.ToTable("SharedRideOfferDetails", (string)null);
                 });
 
             modelBuilder.Entity("AppGroupCar.Entities.Market.Shipment", b =>
                 {
-                    b.Property<Guid>("ShipmentId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastUpdateAt")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("PaymentStatus")
@@ -818,10 +1097,7 @@ namespace AppGroupCar.Migrations
                     b.Property<int>("ShipmentStatus")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("ShipmentId");
+                    b.HasKey("Id");
 
                     b.HasIndex("ShipmentOfferId")
                         .IsUnique();
@@ -831,16 +1107,21 @@ namespace AppGroupCar.Migrations
 
             modelBuilder.Entity("AppGroupCar.Entities.Market.ShipmentOffer", b =>
                 {
-                    b.Property<Guid>("ShipmentOfferId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("DriverId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("DriverId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<decimal>("ProposedPrice")
                         .HasColumnType("decimal(18,2)");
@@ -854,7 +1135,7 @@ namespace AppGroupCar.Migrations
                     b.Property<Guid>("VehicleId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("ShipmentOfferId");
+                    b.HasKey("Id");
 
                     b.HasIndex("DriverId");
 
@@ -867,7 +1148,7 @@ namespace AppGroupCar.Migrations
 
             modelBuilder.Entity("AppGroupCar.Entities.Market.ShipmentRequest", b =>
                 {
-                    b.Property<Guid>("RequestId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
@@ -877,9 +1158,11 @@ namespace AppGroupCar.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("CustomerId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .HasMaxLength(500)
@@ -898,6 +1181,9 @@ namespace AppGroupCar.Migrations
                     b.Property<bool>("IsPerishable")
                         .HasColumnType("bit");
 
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<Guid>("PickupLocationId")
                         .HasColumnType("uniqueidentifier");
 
@@ -913,7 +1199,7 @@ namespace AppGroupCar.Migrations
                     b.Property<decimal>("Weight")
                         .HasColumnType("decimal(10,2)");
 
-                    b.HasKey("RequestId");
+                    b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
 
@@ -926,7 +1212,7 @@ namespace AppGroupCar.Migrations
 
             modelBuilder.Entity("AppGroupCar.Entities.Market.Vehicle", b =>
                 {
-                    b.Property<Guid>("VehicleId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
@@ -938,12 +1224,14 @@ namespace AppGroupCar.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("DriverId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
+                    b.Property<Guid>("DriverId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("PlateNumber")
                         .IsRequired()
@@ -959,7 +1247,7 @@ namespace AppGroupCar.Migrations
                     b.Property<int>("VehicleType")
                         .HasColumnType("int");
 
-                    b.HasKey("VehicleId");
+                    b.HasKey("Id");
 
                     b.HasIndex("DriverId");
 
@@ -968,13 +1256,14 @@ namespace AppGroupCar.Migrations
 
             modelBuilder.Entity("AppGroupCar.Entities.RefreshToken", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("CreationDate")
+                    b.Property<DateTime?>("DeleteAt")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("ExpiryDate")
@@ -987,6 +1276,9 @@ namespace AppGroupCar.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Token")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -994,148 +1286,14 @@ namespace AppGroupCar.Migrations
                     b.Property<bool>("Used")
                         .HasColumnType("bit");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("RefreshTokens", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("NormalizedName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NormalizedName")
-                        .IsUnique()
-                        .HasDatabaseName("RoleNameIndex")
-                        .HasFilter("[NormalizedName] IS NOT NULL");
-
-                    b.ToTable("Roles", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ClaimType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ClaimValue")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RoleId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("RoleClaims", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ClaimType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ClaimValue")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserClaims", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
-                {
-                    b.Property<string>("LoginProvider")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("ProviderKey")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("ProviderDisplayName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("LoginProvider", "ProviderKey");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserLogins", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("RoleId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("UserId", "RoleId");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("UserRoles", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("LoginProvider")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Value")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("UserId", "LoginProvider", "Name");
-
-                    b.ToTable("UserTokens", (string)null);
                 });
 
             modelBuilder.Entity("AppGroupCar.Entities.Bus.BusBooking", b =>
@@ -1286,6 +1444,57 @@ namespace AppGroupCar.Migrations
                     b.Navigation("Showtime");
                 });
 
+            modelBuilder.Entity("AppGroupCar.Entities.Identity.ApplicationRoleClaim", b =>
+                {
+                    b.HasOne("AppGroupCar.Entities.Identity.ApplicationRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AppGroupCar.Entities.Identity.ApplicationUserClaim", b =>
+                {
+                    b.HasOne("AppGroupCar.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AppGroupCar.Entities.Identity.ApplicationUserLogin", b =>
+                {
+                    b.HasOne("AppGroupCar.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AppGroupCar.Entities.Identity.ApplicationUserRole", b =>
+                {
+                    b.HasOne("AppGroupCar.Entities.Identity.ApplicationRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AppGroupCar.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AppGroupCar.Entities.Identity.ApplicationUserToken", b =>
+                {
+                    b.HasOne("AppGroupCar.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("AppGroupCar.Entities.Location", b =>
                 {
                     b.HasOne("AppGroupCar.Entities.Location", "ParentLocation")
@@ -1329,7 +1538,7 @@ namespace AppGroupCar.Migrations
                 {
                     b.HasOne("AppGroupCar.Entities.Market.Offer", "Offer")
                         .WithOne("CargoDetail")
-                        .HasForeignKey("AppGroupCar.Entities.Market.CargoOfferDetail", "OfferId")
+                        .HasForeignKey("AppGroupCar.Entities.Market.CargoOfferDetail", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1340,7 +1549,7 @@ namespace AppGroupCar.Migrations
                 {
                     b.HasOne("AppGroupCar.Entities.ApplicationUser", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("Id")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -1414,7 +1623,7 @@ namespace AppGroupCar.Migrations
                 {
                     b.HasOne("AppGroupCar.Entities.Market.Offer", "Offer")
                         .WithOne("SharedRideDetail")
-                        .HasForeignKey("AppGroupCar.Entities.Market.SharedRideOfferDetail", "OfferId")
+                        .HasForeignKey("AppGroupCar.Entities.Market.SharedRideOfferDetail", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1506,57 +1715,6 @@ namespace AppGroupCar.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
-                {
-                    b.HasOne("AppGroupCar.Entities.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
-                {
-                    b.HasOne("AppGroupCar.Entities.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AppGroupCar.Entities.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
-                {
-                    b.HasOne("AppGroupCar.Entities.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("AppGroupCar.Entities.Bus.BusBooking", b =>

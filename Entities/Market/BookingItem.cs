@@ -1,14 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using AppGroupCar.Entities.Base;
 
 namespace AppGroupCar.Entities.Market
 {
     [Table("BookingItems")]
-    public class BookingItem
+    public class BookingItem : BaseEntity
     {
-        [Key]
-        public Guid BookingItemId { get; set; }
-
         [Required]
         public Guid BookingId { get; set; }
 
