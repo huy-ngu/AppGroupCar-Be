@@ -1,4 +1,5 @@
-﻿using AppGroupCar.Entities.Base;
+﻿using System.Linq.Expressions;
+using AppGroupCar.Entities.Base;
 
 namespace AppGroupCar.Repositories.BaseRepo
 {
@@ -10,5 +11,6 @@ namespace AppGroupCar.Repositories.BaseRepo
         void Update(T entity);
         void Delete(T entity);
         Task<int> SaveChangesAsync();
+        Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, int pageNumber, int pageSize);
     }
 }

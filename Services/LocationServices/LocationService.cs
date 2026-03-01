@@ -1,5 +1,6 @@
-﻿using AppGroupCar.Entities;
-using AppGroupCar.Entities.Market;
+﻿using System.Linq.Expressions;
+using AppGroupCar.Entities;
+using Microsoft.EntityFrameworkCore;
 using AppGroupCar.Repositories.BaseRepo;
 
 namespace AppGroupCar.Services.LocationServices
@@ -62,6 +63,28 @@ namespace AppGroupCar.Services.LocationServices
 
             // Lưu thay đổi
             await _repo.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Tìm kiếm xe với nhiều điều kiện (keyword, type, parentLocationId, isActive) và phân trang
+        /// </summary>
+        //Tuy nhiên có thể phát triển thêm phần tìm kiếm nâng cao như: tìm theo tọa độ (gần đây nhất), tìm theo GooglePlaceId, v.v... tùy nhu cầu
+        public async Task<IEnumerable<Location>> FindLocationsAsync(
+    string? keyword,
+    LocationType? type,
+    Guid? parentLocationId,
+    bool? isActive,
+    int pageNumber,
+    int pageSize)
+        {
+            Expression<Func<Location, bool>> predicate = x =>
+                (string.IsNullOrWhiteSpace(keyword) ||
+                    EF.Functions.Like(x.Name, $"%{keyword}%")) &&
+                (!type.HasValue || x.LocationType == type.Value) &&
+                (!parentLocationId.HasValue || x.ParentLocationId == parentLocationId) &&
+                (!isActive.HasValue || x.IsActive == isActive.Value);
+
+            return await _repo.FindAsync(predicate, pageNumber, pageSize);
         }
     }
 }

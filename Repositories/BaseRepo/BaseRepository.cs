@@ -1,4 +1,5 @@
-﻿using AppGroupCar.Data;
+﻿using System.Linq.Expressions;
+using AppGroupCar.Data;
 using AppGroupCar.Entities.Base;
 using Microsoft.EntityFrameworkCore;
 
@@ -51,6 +52,15 @@ namespace AppGroupCar.Repositories.BaseRepo
         {
             // Trả về số lượng bản ghi bị ảnh hưởng trong Database
             return await _context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, int pageNumber, int pageSize)
+        {
+            return await _dbSet
+                .Where(predicate)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
         }
     }
 }
