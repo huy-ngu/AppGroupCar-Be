@@ -21,13 +21,13 @@ namespace AppGroupCar.Controllers
             var location = await _locationService.GetLocationByIdAsync(id);
             return Ok(location);
         }
-        [HttpGet("All")]
+        [HttpGet("GetAll")]
         public async Task<IActionResult> GetAllLocation()
         {
             var location = await _locationService.GetAllAsync();
             return Ok(location);
         }
-        [HttpPost]
+        [HttpPost("Create")]
         public async Task<IActionResult> CreateLocation(string name, LocationType type)
         {
             var location = await _locationService.CreateLocationAsync(name, type);

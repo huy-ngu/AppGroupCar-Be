@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using AppGroupCar.Data;
+using AppGroupCar.DTO;
 using AppGroupCar.Entities.Base;
 using Microsoft.EntityFrameworkCore;
 
@@ -57,6 +58,45 @@ namespace AppGroupCar.Repositories.BaseRepo
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
+        }
+
+        public async Task<PagedResult<T>> FindAndFilter(Expression<Func<T, bool>> predicate, Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null, int pageNumber = 1, int pageSize = 10)
+        {
+            // 1. Validation chống mập mờ: Chặn mấy gã ngáo ngơ truyền số âm
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1) pageSize = 10;
+
+            // 2. AsNoTracking(): Tăng hiệu suất đọc dữ liệu (cực kỳ quan trọng)
+            IQueryable<T> query = _dbSet.AsNoTracking().Where(predicate);
+
+            // 3. Đếm TỔNG SỐ bản ghi thỏa mãn điều kiện trước khi cắt trang
+            int totalCount = await query.CountAsync();
+
+            // 4. Bắt buộc phải sắp xếp (OrderBy) trước khi Skip/Take để tránh lỗi SQL
+            if (orderBy != null)
+            {
+                query = orderBy(query);
+            }
+            else
+            {
+                // Nếu lười không truyền OrderBy, tự động fallback sắp xếp theo Id của BaseEntity
+                query = query.OrderBy(e => e.Id);
+            }
+
+            // 5. Cắt trang (Pagination)
+            var items = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            // 6. Đóng gói và trả về
+            return new PagedResult<T>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
         }
     }
 }
