@@ -29,22 +29,25 @@ namespace AppGroupCar.Entities.Market
 
         // Flags
         [Required]
-        public bool IsFragile { get; set; } = false;
+        public bool IsFragile { get; set; } = false; //hàng dễ vỡ
 
         [Required]
-        public bool IsPerishable { get; set; } = false;
+        public bool IsPerishable { get; set; } = false; //hàng dễ hỏng (thực phẩm, hoa quả...)
 
         [Required]
-        public bool RequiresCooler { get; set; } = false;
+        public bool RequiresCooler { get; set; } = false; //cần thùng lạnh (thực phẩm đông lạnh, dược phẩm...)
 
         [Required]
-        public bool AvoidSunLight { get; set; } = false;
+        public bool AvoidSunLight { get; set; } = false; // tránh ánh nắng (hàng dễ hỏng, hóa chất...)
 
         [MaxLength(500)]
         public string? HandlingNote { get; set; }
 
         [Required]
         public ShipmentRequestStatus Status { get; set; }
+
+        [MaxLength(500)]
+        public string? ImageUrl { get; set; }
 
         // Navigation
         [ForeignKey(nameof(CustomerId))]

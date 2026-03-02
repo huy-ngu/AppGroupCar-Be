@@ -6,6 +6,7 @@ using AppGroupCar.Entities;
 using AppGroupCar.Exceptions;
 using AppGroupCar.Repositories.RefreshTokensRepo;
 using AppGroupCar.Repositories.UserRepo;
+using AppGroupCar.Services.Image;
 using AppGroupCar.Services.TokenServices;
 using Azure.Core;
 using Google.Apis.Auth;
@@ -20,22 +21,37 @@ namespace AppGroupCar.Services.AuthServices
         private readonly IConfiguration _configuration;
         private readonly ITokenService _tokenService;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
-        public AuthService(IUserRepository userRepository, IConfiguration configuration, ITokenService tokenService, IRefreshTokenRepository refreshTokenRepository)
+        private readonly IPhotoService _photoService;
+        public AuthService(IUserRepository userRepository, IConfiguration configuration, ITokenService tokenService, IRefreshTokenRepository refreshTokenRepository, IPhotoService photoService)
         {
             _userRepository = userRepository;
             _configuration = configuration;
             _tokenService = tokenService;
             _refreshTokenRepository = refreshTokenRepository;
+            _photoService = photoService;
         }
 
         public async Task<(bool Success, IEnumerable<string> Errors)> RegisterAsync(RegisterRequestDTO request)
         {
+            string? avatarUrl = null;
+
+            if (request.Avatar != null && request.Avatar.Length > 0)
+            {
+                var uploadResult = await _photoService.AddPhotoAsync(request.Avatar);
+
+                if (uploadResult.Error != null)
+                    throw new AppException(400, "Cloudinary upload failed: " + uploadResult.Error.Message);
+
+                avatarUrl = uploadResult.SecureUrl.AbsoluteUri;
+            }
+
             var user = new ApplicationUser
             {
                 UserName = request.UserName,
                 Email = request.Email,
                 FullName = request.FullName,
-                PhoneNumber = request.PhoneNumber
+                PhoneNumber = request.PhoneNumber,
+                AvatarUrl = avatarUrl 
             };
 
             var result = await _userRepository.CreateUserAsync(user, request.Password);
@@ -48,6 +64,7 @@ namespace AppGroupCar.Services.AuthServices
 
             // assign default role 'User'
             var addRoleResult = await _userRepository.AddToRolesAsync(user, new[] { "User" });
+
             if (!addRoleResult.Succeeded)
             {
                 var errors = addRoleResult.Errors.Select(e => e.Description);

@@ -13,7 +13,7 @@ namespace AppGroupCar.Entities.Market
         // Thông tin xe
         [Required]
         [MaxLength(20)]
-        public string PlateNumber { get; set; } = null!;
+        public string PlateNumber { get; set; } = null!; //biển số xe
 
         [Required]
         [MaxLength(50)]
@@ -27,6 +27,15 @@ namespace AppGroupCar.Entities.Market
 
         [Required]
         public VehicleStatus Status { get; set; }
+
+        [Required]
+        [MaxLength(500)]
+        public string? UrlImage { get; set; } //lưu giấy đăng kí xe có gắn với biển số
+
+        [Required]
+        [MaxLength(500)]
+        public string? RegistrationDocumentUrl { get; set; } //ảnh đăng kiểm
+
 
         // Navigation
         [ForeignKey(nameof(DriverId))]

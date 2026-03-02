@@ -11,6 +11,7 @@ namespace AppGroupCar.Entities
         //Đánh giá chung cho mọi user
         public decimal CustomerRatingAvg { get; set; } = 5.00m;
 
+        public string? AvatarUrl { get; set; }
         public int CustomerRatingCount { get; set; } = 0;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

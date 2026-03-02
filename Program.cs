@@ -1,11 +1,13 @@
 ﻿using AppGroupCar.Data;
 using AppGroupCar.Entities;
 using AppGroupCar.Entities.Identity;
+using AppGroupCar.Helpers;
 using AppGroupCar.Middleware;
 using AppGroupCar.Repositories.BaseRepo;
 using AppGroupCar.Repositories.RefreshTokensRepo;
 using AppGroupCar.Repositories.UserRepo;
 using AppGroupCar.Services.AuthServices;
+using AppGroupCar.Services.Image;
 using AppGroupCar.Services.LocationServices;
 using AppGroupCar.Services.RoleServices;
 using AppGroupCar.Services.TokenServices;
@@ -16,6 +18,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Text;
+using WebCarOrder.Services.Photo;
 
 namespace AppGroupCar
 {
@@ -138,6 +141,10 @@ namespace AppGroupCar
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IRoleService, RoleService>();
             builder.Services.AddScoped<LocationService>();
+            builder.Services.AddScoped<IPhotoService, PhotoService>();
+
+            // Map section trong appsettings vào class CloudinarySettings
+            builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 
 
             builder.Services.AddAuthorization();
