@@ -28,15 +28,19 @@ namespace AppGroupCar.Services.RideRequestServices
             };
 
             await _repo.AddAsync(newRideReques);
-
-            int rowChange = await _repo.SaveChangesAsync();
-
-            if (rowChange <= 0)
-            {
-                throw new AppException(500, "Có lỗi ở Database");
-            }
-
+            await _repo.SaveChangesAsync();
             return newRideReques;
+        }
+
+        public async Task DeleteByIdAsync(Guid id)
+        {
+            var rideRequest = await _repo.GetByIdAsync(id);
+            if (rideRequest == null || rideRequest.DeleteAt != null)
+            {
+                throw new AppException(404, "Không tìm thấy bản ghi");
+            }
+            _repo.Delete(rideRequest);
+            await _repo.SaveChangesAsync();
         }
 
         public async Task<PagedResult<RideRequest>> FilterByTimeAndLocationAsync(
@@ -60,9 +64,10 @@ namespace AppGroupCar.Services.RideRequestServices
                     (!toTime.HasValue || r.DesiredDepartureTime <= toTime.Value) &&
 
                     // Mặc định luôn chỉ lấy cuốc xe đang Open
-                    r.Status == RideRequestStatus.Open,
+                    r.Status == RideRequestStatus.Open && r.DeleteAt == null,
 
-                orderBy: q => q.OrderBy(r => r.DesiredDepartureTime),
+
+                orderBy: q => q.OrderByDescending(r => r.DesiredDepartureTime),
                 pageNumber: 1,
                 pageSize: 10
             );
@@ -87,5 +92,48 @@ namespace AppGroupCar.Services.RideRequestServices
             return RideRequestList;
         }
 
+        public async Task<RideRequest> GetByIdAsync(Guid id)
+        {
+            var rideRequest = await _repo.GetByIdAsync(id);
+            if (rideRequest == null || rideRequest.DeleteAt != null)
+            {
+                throw new AppException(404, "Không tìm thấy bản ghi");
+
+            }
+            return rideRequest;
+        }
+
+        public async Task UpdateAsync(UpdateRideRequestDTO request)
+        {
+            var existingRide = await _repo.GetByIdAsync(request.Id);
+
+            if (existingRide == null || existingRide.DeleteAt != null)
+            {
+                throw new AppException(404, "Không tìm thấy bản ghi");
+            }
+            if (request.FromLocationId != null)
+            {
+                existingRide.FromLocationId = (Guid)request.FromLocationId;
+            }
+            if (request.ToLocationId != null)
+            {
+                existingRide.ToLocationId = (Guid)request.ToLocationId;
+            }
+            if (request.DesiredDepartureTime != null)
+            {
+                existingRide.DesiredDepartureTime = (DateTime)request.DesiredDepartureTime;
+            }
+            if (request.SeatsRequired != null)
+            {
+                existingRide.SeatsRequired = (int)request.SeatsRequired;
+            }
+            if (request.Status != null)
+            {
+                existingRide.Status = request.Status;
+            }
+            _repo.Update(existingRide);
+
+            await _repo.SaveChangesAsync();
+        }
     }
 }
