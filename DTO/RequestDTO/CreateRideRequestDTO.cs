@@ -11,6 +11,7 @@ namespace AppGroupCar.DTO.RequestDTO
         public Guid ToLocationId { get; set; }
         public DateTime DesiredDepartureTime { get; set; }
         [DefaultValue(1)]
+        [Range(1, int.MaxValue, ErrorMessage = "Số ghế phải lớn hơn 0!")]
         public int SeatsRequired { get; set; }
     }
 }

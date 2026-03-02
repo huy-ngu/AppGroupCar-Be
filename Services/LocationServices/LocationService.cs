@@ -68,12 +68,12 @@ namespace AppGroupCar.Services.LocationServices
         /// </summary>
         //Tuy nhiên có thể phát triển thêm phần tìm kiếm nâng cao như: tìm theo tọa độ (gần đây nhất), tìm theo GooglePlaceId, v.v... tùy nhu cầu
         public async Task<IEnumerable<Location>> FindLocationsAsync(
-    string? keyword,
-    LocationType? type,
-    Guid? parentLocationId,
-    bool? isActive,
-    int pageNumber,
-    int pageSize)
+            string? keyword,
+            LocationType? type,
+            Guid? parentLocationId,
+            bool? isActive,
+            int pageNumber,
+            int pageSize)
         {
             Expression<Func<Location, bool>> predicate = x =>
                 (string.IsNullOrWhiteSpace(keyword) ||
