@@ -25,12 +25,10 @@ namespace AppGroupCar.Services.LocationServices
             {
                 Name = name,
                 LocationType = type
-                // CreatedAt sẽ tự động được gán theo logic trong BaseEntity/BaseRepository
             };
 
             await _repo.AddAsync(newLocation);
 
-            // NHỚ GỌI HÀM NÀY! Không gọi là database không có gì đâu nhé!
             await _repo.SaveChangesAsync();
 
             return newLocation;
@@ -57,7 +55,7 @@ namespace AppGroupCar.Services.LocationServices
         public async Task DeleteLocationAsync(Guid id)
         {
             var location = await _repo.GetByIdAsync(id);
-            if (location == null) return; // Không có thì thôi, khỏi xóa
+            if (location == null) return;
 
             _repo.Delete(location);
 

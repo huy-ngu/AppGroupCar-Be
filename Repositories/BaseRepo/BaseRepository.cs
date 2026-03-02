@@ -21,28 +21,24 @@ namespace AppGroupCar.Repositories.BaseRepo
 
         public async Task<IEnumerable<T>> GetAllAsync()
         {
-            // Lọc ra những bản ghi chưa bị xóa mềm
-            // Tuy nhiên, tốt nhất là cấu hình Global Query Filter trong DbContext
             return await _dbSet.ToListAsync();
         }
 
         public async Task AddAsync(T entity)
         {
-            entity.CreatedAt = DateTime.UtcNow; // Gán lại cho chắc cốp dù bạn đã init ở BaseEntity
+            entity.CreatedAt = DateTime.UtcNow;
             await _dbSet.AddAsync(entity);
         }
 
         public void Update(T entity)
         {
-            entity.LastUpdateAt = DateTime.UtcNow; // Tự động cập nhật thời gian sửa
-
+            entity.LastUpdateAt = DateTime.UtcNow;
             _dbSet.Attach(entity);
             _context.Entry(entity).State = EntityState.Modified;
         }
 
         public void Delete(T entity)
         {
-            // XÓA MỀM (Soft Delete): Không gọi _dbSet.Remove()
             entity.DeleteAt = DateTime.UtcNow;
 
             _dbSet.Attach(entity);

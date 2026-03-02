@@ -7,6 +7,7 @@ using AppGroupCar.Repositories.RefreshTokensRepo;
 using AppGroupCar.Repositories.UserRepo;
 using AppGroupCar.Services.AuthServices;
 using AppGroupCar.Services.LocationServices;
+using AppGroupCar.Services.RideRequestServices;
 using AppGroupCar.Services.RoleServices;
 using AppGroupCar.Services.TokenServices;
 using AppGroupCar.Services.UserServices;
@@ -137,6 +138,7 @@ namespace AppGroupCar
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IRoleService, RoleService>();
+            builder.Services.AddScoped<IRideRequestService, RideRequestService>();
             builder.Services.AddScoped<LocationService>();
 
 
