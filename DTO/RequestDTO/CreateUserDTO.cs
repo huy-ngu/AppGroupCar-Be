@@ -8,5 +8,6 @@ namespace AppGroupCar.DTO.RequestDTO
         public string PhoneNumber { get; set; }
         public string Password { get; set; }
         public IList<string> Roles { get; set; }
+        public IFormFile? AvatarUrl { get; set; }
     }
 }

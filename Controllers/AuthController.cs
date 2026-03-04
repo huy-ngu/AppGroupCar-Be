@@ -22,7 +22,7 @@ namespace AppGroupCar.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterRequestDTO request)
+        public async Task<IActionResult> Register([FromForm] RegisterRequestDTO request)
         {
             await _authService.RegisterAsync(request); // will throw on error
             return Ok(new ApiResponse<object> { Data = null, Message = "Register success" });

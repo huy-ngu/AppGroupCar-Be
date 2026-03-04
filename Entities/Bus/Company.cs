@@ -20,6 +20,9 @@ namespace AppGroupCar.Entities.Bus
         [MaxLength(500)]
         public string? Description { get; set; }
 
+        [MaxLength(500)]
+        public string? LogoUrl { get; set; }
+
         // Thông tin liên hệ
         [Required]
         [MaxLength(15)]
