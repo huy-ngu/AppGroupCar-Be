@@ -35,7 +35,11 @@ namespace AppGroupCar.Services.RideRequestServices
         public async Task DeleteByIdAsync(Guid id)
         {
             var rideRequest = await _repo.GetByIdAsync(id);
-            if (rideRequest == null || rideRequest.DeleteAt != null)
+            if (rideRequest == null)
+            {
+                throw new AppException(404, "Không tìm thấy bản ghi");
+            }
+            if (rideRequest.DeleteAt != null)
             {
                 throw new AppException(404, "Không tìm thấy bản ghi");
             }
@@ -95,10 +99,13 @@ namespace AppGroupCar.Services.RideRequestServices
         public async Task<RideRequest> GetByIdAsync(Guid id)
         {
             var rideRequest = await _repo.GetByIdAsync(id);
-            if (rideRequest == null || rideRequest.DeleteAt != null)
+            if (rideRequest == null)
             {
                 throw new AppException(404, "Không tìm thấy bản ghi");
-
+            }
+            if (rideRequest.DeleteAt != null)
+            {
+                throw new AppException(404, "Không tìm thấy bản ghi");
             }
             return rideRequest;
         }
@@ -107,7 +114,11 @@ namespace AppGroupCar.Services.RideRequestServices
         {
             var existingRide = await _repo.GetByIdAsync(request.Id);
 
-            if (existingRide == null || existingRide.DeleteAt != null)
+            if (existingRide == null)
+            {
+                throw new AppException(404, "Không tìm thấy bản ghi");
+            }
+            if (existingRide.DeleteAt != null)
             {
                 throw new AppException(404, "Không tìm thấy bản ghi");
             }
