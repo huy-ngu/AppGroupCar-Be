@@ -6,9 +6,9 @@ namespace AppGroupCar.DTO.RequestDTO
 {
     public class UpdateShipmentRequestDTO
     {
-        //[Required]
-        //[DefaultValue("552bfc5a-77e7-49d4-af3c-08de79a495a7")]
-        //public Guid Id { get; set; }
+        [Required]
+        [DefaultValue("552bfc5a-77e7-49d4-af3c-08de79a495a7")]
+        public Guid Id { get; set; }
         [DefaultValue("2576628b-2325-45a4-33ad-08de76eb22d1")]
         public Guid? PickupLocationId { get; set; }
 
@@ -43,5 +43,6 @@ namespace AppGroupCar.DTO.RequestDTO
         [MaxLength(500)]
         [DefaultValue("")]
         public string? HandlingNote { get; set; }
+        public IFormFile? imgFile { get; set; }
     }
 }
