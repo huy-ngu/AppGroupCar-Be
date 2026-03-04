@@ -1,8 +1,8 @@
 ﻿using AppGroupCar.DTO;
-using AppGroupCar.DTO.RequestDTO;
+using AppGroupCar.DTO.RequestDTO.Market.RideRequest;
 using AppGroupCar.DTO.ResponseDTO;
 using AppGroupCar.Entities.Market;
-using AppGroupCar.Services.RideRequestServices;
+using AppGroupCar.Services.Market.RideRequestServices;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using static System.Runtime.InteropServices.JavaScript.JSType;

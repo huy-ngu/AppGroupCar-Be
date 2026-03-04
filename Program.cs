@@ -1,20 +1,20 @@
-﻿using AppGroupCar.Data;
-using AppGroupCar.DTO.AutoMapper;
+﻿using AppGroupCar.AutoMapper;
+using AppGroupCar.Data;
 using AppGroupCar.Entities;
 using AppGroupCar.Entities.Identity;
 using AppGroupCar.Helpers;
 using AppGroupCar.Middleware;
+using AppGroupCar.Repositories.Auth.RefreshTokensRepo;
+using AppGroupCar.Repositories.Auth.UserRepo;
 using AppGroupCar.Repositories.BaseRepo;
-using AppGroupCar.Repositories.RefreshTokensRepo;
-using AppGroupCar.Repositories.UserRepo;
-using AppGroupCar.Services.AuthServices;
-using AppGroupCar.Services.Image;
-using AppGroupCar.Services.LocationServices;
-using AppGroupCar.Services.RideRequestServices;
-using AppGroupCar.Services.RoleServices;
-using AppGroupCar.Services.ShipmentRequestServices;
-using AppGroupCar.Services.TokenServices;
-using AppGroupCar.Services.UserServices;
+using AppGroupCar.Services.Auth.AuthServices;
+using AppGroupCar.Services.Auth.RoleServices;
+using AppGroupCar.Services.Auth.TokenServices;
+using AppGroupCar.Services.Auth.UserServices;
+using AppGroupCar.Services.Market.RideRequestServices;
+using AppGroupCar.Services.Market.ShipmentRequestServices;
+using AppGroupCar.Services.Mytoys.LocationServices;
+using AppGroupCar.Services.Mytoys.Photo;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +22,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Text;
-using WebCarOrder.Services.Photo;
 
 namespace AppGroupCar
 {

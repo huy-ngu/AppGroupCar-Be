@@ -1,6 +1,6 @@
-﻿using AppGroupCar.DTO.RequestDTO;
+﻿using AppGroupCar.DTO.RequestDTO.User;
 using AppGroupCar.DTO.ResponseDTO;
-using AppGroupCar.Services.UserServices;
+using AppGroupCar.Services.Auth.UserServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

@@ -1,10 +1,10 @@
 ﻿using AppGroupCar.DTO;
 using AppGroupCar.DTO.Filters;
-using AppGroupCar.DTO.RequestDTO;
+using AppGroupCar.DTO.RequestDTO.Market.ShipmentRequest;
 using AppGroupCar.DTO.ResponseDTO;
 using AppGroupCar.Entities.Market;
-using AppGroupCar.Helper;
-using AppGroupCar.Services.ShipmentRequestServices;
+using AppGroupCar.Helpers;
+using AppGroupCar.Services.Market.ShipmentRequestServices;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Security.Claims;
