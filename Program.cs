@@ -1,4 +1,5 @@
 ﻿using AppGroupCar.Data;
+using AppGroupCar.DTO.AutoMapper;
 using AppGroupCar.Entities;
 using AppGroupCar.Entities.Identity;
 using AppGroupCar.Middleware;
@@ -9,11 +10,13 @@ using AppGroupCar.Services.AuthServices;
 using AppGroupCar.Services.LocationServices;
 using AppGroupCar.Services.RideRequestServices;
 using AppGroupCar.Services.RoleServices;
+using AppGroupCar.Services.ShipmentRequestServices;
 using AppGroupCar.Services.TokenServices;
 using AppGroupCar.Services.UserServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Text;
@@ -139,10 +142,16 @@ namespace AppGroupCar
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IRoleService, RoleService>();
             builder.Services.AddScoped<IRideRequestService, RideRequestService>();
+            builder.Services.AddScoped<IShipmentRequestServices, ShipmentRequestServices>();
             builder.Services.AddScoped<LocationService>();
 
-
+            // authoriztion
             builder.Services.AddAuthorization();
+
+            //Đăng ký AutoMapper
+            builder.Services.AddAutoMapper(cfg => { },
+            typeof(ShipmentRequestMapping).Assembly);
+
 
             var app = builder.Build();
 

@@ -2,35 +2,25 @@
 using AppGroupCar.Entities.Market;
 using AppGroupCar.Exceptions;
 using AppGroupCar.Repositories.BaseRepo;
+using AutoMapper;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace AppGroupCar.Services.ShipmentRequestServices
 {
     public class ShipmentRequestServices : IShipmentRequestServices
     {
         private readonly IBaseRepository<ShipmentRequest> _repo;
-        public ShipmentRequestServices(IBaseRepository<ShipmentRequest> repo)
+        private readonly IMapper _mapper;
+        public ShipmentRequestServices(IBaseRepository<ShipmentRequest> repo, IMapper mapper)
         {
             _repo = repo;
+            _mapper = mapper;
         }
         public async Task<ShipmentRequest> CreateAsync(Guid userId, CreateShipmentRequestDTO request)
         {
-            ShipmentRequest shipmentRequest = new ShipmentRequest
-            {
-                CustomerId = userId,
-                PickupLocationId = request.PickupLocationId,
-                DropoffLocationId = request.DropoffLocationId,
-                Weight = request.Weight,
-                Volume = request.Volume,
-                Description = request.Description,
-                IsFragile = request.IsFragile,
-                IsPerishable = request.IsPerishable,
-                RequiresCooler = request.RequiresCooler,
-                AvoidSunLight = request.AvoidSunLight,
-                HandlingNote = request.HandlingNote,
-                CreatedAt = DateTime.UtcNow,
-                DeleteAt = null,
-                LastUpdateAt = null
-            };
+            var shipmentRequest = _mapper.Map<ShipmentRequest>(request);
+            shipmentRequest.CustomerId = userId;
+
             await _repo.AddAsync(shipmentRequest);
             await _repo.SaveChangesAsync();
             return shipmentRequest;
@@ -50,13 +40,28 @@ namespace AppGroupCar.Services.ShipmentRequestServices
         public async Task<ShipmentRequest> GetByIdAsync(Guid id)
         {
             var data = await _repo.GetByIdAsync(id);
-            if (data == null && data.DeleteAt != null)
+            if (data == null || data?.DeleteAt != null)
             {
                 throw new AppException(404, "Không tìm thấy bản ghi");
             }
+            //if (data.DeleteAt != null)
+            //{
+            //    throw new AppException(404, "Không tìm thấy bản ghi");
+            //}
             return data;
         }
 
-
+        public async Task UpdateAsync(Guid id, UpdateShipmentRequestDTO request)
+        {
+            var exitShipmentRequest = await _repo.GetByIdAsync(id);
+            if (exitShipmentRequest == null || exitShipmentRequest?.DeleteAt != null)
+            {
+                throw new AppException(404, "Không tìm thấy bản ghi");
+            }
+            _mapper.Map(request, exitShipmentRequest);
+            _repo.Update(exitShipmentRequest);
+            await _repo.SaveChangesAsync();
+            return;
+        }
     }
 }

@@ -8,5 +8,6 @@ namespace AppGroupCar.Services.ShipmentRequestServices
         public Task<ShipmentRequest> CreateAsync(Guid userId, CreateShipmentRequestDTO request);
         public Task<ShipmentRequest> GetByIdAsync(Guid id);
         public Task DeleteAsync(Guid id);
+        public Task UpdateAsync(Guid id, UpdateShipmentRequestDTO request);
     }
 }

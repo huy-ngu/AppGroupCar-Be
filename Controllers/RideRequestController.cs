@@ -23,14 +23,15 @@ namespace AppGroupCar.Controllers
         [HttpPost("Create")]
         public async Task<IActionResult> CreateRideRequest(CreateRideRequestDTO rideRequest)
         {
-            var Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (Id == null)
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrWhiteSpace(userIdString) || !Guid.TryParse(userIdString, out Guid userId))
             {
-                return Unauthorized("Sai token");
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ hoặc bị lỗi ID!" });
             }
-            Guid userId = new Guid(Id);
+
             var newRideRequest = await _service.CreateRideRequestAsync(userId, rideRequest);
-            return Ok(newRideRequest);
+            return Ok(new ApiResponse<RideRequest> { Data = newRideRequest });
         }
 
         [HttpGet("GetAll")]

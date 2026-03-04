@@ -61,8 +61,8 @@ namespace AppGroupCar.Services.UserServices
 
         public async Task CreateAsync(CreateUserDTO dto)
         {
-            var existing = await _userManager.FindByEmailAsync(dto.Email);
-            if (existing != null) throw new AppException(400, "Email already exists");
+            //var existing = await _userManager.FindByEmailAsync(dto.Email);
+            //if (existing != null) throw new AppException(400, "Email already exists");
             var user = new ApplicationUser
             {
                 UserName = dto.UserName,

@@ -1,7 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
-using AppGroupCar.DTO.RequestDTO;
+﻿using AppGroupCar.DTO.RequestDTO;
 using AppGroupCar.Entities;
 using AppGroupCar.Exceptions;
 using AppGroupCar.Repositories.RefreshTokensRepo;
@@ -11,6 +8,11 @@ using Azure.Core;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
 
 namespace AppGroupCar.Services.AuthServices
 {
@@ -211,19 +213,69 @@ namespace AppGroupCar.Services.AuthServices
             return (AccessToken, RefreshToken.Token);
         }
 
+        //public string getJwtId(string accessToken)
+        //{
+        //    var handler = new JwtSecurityTokenHandler();
+        //    handler.MapInboundClaims = false;
+        //    if (!handler.CanReadToken(accessToken))
+        //    {
+        //        Console.WriteLine("Token lỗi hoặc không đúng định dạng JWT.");
+        //        throw new AppException(500, "Token lỗi hoặc không đúng định dạng JWT.");
+        //    }
+        //    var jsonToken = handler.ReadJwtToken(accessToken);
+        //    //var jti = jsonToken.Claims.FirstOrDefault(c => c.Type == "jti")?.Value;
+        //    var jti = jsonToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
+        //    //var jti = jsonToken.Id;
+        //    return jti;
+        //}
+
         public string getJwtId(string accessToken)
         {
-            var handler = new JwtSecurityTokenHandler();
-
-            if (!handler.CanReadToken(accessToken))
+            try
             {
-                Console.WriteLine("Token lỗi hoặc không đúng định dạng JWT.");
+                // 1. Chẻ token ra làm 3 khúc
+                var parts = accessToken.Split('.');
+                if (parts.Length != 3)
+                {
+                    Console.WriteLine("Token vớ vẩn, không đúng chuẩn JWT 3 phần.");
+                    return null; // Hoặc throw Exception tùy bạn
+                }
+
+                var payloadBase64 = parts[1];
+
+                // 2. SỬA LỖI BASE64URL (Bước này cực kỳ quan trọng nhé tay mơ!)
+                // JWT dùng Base64Url (thay + thành -, thay / thành _), nên phải đổi ngược lại
+                // và bù thêm dấu '=' cho đủ độ dài chia hết cho 4.
+                payloadBase64 = payloadBase64.Replace('-', '+').Replace('_', '/');
+                payloadBase64 = payloadBase64.PadRight(payloadBase64.Length + (4 - payloadBase64.Length % 4) % 4, '=');
+
+                // 3. Giải mã ra chuỗi JSON gốc
+                var rawJsonPayload = Encoding.UTF8.GetString(Convert.FromBase64String(payloadBase64));
+
+                // 4. MÓC JTI THẲNG TỪ JSON (Khỏi cần Handler rách việc)
+                using (JsonDocument doc = JsonDocument.Parse(rawJsonPayload))
+                {
+                    // Tìm chính xác key "jti" trong object JSON
+                    if (doc.RootElement.TryGetProperty("jti", out JsonElement jtiElement))
+                    {
+                        var jti = jtiElement.GetString();
+                        Console.WriteLine($"[CHÂN LÝ LÀ ĐÂY] Đã móc được jti: {jti}");
+                        return jti;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Cảnh báo: Payload decode ra thành công nhưng bên trong thực sự KHÔNG CÓ field 'jti'.");
+                        return null;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Toang! Lỗi khi bóc phốt token: {ex.Message}");
                 return null;
             }
-            var jsonToken = handler.ReadJwtToken(accessToken);
-            var jti = jsonToken.Claims.FirstOrDefault(c => c.Type == "jti")?.Value;
-            return jti;
         }
+
 
         public async Task Logout(string token)
         {
