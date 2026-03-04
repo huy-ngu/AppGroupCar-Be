@@ -46,7 +46,6 @@ namespace AppGroupCar.Entities.Market
         [Required]
         public ShipmentRequestStatus Status { get; set; }
 
-        [MaxLength(500)]
         public string? ImageUrl { get; set; }
 
         // Navigation

@@ -47,5 +47,6 @@ namespace AppGroupCar.DTO.RequestDTO
         [MaxLength(500)]
         [DefaultValue("")]
         public string? HandlingNote { get; set; }
+        public IFormFile? ImageUrl { get; set; }
     }
 }
