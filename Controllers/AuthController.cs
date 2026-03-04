@@ -1,11 +1,12 @@
-﻿using System.Security.Claims;
-using AppGroupCar.DTO.RequestDTO;
+﻿using AppGroupCar.DTO.RequestDTO;
 using AppGroupCar.DTO.ResponseDTO;
+using AppGroupCar.Helper;
 using AppGroupCar.Services.AuthServices;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace AppGroupCar.Controllers
 {
@@ -21,7 +22,7 @@ namespace AppGroupCar.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterRequestDTO request)
+        public async Task<IActionResult> Register([FromForm] RegisterRequestDTO request)
         {
             await _authService.RegisterAsync(request); // will throw on error
             return Ok(new ApiResponse<object> { Data = null, Message = "Register success" });
@@ -62,12 +63,11 @@ namespace AppGroupCar.Controllers
         [HttpPost("logout_AllDevices")]
         public async Task<IActionResult> LogoutAllDevices()
         {
-            var Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (Id == null)
+            var userIdNullable = User.GetUserId();
+            if (userIdNullable is not Guid userId)
             {
-                return Unauthorized("Sai token");
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
             }
-            Guid userId = new Guid(Id);
 
             await _authService.LogoutAllDevices(userId);
             return Ok(new ApiResponse<string> { });

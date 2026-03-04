@@ -1,22 +1,28 @@
 ﻿using AppGroupCar.Data;
+using AppGroupCar.DTO.AutoMapper;
 using AppGroupCar.Entities;
 using AppGroupCar.Entities.Identity;
+using AppGroupCar.Helpers;
 using AppGroupCar.Middleware;
 using AppGroupCar.Repositories.BaseRepo;
 using AppGroupCar.Repositories.RefreshTokensRepo;
 using AppGroupCar.Repositories.UserRepo;
 using AppGroupCar.Services.AuthServices;
+using AppGroupCar.Services.Image;
 using AppGroupCar.Services.LocationServices;
 using AppGroupCar.Services.RideRequestServices;
 using AppGroupCar.Services.RoleServices;
+using AppGroupCar.Services.ShipmentRequestServices;
 using AppGroupCar.Services.TokenServices;
 using AppGroupCar.Services.UserServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Text;
+using WebCarOrder.Services.Photo;
 
 namespace AppGroupCar
 {
@@ -139,10 +145,20 @@ namespace AppGroupCar
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IRoleService, RoleService>();
             builder.Services.AddScoped<IRideRequestService, RideRequestService>();
+            builder.Services.AddScoped<IShipmentRequestServices, ShipmentRequestServices>();
             builder.Services.AddScoped<LocationService>();
+            builder.Services.AddScoped<IPhotoService, PhotoService>();
 
+            // Map section trong appsettings vào class CloudinarySettings
+            builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 
+            // authoriztion
             builder.Services.AddAuthorization();
+
+            //Đăng ký AutoMapper
+            builder.Services.AddAutoMapper(cfg => { },
+            typeof(ShipmentRequestMapping).Assembly);
+
 
             var app = builder.Build();
 

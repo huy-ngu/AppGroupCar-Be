@@ -6,6 +6,7 @@ namespace AppGroupCar.DTO.RequestDTO
 {
     public class UpdateRideRequestDTO
     {
+        [Required]
         [DefaultValue("cc0cfa65-2bb4-4cf8-bff4-08de78310217")]
         public Guid Id { get; set; }
         [DefaultValue("2576628b-2325-45a4-33ad-08de76eb22d1")]

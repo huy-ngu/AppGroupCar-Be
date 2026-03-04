@@ -35,7 +35,7 @@ namespace AppGroupCar.Controllers
 
         [HttpPost]
         //[Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create(CreateUserDTO dto)
+        public async Task<IActionResult> Create([FromForm] CreateUserDTO dto)
         {
             await _userService.CreateAsync(dto);
             return Ok(new ApiResponse<object> { Data = null, Message = "User created" });

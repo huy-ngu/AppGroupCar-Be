@@ -23,7 +23,10 @@ namespace AppGroupCar.Entities.Bus
         public string LicenseClass { get; set; } = null!;
 
         [Required]
-        public int VerificationStatus { get; set; } // Pending / Approved / Rejected
+        public int DriverVerificationStatus { get; set; } // Pending / Approved / Rejected
+
+        [MaxLength(500)]
+        public string LicenseDocumentUrl { get; set; }
 
         public DateTime? VerifiedAt { get; set; }
 

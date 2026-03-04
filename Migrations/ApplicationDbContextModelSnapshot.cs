@@ -32,6 +32,9 @@ namespace AppGroupCar.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
+                    b.Property<string>("AvatarUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
@@ -380,6 +383,10 @@ namespace AppGroupCar.Migrations
                     b.Property<DateTime?>("LicenseIssuedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("LogoUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasMaxLength(15)
@@ -417,6 +424,9 @@ namespace AppGroupCar.Migrations
                     b.Property<DateTime?>("DeleteAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("DriverVerificationStatus")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("LastUpdateAt")
                         .HasColumnType("datetime2");
 
@@ -425,6 +435,11 @@ namespace AppGroupCar.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
+                    b.Property<string>("LicenseDocumentUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<string>("LicenseNumber")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -432,9 +447,6 @@ namespace AppGroupCar.Migrations
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("VerificationStatus")
-                        .HasColumnType("int");
 
                     b.Property<DateTime?>("VerifiedAt")
                         .HasColumnType("datetime2");
@@ -906,6 +918,10 @@ namespace AppGroupCar.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
+                    b.Property<string>("LicenseDocumentUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<string>("LicenseNumber")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -1175,6 +1191,10 @@ namespace AppGroupCar.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<bool>("IsFragile")
                         .HasColumnType("bit");
 
@@ -1238,11 +1258,21 @@ namespace AppGroupCar.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<string>("RegistrationDocumentUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<int>("SeatCapacity")
                         .HasColumnType("int");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
+
+                    b.Property<string>("UrlImage")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<int>("VehicleType")
                         .HasColumnType("int");

@@ -30,6 +30,11 @@ namespace AppGroupCar.Entities.Market
         [Required]
         public DriverVerificationStatus VerificationStatus { get; set; }
 
+        
+        [MaxLength(500)]
+        public string? LicenseDocumentUrl { get; set; }
+
+
         // Navigation
         [ForeignKey(nameof(Id))]
         public ApplicationUser User { get; set; } = null!;

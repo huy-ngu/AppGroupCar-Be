@@ -13,6 +13,7 @@ namespace AppGroupCar.DTO.RequestDTO
         //public string PhoneNumberConfirmed { get; set; }
         [DefaultValue("123456")]
         public string Password { get; set; }
+        public IFormFile? Avatar { get; set; }
 
     }
 }
