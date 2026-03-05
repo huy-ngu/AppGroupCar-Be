@@ -8,7 +8,6 @@ namespace AppGroupCar.AutoMapper
     {
         public ShipmentRequestMapping()
         {
-            // dành cho Guid
             CreateMap<UpdateShipmentRequestDTO, ShipmentRequest>()
                 .ForMember(dest => dest.DropoffLocationId, opt => opt.Condition(src => src.DropoffLocationId != null))
                 .ForMember(dest => dest.DropoffLocationId, opt => opt.Condition(src => src.PickupLocationId != null))
