@@ -66,9 +66,9 @@ namespace AppGroupCar.Services.Market.MarketDriverServices
             return driver;
         }
 
-        public async Task<Driver> UpdateAsync(UpdateDriverRequestDTO request)
+        public async Task<Driver> UpdateAsync(Guid id, UpdateDriverRequestDTO request)
         {
-            var driver = await _repo.GetByIdAsync(request.Id);
+            var driver = await _repo.GetByIdAsync(id);
             if (driver == null || driver?.DeleteAt != null)
             {
                 throw new AppException(404, "Không tìm thấy bản ghi");

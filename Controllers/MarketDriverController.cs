@@ -25,29 +25,26 @@ namespace AppGroupCar.Controllers
             return Ok(new ApiResponse<Driver> { Data = data });
         }
         [HttpPost("create")]
-        public async Task<IActionResult> Create(Guid id, CreateDriverRequestDTO request)
+        public async Task<IActionResult> Create([FromForm] CreateDriverRequestDTO request)
         {
             var userIdNullable = User.GetUserId();
             if (userIdNullable is not Guid userId)
             {
                 return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
             }
-            var driver = await _marketDriverService.CreatAsync(id, request);
+            var driver = await _marketDriverService.CreatAsync(userId, request);
             return Ok(new ApiResponse<Driver> { Data = driver });
         }
         [HttpPatch("update")]
-        public async Task<IActionResult> Update(UpdateDriverRequestDTO request)
+        public async Task<IActionResult> Update([FromForm] UpdateDriverRequestDTO request)
         {
             var userIdNullable = User.GetUserId();
             if (userIdNullable is not Guid userId)
             {
                 return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
             }
-            if (request.Id != userId)
-            {
-                return BadRequest(new ApiResponse<string> { Code = 403, Message = "Không được sửa bản khi người khác" });
-            }
-            var driver = await _marketDriverService.UpdateAsync(request);
+
+            var driver = await _marketDriverService.UpdateAsync(userId, request);
             return Ok(new ApiResponse<Driver> { Data = driver });
 
         }

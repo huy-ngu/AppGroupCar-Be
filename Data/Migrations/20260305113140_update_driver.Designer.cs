@@ -13,8 +13,8 @@ using NetTopologySuite.Geometries;
 namespace AppGroupCar.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260302153505_MakeAvatarUrlNullable")]
-    partial class MakeAvatarUrlNullable
+    [Migration("20260305113140_update_driver")]
+    partial class update_driver
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -911,10 +911,19 @@ namespace AppGroupCar.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("UserId");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("IdentityNumber")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("LicenseClass")
                         .IsRequired()
@@ -922,8 +931,7 @@ namespace AppGroupCar.Migrations
                         .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("LicenseDocumentUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LicenseNumber")
                         .IsRequired()
@@ -1195,8 +1203,7 @@ namespace AppGroupCar.Migrations
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("ImageUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsFragile")
                         .HasColumnType("bit");

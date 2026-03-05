@@ -8,7 +8,7 @@ namespace AppGroupCar.Services.Market.MarketDriverServices
     public interface IMarketDriverService
     {
         Task<Driver> CreatAsync(Guid id, CreateDriverRequestDTO request);
-        Task<Driver> UpdateAsync(UpdateDriverRequestDTO request);
+        Task<Driver> UpdateAsync(Guid id, UpdateDriverRequestDTO request);
         Task<Driver> GetByIdAsync(Guid id);
         Task DeleteAsync(Guid id);
         //Task<PagedResult<Driver>> FilterAsync(ShipmentRequestParameters param);

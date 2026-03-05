@@ -11,6 +11,7 @@ using AppGroupCar.Services.Auth.AuthServices;
 using AppGroupCar.Services.Auth.RoleServices;
 using AppGroupCar.Services.Auth.TokenServices;
 using AppGroupCar.Services.Auth.UserServices;
+using AppGroupCar.Services.Market.MarketDriverServices;
 using AppGroupCar.Services.Market.RideRequestServices;
 using AppGroupCar.Services.Market.ShipmentRequestServices;
 using AppGroupCar.Services.Mytoys.LocationServices;
@@ -147,6 +148,7 @@ namespace AppGroupCar
             builder.Services.AddScoped<IShipmentRequestServices, ShipmentRequestServices>();
             builder.Services.AddScoped<LocationService>();
             builder.Services.AddScoped<IPhotoService, PhotoService>();
+            builder.Services.AddScoped<IMarketDriverService, MarketDriverService>();
 
             // Map section trong appsettings vào class CloudinarySettings
             builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
