@@ -1,10 +1,14 @@
-﻿using AppGroupCar.DTO.RequestDTO.Market.MarketDriver;
+﻿using AppGroupCar.DTO;
+using AppGroupCar.DTO.Filters;
+using AppGroupCar.DTO.RequestDTO.Market.MarketDriver;
 using AppGroupCar.DTO.ResponseDTO;
 using AppGroupCar.Entities.Market;
 using AppGroupCar.Helpers;
 using AppGroupCar.Services.Market.MarketDriverServices;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore.SqlServer.Query.Internal;
+using System.Security.Claims;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace AppGroupCar.Controllers
@@ -24,6 +28,15 @@ namespace AppGroupCar.Controllers
             var data = await _marketDriverService.GetByIdAsync(id);
             return Ok(new ApiResponse<Driver> { Data = data });
         }
+        [HttpPost("filter")]
+        public async Task<IActionResult> Filter(MarketDriverParameters param)
+        {
+            var data = await _marketDriverService.FilterAsync(param);
+            return Ok(new ApiResponse<PagedResult<Driver>> { Data = data });
+        }
+
+
+
         [HttpPost("create")]
         public async Task<IActionResult> Create([FromForm] CreateDriverRequestDTO request)
         {
@@ -32,7 +45,13 @@ namespace AppGroupCar.Controllers
             {
                 return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
             }
-            var driver = await _marketDriverService.CreatAsync(userId, request);
+            var fullName = User.FindFirstValue("fullname");
+            if (fullName is null)
+            {
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
+            }
+
+            var driver = await _marketDriverService.CreatAsync(userId, fullName, request);
             return Ok(new ApiResponse<Driver> { Data = driver });
         }
         [HttpPatch("update")]

@@ -1,4 +1,6 @@
-﻿using AppGroupCar.DTO.RequestDTO.Market.MarketDriver;
+﻿using AppGroupCar.DTO;
+using AppGroupCar.DTO.Filters;
+using AppGroupCar.DTO.RequestDTO.Market.MarketDriver;
 using AppGroupCar.Entities.Market;
 using AppGroupCar.Exceptions;
 using AppGroupCar.Repositories.BaseRepo;
@@ -20,7 +22,7 @@ namespace AppGroupCar.Services.Market.MarketDriverServices
             _photoService = photoService;
         }
 
-        public async Task<Driver> CreatAsync(Guid id, CreateDriverRequestDTO request)
+        public async Task<Driver> CreatAsync(Guid id, string fullName, CreateDriverRequestDTO request)
         {
             string? imgUrl = null;
 
@@ -35,6 +37,7 @@ namespace AppGroupCar.Services.Market.MarketDriverServices
 
             var driver = _mapper.Map<Driver>(request);
             driver.Id = id;
+            driver.Name = fullName;
             driver.VerificationStatus = DriverVerificationStatus.Pending;
             driver.LicenseDocumentUrl = imgUrl;
 
@@ -54,6 +57,22 @@ namespace AppGroupCar.Services.Market.MarketDriverServices
             _repo.Delete(driver);
             await _repo.SaveChangesAsync();
             return;
+        }
+
+        public async Task<PagedResult<Driver>> FilterAsync(MarketDriverParameters param)
+        {
+            var data = await _repo.FindAndFilter(
+                predicate: r =>
+                    //  Lọc điểm đi (nếu null/rỗng thì bỏ qua điều kiện này)
+                    (string.IsNullOrEmpty(param.fullName) || r.Name.Contains(param.fullName)) &&
+                    (param.status == null) || (r.VerificationStatus == param.status) &&
+                    r.DeleteAt == null,
+
+                orderBy: q => q.OrderByDescending(r => r.CreatedAt),
+                pageNumber: param.PageNumber,
+                pageSize: param.PageSize
+            );
+            return data;
         }
 
         public async Task<Driver> GetByIdAsync(Guid id)
@@ -82,9 +101,9 @@ namespace AppGroupCar.Services.Market.MarketDriverServices
                     throw new AppException(400, "Cloudinary upload failed: " + uploadResult.Error.Message);
 
                 imgUrl = uploadResult.SecureUrl.AbsoluteUri;
+                driver.LicenseDocumentUrl = imgUrl;
             }
             _mapper.Map(request, driver);
-            driver.LicenseDocumentUrl = imgUrl;
             _repo.Update(driver);
             await _repo.SaveChangesAsync();
             return driver;

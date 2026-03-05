@@ -6,10 +6,6 @@ namespace AppGroupCar.DTO.RequestDTO.Market.MarketDriver
     public class CreateDriverRequestDTO
     {
         [Required]
-        [MaxLength(200)]
-        public string Name { get; set; } = null!;
-
-        [Required]
         [MaxLength(20)]
         public string IdentityNumber { get; set; } = null!;
 

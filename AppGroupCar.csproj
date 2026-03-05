@@ -25,8 +25,8 @@
 
 	<ItemGroup>
 	  <Folder Include="DTO\RequestDTO\Bus\" />
-	  <Folder Include="DTO\ResponseDTO\Market\" />
 	  <Folder Include="DTO\ResponseDTO\Bus\" />
+	  <Folder Include="DTO\ResponseDTO\Market\Driver\" />
 	  <Folder Include="Repositories\Market\" />
 	  <Folder Include="Repositories\Bus\" />
 	  <Folder Include="Services\Bus\" />

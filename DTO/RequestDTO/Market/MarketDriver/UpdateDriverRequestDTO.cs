@@ -5,24 +5,19 @@ namespace AppGroupCar.DTO.RequestDTO.Market.MarketDriver
 {
     public class UpdateDriverRequestDTO
     {
-        [Required]
         [MaxLength(200)]
-        public string Name { get; set; } = null!;
+        public string? Name { get; set; } = null!;
 
-        [Required]
         [MaxLength(20)]
-        public string IdentityNumber { get; set; } = null!;
+        public string? IdentityNumber { get; set; } = null!;
 
-        [Required]
         [MaxLength(20)]
-        public string LicenseNumber { get; set; } = null!;
+        public string? LicenseNumber { get; set; } = null!;
 
-        [Required]
         [MaxLength(10)]
-        public string LicenseClass { get; set; } = null!;
+        public string? LicenseClass { get; set; } = null!;
 
-        [Required]
-        public DriverVerificationStatus VerificationStatus { get; set; }
+        public DriverVerificationStatus? VerificationStatus { get; set; }
 
         public IFormFile? LicenseDocumenImg { get; set; }
     }

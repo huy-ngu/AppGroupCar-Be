@@ -65,8 +65,7 @@ namespace AppGroupCar.Services.Market.ShipmentRequestServices
                     // Lọc điểm đến (đã sửa lại thành ToLocation)
                     (string.IsNullOrEmpty(param.dropOffLocation) || r.DropoffLocation.Name.Contains(param.dropOffLocation)) &&
 
-                r.Status == ShipmentRequestStatus.Open && r.DeleteAt == null,
-
+                    r.Status == ShipmentRequestStatus.Open && r.DeleteAt == null,
 
                 orderBy: q => q.OrderByDescending(r => r.PickupLocation.Name),
                 pageNumber: param.PageNumber,
@@ -103,10 +102,11 @@ namespace AppGroupCar.Services.Market.ShipmentRequestServices
                     throw new AppException(400, "Cloudinary upload failed: " + uploadResult.Error.Message);
 
                 imgUrl = uploadResult.SecureUrl.AbsoluteUri;
+                exitShipmentRequest.ImageUrl = imgUrl;
+
             }
 
             _mapper.Map(request, exitShipmentRequest);
-            exitShipmentRequest.ImageUrl = imgUrl;
             _repo.Update(exitShipmentRequest);
             await _repo.SaveChangesAsync();
             return;

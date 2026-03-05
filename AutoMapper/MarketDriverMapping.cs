@@ -15,6 +15,11 @@ namespace AppGroupCar.AutoMapper
 
             CreateMap<UpdateDriverRequestDTO, Driver>()
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
+            CreateMap<CreateDriverRequestDTO, ShipmentRequest>()
+            .ForMember(dest => dest.ImageUrl, opt => opt.Ignore());
+            CreateMap<UpdateDriverRequestDTO, ShipmentRequest>()
+            .ForMember(dest => dest.ImageUrl, opt => opt.Ignore());
         }
     }
 }
