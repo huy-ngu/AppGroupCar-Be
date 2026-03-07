@@ -254,8 +254,7 @@ namespace AppGroupCar.Services.Auth.AuthServices
                 var parts = accessToken.Split('.');
                 if (parts.Length != 3)
                 {
-                    Console.WriteLine("Token vớ vẩn, không đúng chuẩn JWT 3 phần.");
-                    return null; // Hoặc throw Exception tùy bạn
+                    throw new AppException(401, "Token sai!");
                 }
 
                 var payloadBase64 = parts[1];
@@ -276,20 +275,18 @@ namespace AppGroupCar.Services.Auth.AuthServices
                     if (doc.RootElement.TryGetProperty("jti", out JsonElement jtiElement))
                     {
                         var jti = jtiElement.GetString();
-                        Console.WriteLine($"[CHÂN LÝ LÀ ĐÂY] Đã móc được jti: {jti}");
                         return jti;
                     }
                     else
                     {
-                        Console.WriteLine("Cảnh báo: Payload decode ra thành công nhưng bên trong thực sự KHÔNG CÓ field 'jti'.");
-                        return null;
+                        throw new AppException(401, "Token sai!");
                     }
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Toang! Lỗi khi bóc phốt token: {ex.Message}");
-                return null;
+                throw new AppException(401, ex.Message);
             }
         }
 

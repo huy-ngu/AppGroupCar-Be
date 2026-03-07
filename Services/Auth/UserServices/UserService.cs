@@ -7,6 +7,7 @@ using AppGroupCar.Entities;
 using AppGroupCar.Entities.Identity;
 using AppGroupCar.Exceptions;
 using AppGroupCar.Services.Mytoys.Photo;
+using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 
 namespace AppGroupCar.Services.Auth.UserServices
@@ -15,13 +16,15 @@ namespace AppGroupCar.Services.Auth.UserServices
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<ApplicationRole> _roleManager;
+        private readonly IMapper _mapper;
         private readonly IPhotoService _photoService;
 
-        public UserService(UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager, IPhotoService photoService)
+        public UserService(UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager, IPhotoService photoService, IMapper mapper)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _photoService = photoService;
+            _mapper = mapper;
         }
 
         public async Task<IEnumerable<UserDto>> GetAllAsync()
@@ -32,15 +35,9 @@ namespace AppGroupCar.Services.Auth.UserServices
             foreach (var u in users)
             {
                 var roles = await _userManager.GetRolesAsync(u);
-                result.Add(new UserDto
-                {
-                    Id = u.Id,
-                    UserName = u.UserName,
-                    Email = u.Email,
-                    FullName = u.FullName,
-                    PhoneNumber = u.PhoneNumber,
-                    Roles = roles
-                });
+                UserDto user = _mapper.Map<UserDto>(u);
+                user.Roles = roles;
+                result.Add(user);
             }
 
             return result;
@@ -50,16 +47,19 @@ namespace AppGroupCar.Services.Auth.UserServices
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null) throw new AppException(404, "User not found");
-            var roles = await _userManager.GetRolesAsync(user);
-            return new UserDto
-            {
-                Id = user.Id,
-                UserName = user.UserName,
-                Email = user.Email,
-                FullName = user.FullName,
-                PhoneNumber = user.PhoneNumber,
-                Roles = roles
-            };
+            var roleName = await _userManager.GetRolesAsync(user);
+            //return new UserDto
+            //{
+            //    Id = user.Id,
+            //    UserName = user.UserName,
+            //    Email = user.Email,
+            //    FullName = user.FullName,
+            //    PhoneNumber = user.PhoneNumber,
+            //    Roles = roles
+            //};
+            var userResponse = _mapper.Map<UserDto>(user);
+            userResponse.Roles = roleName;
+            return userResponse;
         }
 
         public async Task CreateAsync(CreateUserDTO dto)
@@ -71,6 +71,7 @@ namespace AppGroupCar.Services.Auth.UserServices
                 throw new AppException(400, "Email already exists");
 
             string? avatarUrl = null;
+            var user = _mapper.Map<ApplicationUser>(dto);
 
             if (dto.AvatarUrl != null && dto.AvatarUrl.Length > 0)
             {
@@ -80,15 +81,8 @@ namespace AppGroupCar.Services.Auth.UserServices
                     throw new AppException(400, "Cloudinary upload failed: " + uploadResult.Error.Message);
 
                 avatarUrl = uploadResult.SecureUrl.AbsoluteUri;
+                user.AvatarUrl = avatarUrl;
             }
-            var user = new ApplicationUser
-            {
-                UserName = dto.UserName,
-                Email = dto.Email,
-                FullName = dto.FullName,
-                PhoneNumber = dto.PhoneNumber,
-                AvatarUrl = avatarUrl
-            };
 
             var result = await _userManager.CreateAsync(user, dto.Password);
 
@@ -96,6 +90,7 @@ namespace AppGroupCar.Services.Auth.UserServices
                 throw new AppException(400, "Create user failed",
                     new { errors = result.Errors.Select(e => e.Description) });
 
+            // thêm role nếu chưa có
             if (dto.Roles != null && dto.Roles.Any())
             {
                 foreach (var role in dto.Roles)
@@ -112,24 +107,26 @@ namespace AppGroupCar.Services.Auth.UserServices
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null) throw new AppException(404, "User not found");
+
+            string? avatarUrl = null;
+
             user.FullName = dto.FullName ?? user.FullName;
             user.PhoneNumber = dto.PhoneNumber ?? user.PhoneNumber;
+
+            if (dto.ImgFile != null && dto.ImgFile.Length > 0)
+            {
+                var uploadResult = await _photoService.AddPhotoAsync(dto.ImgFile);
+
+                if (uploadResult.Error != null)
+                    throw new AppException(400, "Cloudinary upload failed: " + uploadResult.Error.Message);
+
+                avatarUrl = uploadResult.SecureUrl.AbsoluteUri;
+                user.AvatarUrl = avatarUrl;
+            }
+
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded) throw new AppException(400, "Update failed", new { errors = result.Errors.Select(e => e.Description) });
 
-            //roles sync
-            //if (dto.Roles != null)
-            //{
-            //    var current = await _userManager.GetRolesAsync(user);
-            //    var toAdd = dto.Roles.Except(current).ToList();
-            //    var toRemove = current.Except(dto.Roles).ToList();
-            //    foreach (var role in toAdd)
-            //    {
-            //        if (!await _roleManager.RoleExistsAsync(role)) await _roleManager.CreateAsync(new IdentityRole(role));
-            //    }
-            //    if (toRemove.Any()) await _userManager.RemoveFromRolesAsync(user, toRemove);
-            //    if (toAdd.Any()) await _userManager.AddToRolesAsync(user, toAdd);
-            //}
         }
 
         public async Task DeleteAsync(string id)
@@ -138,6 +135,19 @@ namespace AppGroupCar.Services.Auth.UserServices
             if (user == null) throw new AppException(404, "User not found");
             var result = await _userManager.DeleteAsync(user);
             if (!result.Succeeded) throw new AppException(400, "Delete failed", new { errors = result.Errors.Select(e => e.Description) });
+        }
+
+        public async Task ChangePassword(Guid id, string oldPassword, string newPassword)
+        {
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user == null)
+                throw new AppException(404, "User not found");
+
+            var result = await _userManager.ChangePasswordAsync(user, oldPassword, newPassword);
+
+            if (!result.Succeeded)
+                throw new AppException(400, "Change password failed", 
+                    new { errors = result.Errors.Select(e => e.Description) });
         }
     }
 }
