@@ -14,6 +14,7 @@ using AppGroupCar.Services.Auth.UserServices;
 using AppGroupCar.Services.Market.MarketDriverServices;
 using AppGroupCar.Services.Market.RideRequestServices;
 using AppGroupCar.Services.Market.ShipmentRequestServices;
+using AppGroupCar.Services.Market.VehicleServices;
 using AppGroupCar.Services.Mytoys.LocationServices;
 using AppGroupCar.Services.Mytoys.Photo;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -164,6 +165,7 @@ namespace AppGroupCar
                 builder.Services.AddScoped<LocationService>();
                 builder.Services.AddScoped<IPhotoService, PhotoService>();
                 builder.Services.AddScoped<IMarketDriverService, MarketDriverService>();
+                builder.Services.AddScoped<IVehicleService, VehicleService>();
 
                 // Map section trong appsettings vào class CloudinarySettings
                 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
