@@ -10,5 +10,6 @@ namespace AppGroupCar.Services.Auth.UserServices
         Task CreateAsync(CreateUserDTO dto);
         Task UpdateAsync(string id, UpdateUserDTO dto);
         Task DeleteAsync(string id);
+        Task ChangePassword(Guid id, string oldPassword, string newPassword);
     }
 }
