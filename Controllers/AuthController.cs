@@ -2,7 +2,9 @@
 using AppGroupCar.DTO.ResponseDTO;
 using AppGroupCar.Helpers;
 using AppGroupCar.Services.Auth.AuthServices;
+using AppGroupCar.Services.Auth.EmailServices;
 using Google.Apis.Auth;
+using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -15,10 +17,11 @@ namespace AppGroupCar.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-
-        public AuthController(IAuthService authService)
+        private readonly IBackgroundJobClient _backgroundJobs;
+        public AuthController(IAuthService authService, IBackgroundJobClient backgroundJobs)
         {
             _authService = authService;
+            _backgroundJobs = backgroundJobs;
         }
 
         [HttpPost("register")]
@@ -71,6 +74,23 @@ namespace AppGroupCar.Controllers
 
             await _authService.LogoutAllDevices(userId);
             return Ok(new ApiResponse<string> { });
+        }
+
+        [HttpPost("forgot-password")]
+        public IActionResult ForgotPassword([FromBody] string email)
+        {
+            if (string.IsNullOrEmpty(email)) return BadRequest(new ApiResponse<string> { Message = "Email không được null" });
+
+            string token = "reset_password_token";
+
+            string body = $"<h1>Khôi phục mật khẩu</h1><p>Click <a href='https://app.com/reset?token={token}'>vào đây</a>.</p>";
+
+            // Enqueue đưa job vào hàng đợi và chạy ngầm.
+            // Hangfire sẽ tự động resolve (tìm) IEmailService và gọi hàm SendEmailAsync.
+            _backgroundJobs.Enqueue<IEmailService>(x => x.SendEmailAsync(email, "Reset Password", body));
+
+            // Phản hồi về FE ngay lập tức, tốn chưa tới 10ms!
+            return Ok(new { Message = "Yêu cầu đã được tiếp nhận. Vui lòng kiểm tra email." });
         }
     }
 }
