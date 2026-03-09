@@ -1,4 +1,5 @@
 ﻿using AppGroupCar.DTO.RequestDTO.Auth;
+using AppGroupCar.DTO.ResponseDTO;
 using AppGroupCar.Entities;
 using AppGroupCar.Exceptions;
 using AppGroupCar.Repositories.Auth.RefreshTokensRepo;
@@ -8,6 +9,8 @@ using AppGroupCar.Services.Mytoys.Photo;
 using Azure.Core;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -24,13 +27,16 @@ namespace AppGroupCar.Services.Auth.AuthServices
         private readonly ITokenService _tokenService;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IPhotoService _photoService;
-        public AuthService(IUserRepository userRepository, IConfiguration configuration, ITokenService tokenService, IRefreshTokenRepository refreshTokenRepository, IPhotoService photoService)
+        private IMemoryCache _cache;
+
+        public AuthService(IUserRepository userRepository, IConfiguration configuration, ITokenService tokenService, IRefreshTokenRepository refreshTokenRepository, IPhotoService photoService, IMemoryCache cache)
         {
             _userRepository = userRepository;
             _configuration = configuration;
             _tokenService = tokenService;
             _refreshTokenRepository = refreshTokenRepository;
             _photoService = photoService;
+            _cache = cache;
         }
 
         public async Task<(bool Success, IEnumerable<string> Errors)> RegisterAsync(RegisterRequestDTO request)
@@ -290,7 +296,6 @@ namespace AppGroupCar.Services.Auth.AuthServices
             }
         }
 
-
         public async Task Logout(string token)
         {
             var tokenDb = await _refreshTokenRepository.GetByTokenAsync(token);
@@ -308,6 +313,31 @@ namespace AppGroupCar.Services.Auth.AuthServices
             {
                 throw new AppException(500, "Có lỗi sever");
             }
+        }
+
+        public async Task ResetPassword(ResetPasswordRequestDTO request)
+        {
+            var user = await _userRepository.FindByEmailAsync(request.Email);
+
+            var decodedTokenBytes = WebEncoders.Base64UrlDecode(request.Token);
+
+            var normalToken = Encoding.UTF8.GetString(decodedTokenBytes);
+
+            var result = await _userRepository.ResetPasswordAsync(user, normalToken, request.NewPassword);
+
+            if (result.Succeeded)
+            {
+                // Đổi pass thành công rồi thì xóa cái "Cờ" chặn spam đi, 
+                // để lỡ nó có não cá vàng quên tiếp thì còn cho nó xin mail mới!
+                _cache.Remove($"ResetPassWait_{request.Email}");
+            }
+
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new AppException(400, "Đổi mật khẩu thất bại: " + errors);
+            }
+            return;
         }
     }
 }

@@ -1,7 +1,8 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using AppGroupCar.DTO.RequestDTO.Auth;
 using AppGroupCar.Entities;
 using Microsoft.AspNetCore.Identity;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace AppGroupCar.Repositories.Auth.UserRepo
 {
@@ -16,6 +17,7 @@ namespace AppGroupCar.Repositories.Auth.UserRepo
         Task<IdentityResult> AddToRolesAsync(ApplicationUser user, IEnumerable<string> roles);
         Task<IdentityResult> AddLoginAsync(ApplicationUser user, UserLoginInfo loginInfo);
         Task<ApplicationUser> FindByIdAsync(Guid id);
+        Task<IdentityResult> ResetPasswordAsync(ApplicationUser user, string token, string newPassword);
 
     }
 }
