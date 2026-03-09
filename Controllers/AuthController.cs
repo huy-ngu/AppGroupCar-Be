@@ -1,12 +1,20 @@
 ﻿using AppGroupCar.DTO.RequestDTO.Auth;
 using AppGroupCar.DTO.ResponseDTO;
+using AppGroupCar.Entities;
 using AppGroupCar.Helpers;
 using AppGroupCar.Services.Auth.AuthServices;
+using AppGroupCar.Services.Auth.EmailServices;
+using CloudinaryDotNet.Actions;
 using Google.Apis.Auth;
+using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Caching.Memory;
 using System.Security.Claims;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace AppGroupCar.Controllers
 {
@@ -15,10 +23,21 @@ namespace AppGroupCar.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly IBackgroundJobClient _backgroundJobs;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private IMemoryCache _cache;
 
-        public AuthController(IAuthService authService)
+        public AuthController(
+            IAuthService authService,
+            IBackgroundJobClient backgroundJobs,
+            UserManager<ApplicationUser> userManager,
+            IMemoryCache cache
+        )
         {
             _authService = authService;
+            _backgroundJobs = backgroundJobs;
+            _userManager = userManager;
+            _cache = cache;
         }
 
         [HttpPost("register")]
@@ -59,6 +78,7 @@ namespace AppGroupCar.Controllers
             await _authService.Logout(RefreshToken);
             return Ok(new ApiResponse<string> { });
         }
+
         [Authorize]
         [HttpPost("logout_AllDevices")]
         public async Task<IActionResult> LogoutAllDevices()
@@ -71,6 +91,31 @@ namespace AppGroupCar.Controllers
 
             await _authService.LogoutAllDevices(userId);
             return Ok(new ApiResponse<string> { });
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] string email)
+        {
+            if (string.IsNullOrEmpty(email)) return BadRequest(new ApiResponse<string> { Message = "Email không được null" });
+
+            var (shouldSendEmail, encodedToken) = await _userManager.ProcessResetTokenWithCacheAsync(email, _cache);
+            if (shouldSendEmail)
+            {
+                string resetLink = $"https://huyapp.com/reset-password?email={email}&token={encodedToken}";
+                string body = $"<p>Nhấn vào <a href='{resetLink}'>đây</a> để đổi mật khẩu. Link hết hạn sau 15 phút.</p>";
+
+                _backgroundJobs.Enqueue<IEmailService>(x => x.SendEmailAsync(email, "Reset Password", body));
+            }
+
+            // LUÔN LUÔN TRẢ VỀ CÂU NÀY, DÙ CÓ THẤY USER HAY LÀ BỊ SPAM ĐI NỮA
+            return Ok(new ApiResponse<string> { Message = "Vui lòng kiểm tra email của bạn." });
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDTO request)
+        {
+            await _authService.ResetPassword(request);
+            return Ok(new ApiResponse<string> { Message = "Đổi mật khẩu thành công" });
         }
     }
 }
