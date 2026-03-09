@@ -1,4 +1,5 @@
 using AppGroupCar.Entities.Market;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace AppGroupCar.DTO.RequestDTO.Market.Vehicle
@@ -11,10 +12,12 @@ namespace AppGroupCar.DTO.RequestDTO.Market.Vehicle
 
         [Required(ErrorMessage = "Brand is required")]
         [MaxLength(50, ErrorMessage = "Brand must not exceed 50 characters")]
+        [DefaultValue("Honda")]
         public string Brand { get; set; }
 
         [Required(ErrorMessage = "Seat capacity is required")]
         [Range(1, 50, ErrorMessage = "Seat capacity must be between 1 and 50")]
+        [DefaultValue(5)]
         public int SeatCapacity { get; set; }
 
         [Required(ErrorMessage = "Vehicle type is required")]
