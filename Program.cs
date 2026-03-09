@@ -53,7 +53,7 @@ namespace AppGroupCar
                 .Enrich.FromLogContext());
 
                 // Add services to the container.
-
+                builder.Services.AddMemoryCache();
                 builder.Services.AddControllers();
                 builder.Services.AddEndpointsApiExplorer();
                 builder.Services.AddSwaggerGen(c =>

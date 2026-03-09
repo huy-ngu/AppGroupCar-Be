@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using AppGroupCar.DTO.RequestDTO.Auth;
 using AppGroupCar.Entities;
 using Microsoft.AspNetCore.Identity;
 
@@ -56,6 +57,11 @@ namespace AppGroupCar.Repositories.Auth.UserRepo
         public async Task<ApplicationUser> FindByIdAsync(Guid id)
         {
             return await _userManager.FindByIdAsync(id.ToString());
+        }
+        // reset password
+        public async Task<IdentityResult> ResetPasswordAsync(ApplicationUser user, string token, string newPassword)
+        {
+            return await _userManager.ResetPasswordAsync(user, token, newPassword);
         }
     }
 }

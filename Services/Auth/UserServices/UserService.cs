@@ -146,8 +146,9 @@ namespace AppGroupCar.Services.Auth.UserServices
             var result = await _userManager.ChangePasswordAsync(user, oldPassword, newPassword);
 
             if (!result.Succeeded)
-                throw new AppException(400, "Change password failed", 
+                throw new AppException(400, "Change password failed",
                     new { errors = result.Errors.Select(e => e.Description) });
         }
+
     }
 }
