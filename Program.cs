@@ -8,6 +8,7 @@ using AppGroupCar.Repositories.Auth.RefreshTokensRepo;
 using AppGroupCar.Repositories.Auth.UserRepo;
 using AppGroupCar.Repositories.BaseRepo;
 using AppGroupCar.Services.Auth.AuthServices;
+using AppGroupCar.Services.Auth.EmailServices;
 using AppGroupCar.Services.Auth.RoleServices;
 using AppGroupCar.Services.Auth.TokenServices;
 using AppGroupCar.Services.Auth.UserServices;
@@ -17,6 +18,8 @@ using AppGroupCar.Services.Market.ShipmentRequestServices;
 using AppGroupCar.Services.Market.VehicleServices;
 using AppGroupCar.Services.Mytoys.LocationServices;
 using AppGroupCar.Services.Mytoys.Photo;
+using Hangfire;
+using Hangfire.MemoryStorage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -51,7 +54,7 @@ namespace AppGroupCar
                 .Enrich.FromLogContext());
 
                 // Add services to the container.
-
+                builder.Services.AddMemoryCache();
                 builder.Services.AddControllers();
                 builder.Services.AddEndpointsApiExplorer();
                 builder.Services.AddSwaggerGen(c =>
@@ -166,6 +169,7 @@ namespace AppGroupCar
                 builder.Services.AddScoped<IPhotoService, PhotoService>();
                 builder.Services.AddScoped<IMarketDriverService, MarketDriverService>();
                 builder.Services.AddScoped<IVehicleService, VehicleService>();
+                builder.Services.AddScoped<IEmailService, EmailService>();
 
                 // Map section trong appsettings vào class CloudinarySettings
                 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
@@ -177,6 +181,15 @@ namespace AppGroupCar
                 builder.Services.AddAutoMapper(cfg => { },
                 typeof(ShipmentRequestMapping).Assembly);
 
+                //Cấu hình Hangfire
+                builder.Services.AddHangfire(config => config
+                    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                    .UseSimpleAssemblyNameTypeSerializer()
+                    .UseRecommendedSerializerSettings()
+                    .UseMemoryStorage()); // Sử dụng RAM để lưu Job (Chỉ dùng cho lúc đang code!)
+
+                //Thêm Hangfire Server (Worker chạy ngầm)
+                builder.Services.AddHangfireServer();
 
                 var app = builder.Build();
 
@@ -199,6 +212,9 @@ namespace AppGroupCar
                         logger.LogError(ex, "Đã xảy ra lỗi khi Seed dữ liệu.");
                     }
                 }
+
+                // Kích hoạt giao diện quản lý Job của Hangfire
+                app.UseHangfireDashboard("/hangfire"); // Truy cập http://localhost:port/hangfire để xem
 
                 app.UseSerilogRequestLogging();
 
