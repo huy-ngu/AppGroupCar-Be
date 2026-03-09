@@ -1,4 +1,6 @@
-﻿using AppGroupCar.DTO.RequestDTO.Market.Vehicle;
+﻿using AppGroupCar.DTO;
+using AppGroupCar.DTO.Filters;
+using AppGroupCar.DTO.RequestDTO.Market.Vehicle;
 using AppGroupCar.DTO.ResponseDTO.Market;
 using AppGroupCar.Entities.Market;
 using AppGroupCar.Exceptions;
@@ -145,6 +147,50 @@ namespace AppGroupCar.Services.Market.VehicleServices
             vehicle.DeleteAt = DateTime.UtcNow;
             _vehicleRepo.Update(vehicle);
             await _vehicleRepo.SaveChangesAsync();
+        }
+
+        public async Task<PagedResult<VehicleDTO>> SearchAndFilterAsync(VehicleParameters parameters)
+        {
+            var data = await _vehicleRepo.FindAndFilter(
+                predicate: v =>
+                    // Only return non-soft-deleted vehicles
+                    v.DeleteAt == null &&
+
+                    // Filter by driver name (search)
+                    (string.IsNullOrEmpty(parameters.DriverName) ||
+                     v.Driver.Name.Contains(parameters.DriverName)) &&
+
+                    // Filter by brand (search)
+                    (string.IsNullOrEmpty(parameters.Brand) ||
+                     v.Brand.Contains(parameters.Brand)) &&
+
+                    // Filter by seat capacity (exact match)
+                    (!parameters.SeatCapacity.HasValue ||
+                     v.SeatCapacity == parameters.SeatCapacity.Value) &&
+
+                    // Filter by vehicle type (exact match)
+                    (!parameters.VehicleType.HasValue ||
+                     v.VehicleType == parameters.VehicleType.Value) &&
+
+                    // Filter by status (exact match)
+                    (!parameters.Status.HasValue ||
+                     v.Status == parameters.Status.Value),
+
+                orderBy: q => q.OrderByDescending(v => v.CreatedAt),
+                pageNumber: parameters.PageNumber,
+                pageSize: parameters.PageSize
+            );
+
+            // Map Vehicle entities to VehicleDTO
+            var result = new PagedResult<VehicleDTO>
+            {
+                Items = _mapper.Map<IEnumerable<VehicleDTO>>(data.Items),
+                TotalCount = data.TotalCount,
+                PageNumber = data.PageNumber,
+                PageSize = data.PageSize
+            };
+
+            return result;
         }
     }
 }

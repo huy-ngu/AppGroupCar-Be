@@ -1,3 +1,5 @@
+using AppGroupCar.DTO;
+using AppGroupCar.DTO.Filters;
 using AppGroupCar.DTO.RequestDTO.Market.Vehicle;
 using AppGroupCar.DTO.ResponseDTO;
 using AppGroupCar.DTO.ResponseDTO.Market;
@@ -83,6 +85,17 @@ namespace AppGroupCar.Controllers
             var driverId = GetDriverIdFromToken();
             await _vehicleService.DeleteAsync(id, driverId);
             return Ok(new ApiResponse<object> { Data = null, Message = "Vehicle deleted successfully" });
+        }
+
+        /// <summary>
+        /// Search and filter vehicles with pagination
+        /// </summary>
+        [HttpPost("search")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SearchAndFilter(VehicleParameters parameters)
+        {
+            var result = await _vehicleService.SearchAndFilterAsync(parameters);
+            return Ok(new ApiResponse<PagedResult<VehicleDTO>> { Data = result, Message = "Vehicles retrieved successfully" });
         }
     }
 }

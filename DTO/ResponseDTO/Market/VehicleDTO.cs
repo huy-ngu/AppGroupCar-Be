@@ -7,9 +7,8 @@ namespace AppGroupCar.DTO.ResponseDTO.Market
     {
         public Guid Id { get; set; }
         public Guid DriverId { get; set; }
-        [DefaultValue("")]
+        public string DriverName { get; set; }
         public string PlateNumber { get; set; }
-        [DefaultValue("")]
         public string Brand { get; set; }
         public int SeatCapacity { get; set; }
         public VehicleType VehicleType { get; set; }

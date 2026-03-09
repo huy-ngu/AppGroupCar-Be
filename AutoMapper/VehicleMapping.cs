@@ -21,7 +21,7 @@ namespace AppGroupCar.AutoMapper
                 .ForMember(dest => dest.DriverId, opt => opt.Ignore())
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
-            CreateMap<Vehicle, VehicleDTO>();
+            CreateMap<Vehicle, VehicleDTO>().ForMember(dest => dest.DriverName, opt => opt.MapFrom(src => src.Driver.Name)); ;
         }
     }
 }
