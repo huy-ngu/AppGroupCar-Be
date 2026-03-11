@@ -7,7 +7,6 @@ namespace AppGroupCar.Entities.Market
     [Table("SharedRideOfferDetails")]
     public class SharedRideOfferDetail : BaseEntity
     {
-
         [Required]
         public int TotalSeats { get; set; }
 
