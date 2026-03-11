@@ -1,5 +1,6 @@
 using AppGroupCar.DTO.RequestDTO.Market.Offer;
 using AppGroupCar.DTO.ResponseDTO;
+using AppGroupCar.DTO.ResponseDTO.Market;
 using AppGroupCar.Entities.Market;
 using AppGroupCar.Helpers;
 using AppGroupCar.Services.Market.OfferServices;
@@ -26,7 +27,7 @@ namespace AppGroupCar.Controllers
         public async Task<IActionResult> GetAll()
         {
             var data = await _offerService.GetAllAsync();
-            return Ok(new ApiResponse<IEnumerable<Offer>> { Data = data });
+            return Ok(new ApiResponse<IEnumerable<GetOfferDTO>> { Data = data });
         }
 
         [HttpGet("my-offers")]
@@ -39,14 +40,14 @@ namespace AppGroupCar.Controllers
                 return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
             }
             var data = await _offerService.GetMyOffersAsync(userId);
-            return Ok(new ApiResponse<IEnumerable<Offer>> { Data = data });
+            return Ok(new ApiResponse<IEnumerable<GetOfferDTO>> { Data = data });
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var data = await _offerService.GetByIdAsync(id);
-            return Ok(new ApiResponse<Offer> { Data = data });
+            return Ok(new ApiResponse<GetOfferDTO> { Data = data });
         }
 
         [HttpPost]
@@ -59,7 +60,7 @@ namespace AppGroupCar.Controllers
                 return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
             }
             var offer = await _offerService.CreateAsync(userId, request);
-            return Ok(new ApiResponse<Offer> { Data = offer });
+            return Ok(new ApiResponse<GetOfferDTO> { Data = offer });
         }
 
         [HttpPatch("{offerId}")]
@@ -73,7 +74,7 @@ namespace AppGroupCar.Controllers
             }
 
             var offer = await _offerService.UpdateAsync(userId, offerId, request);
-            return Ok(new ApiResponse<Offer> { Data = offer });
+            return Ok(new ApiResponse<GetOfferDTO> { Data = offer });
         }
 
         [HttpDelete("{id}")]
