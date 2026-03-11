@@ -18,15 +18,14 @@ using AppGroupCar.Services.Market.ShipmentRequestServices;
 using AppGroupCar.Services.Market.VehicleServices;
 using AppGroupCar.Services.Mytoys.LocationServices;
 using AppGroupCar.Services.Mytoys.Photo;
+using AppGroupCar.Services.Market.OfferServices;
 using Hangfire;
 using Hangfire.MemoryStorage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
-using System;
 using System.Text;
 
 namespace AppGroupCar
@@ -170,6 +169,7 @@ namespace AppGroupCar
                 builder.Services.AddScoped<IMarketDriverService, MarketDriverService>();
                 builder.Services.AddScoped<IVehicleService, VehicleService>();
                 builder.Services.AddScoped<IEmailService, EmailService>();
+                builder.Services.AddScoped<IOfferService, OfferService>();
 
                 // Map section trong appsettings vào class CloudinarySettings
                 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));

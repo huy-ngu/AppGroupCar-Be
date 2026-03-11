@@ -34,30 +34,23 @@ namespace AppGroupCar.Middleware
             string message;
             object data = null;
 
-            // 1. KI?M TRA LO?I L?I ?? X? L› V¿ LOG CHO G?N
             if (exception is AppException appEx)
             {
-                // ?‚y l‡ l?i nghi?p v? do c?u ch? ??ng nÈm ra (VD: 400 Bad Request)
                 statusCode = appEx.StatusCode;
                 message = appEx.Message;
                 data = appEx.Details;
 
-                // CH? GHI WARNING: KhÙng truy?n exception v‡o, m‡n hÏnh console s? khÙng b? r·c b?i StackTrace
-                _logger.LogWarning("L?i nghi?p v? [{StatusCode}]: {Message}", statusCode, message);
+                _logger.LogWarning("L·ªói nghi·ªáp v·ª• [{StatusCode}]: {Message}", statusCode, message);
             }
             else
             {
-                // ?‚y l‡ l?i v? m?m (500 Internal Server Error) do code ?u ho?c l?i h? th?ng
                 statusCode = (int)HttpStatusCode.InternalServerError;
 
-                // Super Senior Tip: KH‘NG BAO GI? tr? exception.Message c?a l?i 500 ra cho Client, d? b? hack.
-                message = "?„ x?y ra l?i h? th?ng nghiÍm tr?ng. Vui lÚng th? l?i sau.";
+                message = "ƒê√£ x·∫£y ra l·ªói h·ªá th·ªëng. Vui l√≤ng th·ª≠ l·∫°i sau.";
 
-                // GHI ERROR K»M EXCEPTION: M‡n hÏnh console s? hi?n m‡u ?? v‡ in ra StackTrace ?? c?u debug
-                _logger.LogError(exception, "L?I H? TH?NG CHÕ M?NG: {Message}", exception.Message);
+                _logger.LogError(exception, "L·ªói h·ªá th·ªëng: {Message}", exception.Message);
             }
 
-            // 2. TR? V? RESPONSE CHO CLIENT
             var response = new ApiResponse<object>
             {
                 Code = statusCode,
@@ -68,7 +61,6 @@ namespace AppGroupCar.Middleware
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = statusCode;
 
-            // Format JSON cho ??p theo chu?n camelCase c?a API
             var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
             var payload = JsonSerializer.Serialize(response, jsonOptions);
 

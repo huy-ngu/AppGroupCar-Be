@@ -2,7 +2,6 @@
 using AppGroupCar.Entities.Bus;
 using AppGroupCar.Entities.Identity;
 using AppGroupCar.Entities.Market;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
