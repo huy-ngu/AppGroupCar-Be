@@ -34,9 +34,6 @@ namespace AppGroupCar.Controllers
             var data = await _marketDriverService.FilterAsync(param);
             return Ok(new ApiResponse<PagedResult<Driver>> { Data = data });
         }
-
-
-
         [HttpPost("create")]
         public async Task<IActionResult> Create([FromForm] CreateDriverRequestDTO request)
         {
@@ -52,7 +49,7 @@ namespace AppGroupCar.Controllers
             }
 
             var driver = await _marketDriverService.CreatAsync(userId, fullName, request);
-            return Ok(new ApiResponse<Driver> { Data = driver });
+            return Ok(new ApiResponse<Driver> { Code = 201, Data = driver });
         }
         [HttpPatch("update")]
         public async Task<IActionResult> Update([FromForm] UpdateDriverRequestDTO request)

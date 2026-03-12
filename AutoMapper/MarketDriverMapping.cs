@@ -11,15 +11,16 @@ namespace AppGroupCar.AutoMapper
         public MarketDriverMapping()
         {
             CreateMap<CreateDriverRequestDTO, Driver>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.LicenseDocumentUrl, opt => opt.Ignore())
+                .ForMember(dest => dest.User, opt => opt.Ignore())
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
             CreateMap<UpdateDriverRequestDTO, Driver>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.LicenseDocumentUrl, opt => opt.Ignore())
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
-            CreateMap<CreateDriverRequestDTO, ShipmentRequest>()
-            .ForMember(dest => dest.ImageUrl, opt => opt.Ignore());
-            CreateMap<UpdateDriverRequestDTO, ShipmentRequest>()
-            .ForMember(dest => dest.ImageUrl, opt => opt.Ignore());
         }
     }
 }

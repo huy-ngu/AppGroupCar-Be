@@ -5,9 +5,6 @@ namespace AppGroupCar.DTO.RequestDTO.Market.MarketDriver
 {
     public class UpdateDriverRequestDTO
     {
-        [MaxLength(200)]
-        public string? Name { get; set; } = null!;
-
         [MaxLength(20)]
         public string? IdentityNumber { get; set; } = null!;
 
