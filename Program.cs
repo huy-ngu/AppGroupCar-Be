@@ -13,7 +13,9 @@ using AppGroupCar.Services.Auth.RoleServices;
 using AppGroupCar.Services.Auth.TokenServices;
 using AppGroupCar.Services.Auth.UserServices;
 using AppGroupCar.Services.Market.MarketDriverServices;
+using AppGroupCar.Services.Market.OfferServices;
 using AppGroupCar.Services.Market.RideRequestServices;
+using AppGroupCar.Services.Market.SharedRideOfferDetailServices;
 using AppGroupCar.Services.Market.ShipmentRequestServices;
 using AppGroupCar.Services.Market.VehicleServices;
 using AppGroupCar.Services.Mytoys.LocationServices;
@@ -23,10 +25,8 @@ using Hangfire.MemoryStorage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
-using System;
 using System.Text;
 
 namespace AppGroupCar
@@ -170,6 +170,8 @@ namespace AppGroupCar
                 builder.Services.AddScoped<IMarketDriverService, MarketDriverService>();
                 builder.Services.AddScoped<IVehicleService, VehicleService>();
                 builder.Services.AddScoped<IEmailService, EmailService>();
+                builder.Services.AddScoped<IOfferService, OfferService>();
+                builder.Services.AddScoped<ISharedRideOfferDetailService, SharedRideOfferDetailService>();
 
                 // Map section trong appsettings vào class CloudinarySettings
                 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));

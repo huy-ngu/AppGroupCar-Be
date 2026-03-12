@@ -106,6 +106,16 @@ namespace AppGroupCar.Services.Market.ShipmentRequestServices
             }
 
             _mapper.Map(request, exitShipmentRequest);
+
+            if (request.DropoffLocationId != null)
+            {
+                exitShipmentRequest.DropoffLocationId = (Guid)request.DropoffLocationId;
+            }
+            if (request.PickupLocationId != null && request.PickupLocationId is Guid)
+            {
+                exitShipmentRequest.PickupLocationId = (Guid)request.PickupLocationId;
+            }
+
             exitShipmentRequest.ImageUrl = imgUrl;
             _repo.Update(exitShipmentRequest);
             await _repo.SaveChangesAsync();

@@ -11,11 +11,13 @@ namespace AppGroupCar.AutoMapper
     {
         public UserMapping()
         {
-            // create
+            // response
             CreateMap<ApplicationUser, UserDto>().ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
-            CreateMap<CreateUserDTO, ApplicationUser>().ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
-            CreateMap<CreateUserDTO, ApplicationUser>().ForMember(dest => dest.AvatarUrl, opt => opt.Ignore());
+            // create
+            CreateMap<CreateUserDTO, ApplicationUser>()
+                .ForMember(dest => dest.AvatarUrl, opt => opt.Ignore())
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
             //update
             CreateMap<UpdateUserDTO, ApplicationUser>()
