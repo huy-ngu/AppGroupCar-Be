@@ -1,4 +1,5 @@
 ﻿using AppGroupCar.AutoMapper;
+using AppGroupCar.AutoMapper.Bus;
 using AppGroupCar.Data;
 using AppGroupCar.Entities;
 using AppGroupCar.Entities.Identity;
@@ -11,6 +12,7 @@ using AppGroupCar.Services.Auth.AuthServices;
 using AppGroupCar.Services.Auth.RoleServices;
 using AppGroupCar.Services.Auth.TokenServices;
 using AppGroupCar.Services.Auth.UserServices;
+using AppGroupCar.Services.Bus.CompanyServices;
 using AppGroupCar.Services.Market.RideRequestServices;
 using AppGroupCar.Services.Market.ShipmentRequestServices;
 using AppGroupCar.Services.Mytoys.LocationServices;
@@ -148,6 +150,8 @@ namespace AppGroupCar
             builder.Services.AddScoped<LocationService>();
             builder.Services.AddScoped<IPhotoService, PhotoService>();
 
+            builder.Services.AddScoped<ICompanyService, CompanyService>();
+
             // Map section trong appsettings vào class CloudinarySettings
             builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 
@@ -155,9 +159,8 @@ namespace AppGroupCar
             builder.Services.AddAuthorization();
 
             //Đăng ký AutoMapper
-            builder.Services.AddAutoMapper(cfg => { },
-            typeof(ShipmentRequestMapping).Assembly);
-
+            builder.Services.AddAutoMapper(cfg => { }, typeof(ShipmentRequestMapping).Assembly);
+            builder.Services.AddAutoMapper(cfg => { }, typeof(CompanyMapping).Assembly);
 
             var app = builder.Build();
 
