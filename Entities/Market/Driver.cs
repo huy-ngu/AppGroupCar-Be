@@ -5,7 +5,7 @@ using AppGroupCar.Entities.Base;
 namespace AppGroupCar.Entities.Market
 {
     [Table("Drivers")]
-    public class Driver
+    public class Driver : BaseEntity
     {
         [Key]
         [Column("UserId")]
@@ -30,10 +30,7 @@ namespace AppGroupCar.Entities.Market
         [Required]
         public DriverVerificationStatus VerificationStatus { get; set; }
 
-        
-        [MaxLength(500)]
         public string? LicenseDocumentUrl { get; set; }
-
 
         // Navigation
         [ForeignKey(nameof(Id))]

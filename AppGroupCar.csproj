@@ -10,6 +10,9 @@
 		<PackageReference Include="AutoMapper" Version="16.0.0" />
 		<PackageReference Include="CloudinaryDotNet" Version="1.27.9" />
 		<PackageReference Include="Google.Apis.Auth" Version="1.73.0" />
+		<PackageReference Include="Hangfire.AspNetCore" Version="1.8.23" />
+		<PackageReference Include="Hangfire.MemoryStorage" Version="1.8.1.2" />
+		<PackageReference Include="MailKit" Version="4.15.1" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.20" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.23" />
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.23" />
@@ -20,6 +23,7 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="NetTopologySuite" Version="2.5.0" />
+		<PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
 	</ItemGroup>
 
@@ -27,6 +31,12 @@
 	  <Folder Include="DTO\ResponseDTO\Market\" />
 	  <Folder Include="Repositories\Market\" />
 	  <Folder Include="Repositories\Bus\" />
+		<Folder Include="Documents\" />
+		<Folder Include="DTO\RequestDTO\Bus\" />
+		<Folder Include="DTO\ResponseDTO\Bus\" />
+		<Folder Include="Repositories\Market\" />
+		<Folder Include="Repositories\Bus\" />
+		<Folder Include="Services\Bus\" />
 	</ItemGroup>
 
 </Project>

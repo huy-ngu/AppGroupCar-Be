@@ -12,11 +12,8 @@ namespace AppGroupCar.Repositories.BaseRepo
         void Update(T entity);
         void Delete(T entity);
         Task<int> SaveChangesAsync();
+        IQueryable<T> GetQueryable();
         Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, int pageNumber, int pageSize);
-
-        /// <summary>
-        /// Tìm kiếm và phân trang dữ liệu chuẩn.
-        /// </summary>
         Task<PagedResult<T>> FindAndFilter(
             Expression<Func<T, bool>> predicate,
             Func<IQueryable<T>,

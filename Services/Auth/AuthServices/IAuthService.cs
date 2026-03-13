@@ -10,5 +10,6 @@ namespace AppGroupCar.Services.Auth.AuthServices
         Task<(string AccessToken, string RefreshToken)> Refresh(RefreshTokenRequest token);
         Task LogoutAllDevices(Guid userId);
         Task Logout(string token);
+        Task ResetPassword(ResetPasswordRequestDTO request);
     }
 }

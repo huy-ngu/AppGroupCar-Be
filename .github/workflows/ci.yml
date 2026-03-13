@@ -1,0 +1,35 @@
+name: .NET Core Basic CI
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    env:
+      # Tên Solution của bạn đã được gắn vào đây
+      Solution_Name: AppGroupCar.sln
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x # Thay đổi thành 6.0.x hoặc 7.0.x nếu dự án của bạn dùng bản cũ hơn
+
+    - name: Restore dependencies
+      run: dotnet restore $env:Solution_Name
+
+    - name: Build
+      run: dotnet build $env:Solution_Name --configuration Release --no-restore
+
+    - name: Test
+      # Nếu bạn không có project Unit Test nào, bước này sẽ báo "No test matches" nhưng vẫn vượt qua (Pass).
+      # Nếu thấy gai mắt, bạn có thể xóa luôn 2 dòng của bước Test này đi.
+      run: dotnet test $env:Solution_Name --configuration Release --no-build --verbosity normal

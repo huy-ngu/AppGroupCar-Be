@@ -97,5 +97,10 @@ namespace AppGroupCar.Repositories.BaseRepo
                 PageSize = pageSize
             };
         }
+
+        public IQueryable<T> GetQueryable()
+        {
+            return _dbSet.AsQueryable();
+        }
     }
 }

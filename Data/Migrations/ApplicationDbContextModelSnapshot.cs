@@ -902,10 +902,19 @@ namespace AppGroupCar.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("UserId");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("IdentityNumber")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("LicenseClass")
                         .IsRequired()
@@ -913,8 +922,7 @@ namespace AppGroupCar.Migrations
                         .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("LicenseDocumentUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LicenseNumber")
                         .IsRequired()
