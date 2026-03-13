@@ -133,41 +133,6 @@ namespace AppGroupCar
 
                 builder.Services.AddAuthentication(options =>
                 {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = jwtSettings["Issuer"],
-                    ValidAudience = jwtSettings["Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(key)
-                };
-            })
-            .AddGoogle(options =>
-            {
-                options.ClientId = builder.Configuration["Google:ClientId"]!;
-                options.ClientSecret = builder.Configuration["Google:ClientSecret"]!;
-            });
-
-            // repositories
-            builder.Services.AddScoped<IUserRepository, UserRepository>();
-            builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
-            builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
-
-            // services
-            builder.Services.AddScoped<ITokenService, TokenService>();
-            builder.Services.AddScoped<IUserService, UserService>();
-            builder.Services.AddScoped<IAuthService, AuthService>();
-            builder.Services.AddScoped<IRoleService, RoleService>();
-            builder.Services.AddScoped<IRideRequestService, RideRequestService>();
-            builder.Services.AddScoped<IShipmentRequestServices, ShipmentRequestServices>();
-            builder.Services.AddScoped<LocationService>();
-            builder.Services.AddScoped<IPhotoService, PhotoService>();
-
-            builder.Services.AddScoped<ICompanyService, CompanyService>();
-
-            // Map section trong appsettings vào class CloudinarySettings
-            builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
-
                     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                 })
@@ -204,6 +169,7 @@ namespace AppGroupCar
                 builder.Services.AddScoped<IShipmentRequestServices, ShipmentRequestServices>();
                 builder.Services.AddScoped<LocationService>();
                 builder.Services.AddScoped<IPhotoService, PhotoService>();
+                builder.Services.AddScoped<ICompanyService, CompanyService>();
                 builder.Services.AddScoped<IMarketDriverService, MarketDriverService>();
                 builder.Services.AddScoped<IVehicleService, VehicleService>();
                 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -219,6 +185,7 @@ namespace AppGroupCar
                 //Đăng ký AutoMapper
                 builder.Services.AddAutoMapper(cfg => { },
                 typeof(ShipmentRequestMapping).Assembly);
+                builder.Services.AddAutoMapper(cfg => { }, typeof(CompanyMapping).Assembly);
 
                 //Cấu hình Hangfire
                 builder.Services.AddHangfire(config => config
@@ -242,9 +209,6 @@ namespace AppGroupCar
                         var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
                         var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();
 
-            //Đăng ký AutoMapper
-            builder.Services.AddAutoMapper(cfg => { }, typeof(ShipmentRequestMapping).Assembly);
-            builder.Services.AddAutoMapper(cfg => { }, typeof(CompanyMapping).Assembly);
                         // Chạy hàm Seed
                         await IdentityDataInitializer.SeedDataAsync(userManager, roleManager);
                     }
