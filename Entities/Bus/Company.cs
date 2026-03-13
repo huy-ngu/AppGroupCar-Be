@@ -57,18 +57,36 @@ namespace AppGroupCar.Entities.Bus
 
         // Thông tin vận hành
         [Required]
-        public int CompanyType { get; set; }
+        public CompanyType CompanyType { get; set; }
 
         [Required]
-        public int Status { get; set; }
+        public CompanyStatus Status { get; set; }
 
-        [Required]
-        public Guid CreatedBy { get; set; }
+        //tạm bỏ
+       // [Required]
+        //public Guid CreatedBy { get; set; }
 
-        public DateTime? ApprovedAt { get; set; }
-        public Guid? ApprovedBy { get; set; }
+        public DateTime? ApprovedAt { get; set; }// Thời điểm duyệt công ty
+//        public Guid? ApprovedBy { get; set; }// Người duyệt công ty
 
         // Navigation
         public ICollection<CompanyUser> CompanyUsers { get; set; } = new List<CompanyUser>();
     }
+
+    
+}
+
+public enum CompanyType
+{
+    Bus = 1,
+    CarRental = 2,
+    RideSharing = 3
+}
+
+public enum CompanyStatus
+{
+    Pending = 0,
+    Approved = 1,// công ty đã được duyệt, có thể tạo chuyến, không thể chỉnh sửa thông tin công ty, nếu muốn chỉnh sửa phải gửi yêu cầu chỉnh sửa và chờ duyệt lại
+    Rejected = 2,// công ty bị từ chối duyệt, có thể chỉnh sửa lại thông tin và gửi lại yêu cầu duyệt
+    Suspended = 3// công ty bị tạm ngưng hoạt động, không thể tạo chuyến, có thể chỉnh sửa lại thông tin và gửi lại yêu cầu duyệt
 }

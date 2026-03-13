@@ -28,6 +28,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Folder Include="DTO\ResponseDTO\Market\" />
+	  <Folder Include="Repositories\Market\" />
+	  <Folder Include="Repositories\Bus\" />
 		<Folder Include="Documents\" />
 		<Folder Include="DTO\RequestDTO\Bus\" />
 		<Folder Include="DTO\ResponseDTO\Bus\" />
