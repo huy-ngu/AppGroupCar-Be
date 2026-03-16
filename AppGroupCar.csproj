@@ -7,6 +7,17 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Repositories\Bus\**" />
+	  <Compile Remove="Services\Bus\**" />
+	  <Content Remove="Repositories\Bus\**" />
+	  <Content Remove="Services\Bus\**" />
+	  <EmbeddedResource Remove="Repositories\Bus\**" />
+	  <EmbeddedResource Remove="Services\Bus\**" />
+	  <None Remove="Repositories\Bus\**" />
+	  <None Remove="Services\Bus\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="AutoMapper" Version="16.0.0" />
 		<PackageReference Include="CloudinaryDotNet" Version="1.27.9" />
 		<PackageReference Include="Google.Apis.Auth" Version="1.73.0" />
@@ -31,9 +42,6 @@
 		<Folder Include="Documents\" />
 		<Folder Include="DTO\RequestDTO\Bus\" />
 		<Folder Include="DTO\ResponseDTO\Bus\" />
-		<Folder Include="Repositories\Market\" />
-		<Folder Include="Repositories\Bus\" />
-		<Folder Include="Services\Bus\" />
 	</ItemGroup>
 
 </Project>

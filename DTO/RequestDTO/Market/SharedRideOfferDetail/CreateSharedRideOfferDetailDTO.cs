@@ -1,18 +1,22 @@
+Ôªøusing System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace AppGroupCar.DTO.RequestDTO.Market.SharedRideOfferDetail
 {
     public class CreateSharedRideOfferDetailDTO
     {
-        [Required(ErrorMessage = "OfferId l‡ b?t bu?c")]
+        [Required]
         public Guid OfferId { get; set; }
 
-        [Required(ErrorMessage = "TotalSeats l‡ b?t bu?c")]
-        [Range(1, int.MaxValue, ErrorMessage = "TotalSeats ph?i l?n h?n 0")]
+        [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "TotalSeats ph·∫£i l·ªõn h∆°n 0")]
+        [DefaultValue(1)]
+
         public int TotalSeats { get; set; }
 
-        [Required(ErrorMessage = "AvailableSeats l‡ b?t bu?c")]
-        [Range(0, int.MaxValue, ErrorMessage = "AvailableSeats khÙng th? ‚m")]
+        [Required]
+        [DefaultValue(100000)]
+        [Range(0, int.MaxValue, ErrorMessage = "AvailableSeats kh√¥ng √¢m")]
         public int AvailableSeats { get; set; }
     }
 }

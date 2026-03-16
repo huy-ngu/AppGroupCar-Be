@@ -102,5 +102,7 @@ namespace AppGroupCar.Repositories.BaseRepo
         {
             return _dbSet.AsQueryable();
         }
+
+
     }
 }
