@@ -12,6 +12,7 @@ using AppGroupCar.Services.Auth.EmailServices;
 using AppGroupCar.Services.Auth.RoleServices;
 using AppGroupCar.Services.Auth.TokenServices;
 using AppGroupCar.Services.Auth.UserServices;
+using AppGroupCar.Services.Market.BookingItemServices;
 using AppGroupCar.Services.Market.BookingServices;
 using AppGroupCar.Services.Market.MarketDriverServices;
 using AppGroupCar.Services.Market.OfferServices;
@@ -174,6 +175,7 @@ namespace AppGroupCar
                 builder.Services.AddScoped<IOfferService, OfferService>();
                 builder.Services.AddScoped<ISharedRideOfferDetailService, SharedRideOfferDetailService>();
                 builder.Services.AddScoped<IBookingService, BookingService>();
+                builder.Services.AddScoped<IBookingItemService, BookingItemService>();
 
                 // Map section trong appsettings vào class CloudinarySettings
                 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));

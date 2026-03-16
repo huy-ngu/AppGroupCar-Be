@@ -1,4 +1,4 @@
-﻿using AppGroupCar.Entities.Market;
+using AppGroupCar.Entities.Market;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -12,14 +12,21 @@ namespace AppGroupCar.DTO.ResponseDTO.Market
         public decimal TotalPrice { get; set; } = 0;
         public BookingStatus Status { get; set; } = BookingStatus.Pending;
         public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Unpaid;
-        public List<BookingItemResponseDTO> Items { get; set; }
+        public IEnumerable<BookingItemBooking> Items { get; set; }
 
     }
-    public class BookingItemResponseDTO
+    public class BookingItemBooking
     {
         public Guid ItemId { get; set; }
-        public int Quantity { get; set; }
         public decimal Price { get; set; }
+        public LocationBooking PickupLocation { get; set; }
+        public LocationBooking DropoffLocation { get; set; }
 
+    }
+
+    public class LocationBooking
+    {
+        public Guid LocationId { get; set; }
+        public string LocationName { get; set; }
     }
 }
