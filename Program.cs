@@ -245,7 +245,6 @@ namespace AppGroupCar
                 // Bắt mọi lỗi xảy ra làm sập app lúc mới chạy
                 Log.Fatal(ex, "Ứng dụng chết ngắc ngay lúc khởi động!");
             }
-
         }
     }
     public static class IdentityDataInitializer
@@ -253,7 +252,7 @@ namespace AppGroupCar
         public static async Task SeedDataAsync(UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager)
         {
             // 1. Khởi tạo Roles
-            string[] roleNames = { "Admin", "User" };
+            string[] roleNames = { "Admin", "User", "Driver", "Company" };
             foreach (var roleName in roleNames)
             {
                 if (!await roleManager.RoleExistsAsync(roleName))

@@ -4,8 +4,6 @@ using AppGroupCar.DTO.ResponseDTO;
 using AppGroupCar.Services.Market.BookingServices;
 using Azure;
 using Microsoft.AspNetCore.Mvc;
-using static Google.Apis.Requests.BatchRequest;
-
 namespace AppGroupCar.Controllers
 {
     [ApiController]
