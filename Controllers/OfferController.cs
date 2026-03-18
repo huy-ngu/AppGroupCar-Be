@@ -52,14 +52,14 @@ namespace AppGroupCar.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> Create([FromBody] CreateOfferRequestDTO request)
+        public async Task<IActionResult> Create([FromBody] CreateOfferWithDetailRequestDTO request)
         {
             var userIdNullable = User.GetUserId();
             if (userIdNullable is not Guid userId)
             {
                 return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
             }
-            var offer = await _offerService.CreateAsync(userId, request);
+            var offer = await _offerService.CreateWithDetailAsync(userId, request);
             return Ok(new ApiResponse<GetOfferDTO> { Data = offer });
         }
 

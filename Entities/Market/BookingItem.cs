@@ -11,7 +11,10 @@ namespace AppGroupCar.Entities.Market
         public Guid BookingId { get; set; }
 
         [Required]
-        public int Quantity { get; set; }
+        public Guid PickupLocationId { get; set; }
+
+        [Required]
+        public Guid DropoffLocationId { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
@@ -20,6 +23,12 @@ namespace AppGroupCar.Entities.Market
         // Navigation
         [ForeignKey(nameof(BookingId))]
         public Booking Booking { get; set; } = null!;
+
+        [ForeignKey(nameof(PickupLocationId))]
+        public Location PickupLocation { get; set; } = null!;
+
+        [ForeignKey(nameof(DropoffLocationId))]
+        public Location DropoffLocation { get; set; } = null!;
     }
 
 }

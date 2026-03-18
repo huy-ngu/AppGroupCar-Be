@@ -16,17 +16,20 @@ namespace AppGroupCar.Services.Market.OfferServices
     {
         private readonly IBaseRepository<Offer> _repo;
         private readonly IBaseRepository<Vehicle> _vehicleRepo;
+        private readonly IBaseRepository<SharedRideOfferDetail> _repoOfferDetail;
         // Chú ý: Đã loại bỏ _driverRepo và _sharedRideRepo vì không cần gọi lắt nhắt nữa
         private readonly IMapper _mapper;
 
         public OfferService(
             IBaseRepository<Offer> repo,
             IBaseRepository<Vehicle> vehicleRepo,
+            IBaseRepository<SharedRideOfferDetail> repoOfferDetail,
             IMapper mapper)
         {
             _repo = repo;
             _vehicleRepo = vehicleRepo;
             _mapper = mapper;
+            _repoOfferDetail = repoOfferDetail;
         }
 
         public async Task<GetOfferDTO> CreateAsync(Guid driverId, CreateOfferRequestDTO request)
@@ -77,9 +80,20 @@ namespace AppGroupCar.Services.Market.OfferServices
         public async Task<IEnumerable<GetOfferDTO>> GetMyOffersAsync(Guid driverId)
         {
             // Truy vấn kết hợp lọc dữ liệu ngay tại DB (tiết kiệm bộ nhớ server)
-            var offers = await GetOfferWithRelationsQuery()
-                                .Where(x => x.DeleteAt == null && x.DriverId == driverId)
-                                .ToListAsync();
+            var offers = await _repo.GetQueryable().Select(o => new GetOfferDTO
+            {
+                Id = o.Id,
+                DriverId = o.DriverId,
+                DriverName = o.Driver.Name,
+                VehicleId = o.VehicleId,
+                VehicleName = o.Vehicle.Brand,
+                ServiceType = o.ServiceType,
+                DepartureTime = o.DepartureTime,
+                BasePrice = o.BasePrice,
+                Status = o.Status,
+                TotalSeats = o.SharedRideDetail.TotalSeats,
+                AvailableSeats = o.SharedRideDetail.AvailableSeats
+            }).ToListAsync();
 
             return _mapper.Map<IEnumerable<GetOfferDTO>>(offers);
         }
@@ -138,6 +152,39 @@ namespace AppGroupCar.Services.Market.OfferServices
                         .Include(o => o.Vehicle)
                         // Giả sử 1 Offer có 1 SharedRideDetail, bạn map khóa ngoại chuẩn trong Entity nhé
                         .Include(o => o.SharedRideDetail);
+        }
+
+        public async Task<GetOfferDTO> CreateWithDetailAsync(Guid driverId, CreateOfferWithDetailRequestDTO request)
+        {
+            var vehicle = await _vehicleRepo.GetByIdAsync(request.VehicleId);
+            if (vehicle == null || vehicle.DriverId != driverId)
+            {
+                throw new AppException(400, "Vehicle không tồn tại hoặc không thuộc về bạn");
+            }
+
+            // Dùng AutoMapper để chuyển Request thành Entity
+            var offer = _mapper.Map<Offer>(request);
+            offer.Id = Guid.NewGuid();
+            offer.DriverId = driverId;
+
+            var newOfferDetail = new SharedRideOfferDetail
+            {
+                Id = offer.Id,
+                AvailableSeats = vehicle.SeatCapacity,
+                TotalSeats = vehicle.SeatCapacity,
+            };
+
+            await _repo.AddAsync(offer);
+            await _repoOfferDetail.AddAsync(newOfferDetail);
+
+            await _repo.SaveChangesAsync();
+
+
+            var offerResponse = _mapper.Map<GetOfferDTO>(offer);
+            offerResponse.TotalSeats = vehicle.SeatCapacity;
+            offerResponse.AvailableSeats = vehicle.SeatCapacity;
+
+            return offerResponse;
         }
     }
 }

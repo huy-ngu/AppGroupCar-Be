@@ -10,6 +10,7 @@ namespace AppGroupCar.Services.Market.OfferServices
     public interface IOfferService
     {
         Task<GetOfferDTO> CreateAsync(Guid driverId, CreateOfferRequestDTO request);
+        Task<GetOfferDTO> CreateWithDetailAsync(Guid driverId, CreateOfferWithDetailRequestDTO request);
         Task<GetOfferDTO> UpdateAsync(Guid driverId, Guid id, UpdateOfferRequestDTO request);
         Task<GetOfferDTO> GetByIdAsync(Guid id);
         Task<IEnumerable<GetOfferDTO>> GetAllAsync();
