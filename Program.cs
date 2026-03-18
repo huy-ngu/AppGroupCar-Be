@@ -1,4 +1,5 @@
 ﻿using AppGroupCar.AutoMapper;
+using AppGroupCar.AutoMapper.Bus;
 using AppGroupCar.Data;
 using AppGroupCar.Entities;
 using AppGroupCar.Entities.Identity;
@@ -14,6 +15,7 @@ using AppGroupCar.Services.Auth.TokenServices;
 using AppGroupCar.Services.Auth.UserServices;
 using AppGroupCar.Services.Market.BookingItemServices;
 using AppGroupCar.Services.Market.BookingServices;
+using AppGroupCar.Services.Bus.CompanyServices;
 using AppGroupCar.Services.Market.MarketDriverServices;
 using AppGroupCar.Services.Market.OfferServices;
 using AppGroupCar.Services.Market.RideRequestServices;
@@ -169,6 +171,7 @@ namespace AppGroupCar
                 builder.Services.AddScoped<IShipmentRequestServices, ShipmentRequestServices>();
                 builder.Services.AddScoped<LocationService>();
                 builder.Services.AddScoped<IPhotoService, PhotoService>();
+                builder.Services.AddScoped<ICompanyService, CompanyService>();
                 builder.Services.AddScoped<IMarketDriverService, MarketDriverService>();
                 builder.Services.AddScoped<IVehicleService, VehicleService>();
                 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -186,6 +189,7 @@ namespace AppGroupCar
                 //Đăng ký AutoMapper
                 builder.Services.AddAutoMapper(cfg => { },
                 typeof(ShipmentRequestMapping).Assembly);
+                builder.Services.AddAutoMapper(cfg => { }, typeof(CompanyMapping).Assembly);
 
                 //Cấu hình Hangfire
                 builder.Services.AddHangfire(config => config
