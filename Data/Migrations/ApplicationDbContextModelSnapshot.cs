@@ -178,6 +178,9 @@ namespace AppGroupCar.Migrations
                     b.Property<DateTime?>("LastUpdateAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("SeatId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("SeatNumber")
                         .HasColumnType("int");
 
@@ -187,6 +190,8 @@ namespace AppGroupCar.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SeatId");
 
                     b.HasIndex("TicketCode")
                         .IsUnique();
@@ -203,6 +208,9 @@ namespace AppGroupCar.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -217,6 +225,8 @@ namespace AppGroupCar.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
 
                     b.ToTable("BusRoutes", (string)null);
                 });
@@ -403,60 +413,6 @@ namespace AppGroupCar.Migrations
                     b.ToTable("Companies", (string)null);
                 });
 
-            modelBuilder.Entity("AppGroupCar.Entities.Bus.CompanyDriver", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CompanyId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DeleteAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("DriverVerificationStatus")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("LastUpdateAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LicenseClass")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("LicenseDocumentUrl")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("LicenseNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("VerifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("VerifiedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CompanyId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("CompanyDrivers", (string)null);
-                });
-
             modelBuilder.Entity("AppGroupCar.Entities.Bus.CompanyUser", b =>
                 {
                     b.Property<Guid>("Id")
@@ -475,13 +431,11 @@ namespace AppGroupCar.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime?>("LastUpdateAt")
+                    b.Property<DateTime>("JoinedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("RoleId")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
@@ -521,6 +475,11 @@ namespace AppGroupCar.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<string>("RegistrationDocumentUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<int>("SeatCapacity")
                         .HasColumnType("int");
 
@@ -529,6 +488,11 @@ namespace AppGroupCar.Migrations
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
+
+                    b.Property<string>("UrlImage")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<int>("VehicleType")
                         .HasColumnType("int");
@@ -540,6 +504,139 @@ namespace AppGroupCar.Migrations
                     b.HasIndex("SeatLayoutId");
 
                     b.ToTable("CompanyVehicles", (string)null);
+                });
+
+            modelBuilder.Entity("AppGroupCar.Entities.Bus.Old_CompanyDriver", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DriverVerificationStatus")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LicenseClass")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("LicenseDocumentUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("LicenseNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("VerifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("VerifiedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Old_CompanyDrivers", (string)null);
+                });
+
+            modelBuilder.Entity("AppGroupCar.Entities.Bus.Seat", b =>
+                {
+                    b.Property<Guid>("SeatId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("LastUpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SeatNumber")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<Guid>("ShowtimeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("SeatId");
+
+                    b.HasIndex("ShowtimeId");
+
+                    b.ToTable("Seats");
+                });
+
+            modelBuilder.Entity("AppGroupCar.Entities.Bus.SeatStatusHistory", b =>
+                {
+                    b.Property<Guid>("HistoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ChangedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ChangedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("NewStatus")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OldStatus")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<Guid>("SeatId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("HistoryId");
+
+                    b.HasIndex("ChangedAt");
+
+                    b.HasIndex("ChangedBy");
+
+                    b.HasIndex("SeatId");
+
+                    b.ToTable("SeatStatusHistories");
                 });
 
             modelBuilder.Entity("AppGroupCar.Entities.Bus.ShowtimeLog", b =>
@@ -1354,7 +1451,26 @@ namespace AppGroupCar.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("AppGroupCar.Entities.Bus.Seat", "Seat")
+                        .WithMany("BookingSeats")
+                        .HasForeignKey("SeatId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Booking");
+
+                    b.Navigation("Seat");
+                });
+
+            modelBuilder.Entity("AppGroupCar.Entities.Bus.BusRoute", b =>
+                {
+                    b.HasOne("AppGroupCar.Entities.Bus.Company", "Company")
+                        .WithMany("BusRoute")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company");
                 });
 
             modelBuilder.Entity("AppGroupCar.Entities.Bus.BusRoutePoint", b =>
@@ -1407,25 +1523,6 @@ namespace AppGroupCar.Migrations
                     b.Navigation("Route");
                 });
 
-            modelBuilder.Entity("AppGroupCar.Entities.Bus.CompanyDriver", b =>
-                {
-                    b.HasOne("AppGroupCar.Entities.Bus.Company", "Company")
-                        .WithMany()
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AppGroupCar.Entities.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Company");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("AppGroupCar.Entities.Bus.CompanyUser", b =>
                 {
                     b.HasOne("AppGroupCar.Entities.Bus.Company", "Company")
@@ -1462,6 +1559,36 @@ namespace AppGroupCar.Migrations
                     b.Navigation("Company");
 
                     b.Navigation("VehicleSeatLayout");
+                });
+
+            modelBuilder.Entity("AppGroupCar.Entities.Bus.Seat", b =>
+                {
+                    b.HasOne("AppGroupCar.Entities.Bus.BusShowtime", "Showtime")
+                        .WithMany("Seats")
+                        .HasForeignKey("ShowtimeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Showtime");
+                });
+
+            modelBuilder.Entity("AppGroupCar.Entities.Bus.SeatStatusHistory", b =>
+                {
+                    b.HasOne("AppGroupCar.Entities.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("ChangedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AppGroupCar.Entities.Bus.Seat", "Seat")
+                        .WithMany("SeatStatusHistories")
+                        .HasForeignKey("SeatId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Seat");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("AppGroupCar.Entities.Bus.ShowtimeLog", b =>
@@ -1763,11 +1890,22 @@ namespace AppGroupCar.Migrations
             modelBuilder.Entity("AppGroupCar.Entities.Bus.BusShowtime", b =>
                 {
                     b.Navigation("Logs");
+
+                    b.Navigation("Seats");
                 });
 
             modelBuilder.Entity("AppGroupCar.Entities.Bus.Company", b =>
                 {
+                    b.Navigation("BusRoute");
+
                     b.Navigation("CompanyUsers");
+                });
+
+            modelBuilder.Entity("AppGroupCar.Entities.Bus.Seat", b =>
+                {
+                    b.Navigation("BookingSeats");
+
+                    b.Navigation("SeatStatusHistories");
                 });
 
             modelBuilder.Entity("AppGroupCar.Entities.Location", b =>

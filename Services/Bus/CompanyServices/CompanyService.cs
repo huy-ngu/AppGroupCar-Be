@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using AppGroupCar.Entities.Identity;
 using CloudinaryDotNet.Actions;
 using AppGroupCar.Data;
+using AppGroupCar.DTO.Filters.Bus;
 
 namespace AppGroupCar.Services.Bus.CompanyServices
 {
@@ -48,29 +49,37 @@ namespace AppGroupCar.Services.Bus.CompanyServices
             return _mapper.Map<CompanyDetailResponseDto>(company);
         }
 
-        public async Task<PagedResult<CompanyResponseDto>> GetCompaniesAsync(
-            int pageNumber,
-            int pageSize,
-            string? keyword)
+        public async Task<PagedResult<CompanyResponseDto>> FilterAsync(CompanyParameters param)
         {
-            var result = await _companyRepository.FindAndFilter(
+            var data = await _companyRepository.FindAndFilter(
                 predicate: c =>
-                    c.DeleteAt == null &&
-                    (string.IsNullOrEmpty(keyword) ||
-                     c.CompanyName.Contains(keyword) ||
-                     c.CompanyCode.Contains(keyword)),
-                orderBy: q => q.OrderByDescending(x => x.CreatedAt),
-                pageNumber: pageNumber,
-                pageSize: pageSize
+                    // Lọc theo CompanyName
+                    (string.IsNullOrEmpty(param.CompanyName)
+                        || c.CompanyName.Contains(param.CompanyName)) &&
+
+                    // Lọc theo Email
+                    (string.IsNullOrEmpty(param.Email)
+                        || c.Email.Contains(param.Email)) &&
+
+                    // Chỉ lấy Company chưa bị xóa
+                    c.DeleteAt == null,
+
+                orderBy: q => q.OrderByDescending(c => c.CompanyName),
+
+                pageNumber: param.PageNumber,
+                pageSize: param.PageSize
             );
 
-            return new PagedResult<CompanyResponseDto>
+            // Mapping sang DTO
+            var result = new PagedResult<CompanyResponseDto>
             {
-                Items = _mapper.Map<IEnumerable<CompanyResponseDto>>(result.Items),
-                TotalCount = result.TotalCount,
-                PageNumber = result.PageNumber,
-                PageSize = result.PageSize
+                Items = _mapper.Map<IEnumerable<CompanyResponseDto>>(data.Items),
+                TotalCount = data.TotalCount,
+                PageNumber = data.PageNumber,
+                PageSize = data.PageSize
             };
+
+            return result;
         }
 
         public async Task<CompanyResponseDto> CreateCompanyAsync(CreateCompanyRequestDto dto)
@@ -181,19 +190,34 @@ namespace AppGroupCar.Services.Bus.CompanyServices
         }
 
         public async Task<PagedResult<CompanyResponseDto>> GetPendingCompaniesAsync(
-    int pageNumber,
-    int pageSize)
+    CompanyParameters param)
         {
             var result = await _companyRepository.FindAndFilter(
-                predicate: c => c.DeleteAt == null && c.Status == 0,
-                orderBy: q => q.OrderByDescending(x => x.CreatedAt),
-                pageNumber: pageNumber,
-                pageSize: pageSize
+                predicate: c =>
+                    c.DeleteAt == null &&
+                    c.Status == CompanyStatus.Pending,
+
+                orderBy: q => q
+                    .OrderByDescending(x => x.CreatedAt),
+
+                pageNumber: param.PageNumber,
+                pageSize: param.PageSize
             );
+
+            var items = result.Items.Select(c => new CompanyResponseDto
+            {
+                Id = c.Id,
+                CompanyName = c.CompanyName,
+                Email = c.Email,
+                Phone = c.Phone,
+                LogoUrl = c.LogoUrl,
+                Status = c.Status,
+                CreatedAt = c.CreatedAt
+            });
 
             return new PagedResult<CompanyResponseDto>
             {
-                Items = _mapper.Map<IEnumerable<CompanyResponseDto>>(result.Items),
+                Items = items,
                 TotalCount = result.TotalCount,
                 PageNumber = result.PageNumber,
                 PageSize = result.PageSize

@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using AppGroupCar.Entities.Base;
+using AppGroupCar.Entities.Market;
 
 namespace AppGroupCar.Entities.Bus
 {
@@ -41,6 +42,9 @@ namespace AppGroupCar.Entities.Bus
         [Required]
         public Guid CreatedBy { get; set; }
 
+        //[ForeignKey(nameof(Id))]
+        //public Driver Driver { get; set; } = null;
+
         // Navigation
         [ForeignKey(nameof(CompanyId))]
         public Company Company { get; set; } = null!;
@@ -52,6 +56,8 @@ namespace AppGroupCar.Entities.Bus
         public BusRoute Route { get; set; } = null!;
 
         public ICollection<ShowtimeLog> Logs { get; set; } = new List<ShowtimeLog>();
+
+        public virtual ICollection<Seat> Seats { get; set; } = new List<Seat>();
     }
 
     public enum BusShowtimeStatus

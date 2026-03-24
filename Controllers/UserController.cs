@@ -57,6 +57,14 @@ namespace AppGroupCar.Controllers
             return Ok(new ApiResponse<object> { Data = null, Message = "User deleted" });
         }
 
+        [HttpPost("{id}/restore")]
+        [Authorize(Roles = "Admin,User")]
+        public async Task<IActionResult> Restore(string id)
+        {
+            await _userService.RestoreAsync(id);
+            return Ok(new ApiResponse<object> { Data = null, Message = "User restored" });
+        }
+
         [HttpPost("{id}/change-password")]
         [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> ChangePassword(string id, [FromBody] ChangePasswordDTO dto)

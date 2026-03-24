@@ -71,6 +71,8 @@ namespace AppGroupCar.Entities.Bus
 
         // Navigation
         public ICollection<CompanyUser> CompanyUsers { get; set; } = new List<CompanyUser>();
+
+        public ICollection<BusRoute> BusRoute { get; set; } = new List<BusRoute>();
     }
 
     
