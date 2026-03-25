@@ -13,6 +13,8 @@ using AppGroupCar.Entities.Identity;
 using CloudinaryDotNet.Actions;
 using AppGroupCar.Data;
 using AppGroupCar.DTO.Filters.Bus;
+using AppGroupCar.Services.Bus.UserCompanyServices;
+using AppGroupCar.DTO.RequestDTO.Bus.UCRequest;
 
 namespace AppGroupCar.Services.Bus.CompanyServices
 {
@@ -23,19 +25,24 @@ namespace AppGroupCar.Services.Bus.CompanyServices
         private readonly IPhotoService _photoService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<ApplicationRole> _roleManager;
+        private readonly IUCService _ucService;
         protected readonly ApplicationDbContext _context;
 
         public CompanyService(
             IBaseRepository<Company> companyRepository,
             IMapper mapper,
             IPhotoService photoService,
-            UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager, ApplicationDbContext context)
+            UserManager<ApplicationUser> userManager,
+            RoleManager<ApplicationRole> roleManager,
+            IUCService ucService,
+            ApplicationDbContext context)
         {
             _companyRepository = companyRepository;
             _mapper = mapper;
             _photoService = photoService;
             _userManager = userManager;
             _roleManager = roleManager;
+            _ucService = ucService;
             _context = context;
         }
 
@@ -184,13 +191,14 @@ namespace AppGroupCar.Services.Bus.CompanyServices
             if (company == null)
                 throw new AppException(404, "Company not found");
 
-            _companyRepository.Delete(company);
+            company.DeleteAt = DateTime.UtcNow;
+            _companyRepository.Update(company);
 
             await _companyRepository.SaveChangesAsync();
         }
 
         public async Task<PagedResult<CompanyResponseDto>> GetPendingCompaniesAsync(
-    CompanyParameters param)
+            CompanyParameters param)
         {
             var result = await _companyRepository.FindAndFilter(
                 predicate: c =>
@@ -231,10 +239,15 @@ namespace AppGroupCar.Services.Bus.CompanyServices
             if (company == null)
                 throw new AppException(404, "Company not found");
 
-            if (company.Status != CompanyStatus.Pending)
+            if (company.Status != CompanyStatus.Pending
+                && company.Status != CompanyStatus.Suspended
+                && company.Status != CompanyStatus.Approved)
                 throw new AppException(400, "Company already processed");
 
-            if (dto.Status != CompanyStatus.Approved && dto.Status != CompanyStatus.Rejected && dto.Status != CompanyStatus.Suspended)
+            if (dto.Status != CompanyStatus.Approved
+                && dto.Status != CompanyStatus.Rejected
+                && dto.Status != CompanyStatus.Suspended
+                && dto.Status != CompanyStatus.Pending)
                 throw new AppException(400, "Invalid status");
 
             company.Status = dto.Status;
@@ -242,7 +255,7 @@ namespace AppGroupCar.Services.Bus.CompanyServices
             if (!string.IsNullOrEmpty(dto.Description))
                 company.Description = dto.Description;
 
-            company.ApprovedAt = DateTime.UtcNow;
+            company.ApprovedAt = dto.Status == CompanyStatus.Pending ? null : DateTime.UtcNow;
 
             // xử lý user theo status
             if (dto.Status == CompanyStatus.Approved) // Approved
@@ -256,10 +269,6 @@ namespace AppGroupCar.Services.Bus.CompanyServices
                     {
                         user.DeleteAt = null;
                         await _userManager.UpdateAsync(user);
-                    }
-                    else
-                    {
-                        throw new AppException(400, "Email already exists");
                     }
                 }
                 else
@@ -288,7 +297,15 @@ namespace AppGroupCar.Services.Bus.CompanyServices
                         throw new AppException(404, $"Role not found: {roleName}");
 
                     await _userManager.AddToRoleAsync(newUser, roleName);
+
+                    user = newUser;
                 }
+
+                await _ucService.CreateAsync(new CreateCURequestDto
+                {
+                    CompanyId = company.Id,
+                    UserId = user.Id
+                });
             }
             else if (dto.Status == CompanyStatus.Suspended) // Suspended
             {
@@ -296,7 +313,30 @@ namespace AppGroupCar.Services.Bus.CompanyServices
 
                 if (user != null && user.DeleteAt == null)
                 {
-                    await _userManager.DeleteAsync(user); // soft delete
+                    var companyUser = await _context.CompanyUsers
+                        .FirstOrDefaultAsync(cu => cu.CompanyId == company.Id && cu.UserId == user.Id);
+
+                    if (companyUser != null)
+                        await _ucService.GetActiveCompanyByUserAsync(
+                            user.Id,
+                            company.Id,
+                            new UpdateCUStatusRequestDto { IsActive = false });
+                }
+            }
+            else if (dto.Status == CompanyStatus.Pending || dto.Status == CompanyStatus.Rejected)
+            {
+                var user = await _userManager.FindByEmailAsync(company.Email);
+
+                if (user != null)
+                {
+                    var companyUser = await _context.CompanyUsers
+                        .FirstOrDefaultAsync(cu => cu.CompanyId == company.Id && cu.UserId == user.Id);
+
+                    if (companyUser != null)
+                        await _ucService.GetActiveCompanyByUserAsync(
+                            user.Id,
+                            company.Id,
+                            new UpdateCUStatusRequestDto { IsActive = false });
                 }
             }
 

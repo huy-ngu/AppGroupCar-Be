@@ -63,7 +63,7 @@ namespace AppGroupCar.Services.Auth.UserServices
             return userResponse;
         }
 
-        public async Task CreateAsync(CreateUserDTO dto)
+        public async Task<UserDto> CreateAsync(CreateUserDTO dto)
         {
             //var existing = await _userManager.FindByEmailAsync(dto.Email);
             //if (existing != null) throw new AppException(400, "Email already exists");
@@ -102,6 +102,12 @@ namespace AppGroupCar.Services.Auth.UserServices
 
                 await _userManager.AddToRolesAsync(user, dto.Roles);
             }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var userResponse = _mapper.Map<UserDto>(user);
+            userResponse.Roles = roles;
+
+            return userResponse;
         }
 
         public async Task UpdateAsync(string id, UpdateUserDTO dto)

@@ -3,7 +3,6 @@ using AppGroupCar.DTO.Filters.Bus;
 using AppGroupCar.DTO.RequestDTO.Bus.CompanyRequest;
 using AppGroupCar.DTO.ResponseDTO;
 using AppGroupCar.DTO.ResponseDTO.Bus.CompanyResponse;
-using AppGroupCar.Entities.Market;
 using AppGroupCar.Services.Bus.CompanyServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +11,7 @@ namespace AppGroupCar.Controllers.Bus
 {
     [ApiController]
     [Route("companies")]
+    [Authorize(Roles = "Admin")]
     public class CompanyController : ControllerBase
     {
         private readonly ICompanyService _companyService;
@@ -72,7 +72,7 @@ namespace AppGroupCar.Controllers.Bus
         //api lấy danh sách công ty đang ở trạng thái pending
         [HttpGet("pending")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetPendingCompanies(CompanyParameters param)
+        public async Task<IActionResult> GetPendingCompanies([FromQuery] CompanyParameters param)
         {
             var data = await _companyService.GetPendingCompaniesAsync(param);
             return Ok(new ApiResponse<PagedResult<CompanyResponseDto>> { Data = data });

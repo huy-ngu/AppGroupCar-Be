@@ -21,5 +21,6 @@ namespace AppGroupCar.DTO.RequestDTO.Bus.CompanyRequest
         public string? ProvinceCode { get; set; } = null!;
 
         public string? DistrictCode { get; set; }
+        public string? BusinessLicenseNo { get; set; }
     }
 }

@@ -14,6 +14,7 @@ using AppGroupCar.Services.Auth.RoleServices;
 using AppGroupCar.Services.Auth.TokenServices;
 using AppGroupCar.Services.Auth.UserServices;
 using AppGroupCar.Services.Bus.CompanyServices;
+using AppGroupCar.Services.Bus.UserCompanyServices;
 using AppGroupCar.Services.Market.MarketDriverServices;
 using AppGroupCar.Services.Market.OfferServices;
 using AppGroupCar.Services.Market.RideRequestServices;
@@ -170,6 +171,7 @@ namespace AppGroupCar
                 builder.Services.AddScoped<LocationService>();
                 builder.Services.AddScoped<IPhotoService, PhotoService>();
                 builder.Services.AddScoped<ICompanyService, CompanyService>();
+                builder.Services.AddScoped<IUCService, UCService>();
                 builder.Services.AddScoped<IMarketDriverService, MarketDriverService>();
                 builder.Services.AddScoped<IVehicleService, VehicleService>();
                 builder.Services.AddScoped<IEmailService, EmailService>();
