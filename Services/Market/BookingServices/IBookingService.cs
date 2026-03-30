@@ -10,8 +10,8 @@ namespace AppGroupCar.Services.Market.BookingServices
     {
         Task<IEnumerable<BookingResponseDTO>> GetAllAsync();
         Task<BookingResponseDTO> GetByIdAsync(Guid bookingId);
-        Task<BookingResponseDTO> CreateAsync(CreateBookingRequestDTO request);
-        Task CreateWithBookingIteamsAsync(CreateWithBookingIteamsRequestDTO request);
+        //Task<BookingResponseDTO> CreateAsync(CreateBookingRequestDTO request);
+        Task<BookingResponseDTO> CreateWithBookingIteamsAsync(CreateWithBookingIteamsRequestDTO request);
         Task<IEnumerable<BookingResponseDTO>> BookingParameters();
         Task UpdateAsync(UpdateBookingRequestDTO request);
     }

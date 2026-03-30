@@ -150,7 +150,6 @@ namespace AppGroupCar.Services.Market.OfferServices
             return _repo.GetQueryable()
                         .Include(o => o.Driver)
                         .Include(o => o.Vehicle)
-                        // Giả sử 1 Offer có 1 SharedRideDetail, bạn map khóa ngoại chuẩn trong Entity nhé
                         .Include(o => o.SharedRideDetail);
         }
 
@@ -162,7 +161,6 @@ namespace AppGroupCar.Services.Market.OfferServices
                 throw new AppException(400, "Vehicle không tồn tại hoặc không thuộc về bạn");
             }
 
-            // Dùng AutoMapper để chuyển Request thành Entity
             var offer = _mapper.Map<Offer>(request);
             offer.Id = Guid.NewGuid();
             offer.DriverId = driverId;

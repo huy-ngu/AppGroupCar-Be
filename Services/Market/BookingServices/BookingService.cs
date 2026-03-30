@@ -14,32 +14,12 @@ namespace AppGroupCar.Services.Market.BookingServices
     {
         private readonly IBaseRepository<Booking> _bookingRepository;
         private readonly IBaseRepository<BookingItem> _bookingItemRepository;
-
-        public BookingService(IBaseRepository<Booking> bookingRepository, IBaseRepository<BookingItem> bookingItemRepository)
+        private readonly IBaseRepository<Offer> _offerRepository;
+        public BookingService(IBaseRepository<Booking> bookingRepository, IBaseRepository<BookingItem> bookingItemRepository, IBaseRepository<Offer> offerRepository)
         {
             _bookingRepository = bookingRepository;
             _bookingItemRepository = bookingItemRepository;
-        }
-
-        public async Task<BookingResponseDTO> CreateAsync(CreateBookingRequestDTO request)
-        {
-            var newBooking = new Booking
-            {
-                Id = Guid.NewGuid(),
-                CustomerId = request.CustomerId,
-                OfferId = request.OfferId,
-                Status = BookingStatus.Pending,
-                PaymentStatus = PaymentStatus.Unpaid,
-                CreatedAt = DateTime.UtcNow,
-            };
-            await _bookingRepository.AddAsync(newBooking);
-            await _bookingRepository.SaveChangesAsync();
-            return new BookingResponseDTO
-            {
-                BookingId = newBooking.Id,
-                CustomerId = request.CustomerId,
-                OfferId = request.OfferId,
-            };
+            _offerRepository = offerRepository;
         }
 
         public async Task<IEnumerable<BookingResponseDTO>> GetAllAsync()
@@ -50,6 +30,7 @@ namespace AppGroupCar.Services.Market.BookingServices
                     BookingId = b.Id,
                     OfferId = b.OfferId,
                     CustomerId = b.CustomerId,
+                    Quantity = b.Quantity,
                     Status = b.Status,
                     TotalPrice = b.TotalPrice,
                     PaymentStatus = b.PaymentStatus,
@@ -87,6 +68,7 @@ namespace AppGroupCar.Services.Market.BookingServices
                     BookingId = b.Id,
                     OfferId = b.OfferId,
                     CustomerId = b.CustomerId,
+                    Quantity = b.Quantity,
                     Status = b.Status,
                     TotalPrice = b.TotalPrice,
                     PaymentStatus = b.PaymentStatus,
@@ -116,7 +98,7 @@ namespace AppGroupCar.Services.Market.BookingServices
 
                     }).ToList()
                 })
-                .FirstOrDefaultAsync(); // <--- TRUY VẤN XUỐNG DB CHẠY Ở ĐÂY!
+                .FirstOrDefaultAsync();
 
             if (response == null) throw new AppException(404, "Không tìm thấy booking");
 
@@ -128,9 +110,44 @@ namespace AppGroupCar.Services.Market.BookingServices
             throw new NotImplementedException();
         }
 
-        public async Task CreateWithBookingIteamsAsync(CreateWithBookingIteamsRequestDTO request)
+        public async Task<BookingResponseDTO> CreateWithBookingIteamsAsync(CreateWithBookingIteamsRequestDTO request)
         {
-            // 1. Khởi tạo Entity Cha và gán luôn danh sách Con vào nó
+            if (request.ItemRequestDTOs == null)
+            {
+                throw new AppException(400, "Phải có bookingItems");
+            }
+
+            var offer = await _offerRepository.GetQueryable()
+                        .Where(o => o.Id == request.OfferId)
+                        .Where(o => o.DeleteAt == null)
+                        .Include(o => o.SharedRideDetail)
+                        .FirstOrDefaultAsync();
+
+            if (offer == null)
+            {
+                throw new AppException(400, "Không tìm thấy offer");
+            }
+
+            int availableSeats = offer.SharedRideDetail.AvailableSeats;
+
+            if (request.ItemRequestDTOs.Count() > availableSeats)
+            {
+                throw new AppException(400, "Không đủ ghế");
+            }
+
+            if (offer.DepartureTime < DateTime.UtcNow)
+            {
+                throw new AppException(400, "Chuyến xe đã xuất phát");
+            }
+
+
+            decimal totalprice = 0;
+
+            foreach (var item in request.ItemRequestDTOs)
+            {
+                totalprice += item.Price;
+            }
+
             var newBooking = new Booking
             {
                 Id = Guid.NewGuid(),
@@ -139,24 +156,31 @@ namespace AppGroupCar.Services.Market.BookingServices
                 Status = BookingStatus.Pending,
                 PaymentStatus = PaymentStatus.Unpaid,
                 CreatedAt = DateTime.UtcNow,
-
+                Quantity = request.ItemRequestDTOs.Count(),
+                TotalPrice = totalprice,
                 // Sử dụng Navigation Property thay vì dùng Repository con!
                 Items = request.ItemRequestDTOs.Select(item => new BookingItem
                 {
                     Id = Guid.NewGuid(),
-                    // KHÔNG CẦN GÁN BookingId NỮA! EF Core sẽ tự động móc nối ID của Cha vào đây.
                     Price = item.Price,
                     DropoffLocationId = item.DropoffLocationId,
-                    PickupLocationId = item.PickupLocationId
+                    PickupLocationId = item.PickupLocationId,
+
                 }).ToList()
             };
+            offer.SharedRideDetail.AvailableSeats = availableSeats - request.ItemRequestDTOs.Count();
 
-            // 2. Thêm Cha vào DB (EF Core sẽ tự động theo dõi luôn cả đám Con bên trong)
             await _bookingRepository.AddAsync(newBooking);
 
-            // 3. Gọi SaveChanges 1 lần duy nhất. EF Core tự động tạo Transaction, 
-            // lưu Booking trước, lấy ID, nhét vào BookingItems rồi lưu tiếp BookingItems.
             await _bookingRepository.SaveChangesAsync();
+            return new BookingResponseDTO
+            {
+                BookingId = newBooking.Id,
+                CustomerId = request.CustomerId,
+                OfferId = request.OfferId,
+                Quantity = request.ItemRequestDTOs.Count(),
+                TotalPrice = totalprice
+            };
         }
 
         public async Task UpdateAsync(UpdateBookingRequestDTO request)
