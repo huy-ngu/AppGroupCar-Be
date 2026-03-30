@@ -17,42 +17,21 @@ namespace AppGroupCar.Services.Market.OfferServices
         private readonly IBaseRepository<Offer> _repo;
         private readonly IBaseRepository<Vehicle> _vehicleRepo;
         private readonly IBaseRepository<SharedRideOfferDetail> _repoOfferDetail;
-        // Chú ý: Đã loại bỏ _driverRepo và _sharedRideRepo vì không cần gọi lắt nhắt nữa
+        private readonly IBaseRepository<OfferRoutePoint> _repoOfferRoutePoint;
         private readonly IMapper _mapper;
 
         public OfferService(
             IBaseRepository<Offer> repo,
             IBaseRepository<Vehicle> vehicleRepo,
             IBaseRepository<SharedRideOfferDetail> repoOfferDetail,
+            IBaseRepository<OfferRoutePoint> repoOfferRoutePoint,
             IMapper mapper)
         {
             _repo = repo;
             _vehicleRepo = vehicleRepo;
             _mapper = mapper;
             _repoOfferDetail = repoOfferDetail;
-        }
-
-        public async Task<GetOfferDTO> CreateAsync(Guid driverId, CreateOfferRequestDTO request)
-        {
-            var vehicle = await _vehicleRepo.GetByIdAsync(request.VehicleId);
-            if (vehicle == null || vehicle.DriverId != driverId || vehicle.DeleteAt != null)
-            {
-                throw new AppException(400, "Vehicle không tồn tại hoặc không thuộc về bạn");
-            }
-
-            // Dùng AutoMapper để chuyển Request thành Entity
-            var offer = _mapper.Map<Offer>(request);
-            offer.DriverId = driverId;
-
-            await _repo.AddAsync(offer);
-            await _repo.SaveChangesAsync();
-
-            // Lấy lại dữ liệu vừa tạo kèm theo các bảng liên quan (Eager Loading)
-            var createdOffer = await GetOfferWithRelationsQuery()
-                                .FirstOrDefaultAsync(x => x.Id == offer.Id);
-
-            // Tự động map sang DTO
-            return _mapper.Map<GetOfferDTO>(createdOffer);
+            _repoOfferRoutePoint = repoOfferRoutePoint;
         }
 
         public async Task DeleteAsync(Guid driverId, Guid id)
@@ -150,7 +129,6 @@ namespace AppGroupCar.Services.Market.OfferServices
             return _repo.GetQueryable()
                         .Include(o => o.Driver)
                         .Include(o => o.Vehicle)
-                        // Giả sử 1 Offer có 1 SharedRideDetail, bạn map khóa ngoại chuẩn trong Entity nhé
                         .Include(o => o.SharedRideDetail);
         }
 
@@ -161,8 +139,24 @@ namespace AppGroupCar.Services.Market.OfferServices
             {
                 throw new AppException(400, "Vehicle không tồn tại hoặc không thuộc về bạn");
             }
+            if (request.DepartureTime < DateTime.Now)
+            {
+                throw new AppException(400, "Thời gian không hợp lệ");
+            }
+            if (request.OfferRoutePoints.Count() < 2)
+            {
+                throw new AppException(400, "Offer phải có ít nhất 2 Route Point");
+            }
 
-            // Dùng AutoMapper để chuyển Request thành Entity
+            var recentOffer = await _repo.GetQueryable()
+                                            .Where(o => o.DriverId == driverId && o.DepartureTime <= DateTimeOffset.UtcNow && o.Status == OfferStatus.Active)
+                                            .OrderByDescending(o => o.DepartureTime)
+                                            .FirstOrDefaultAsync();
+            if (recentOffer != null)
+            {
+                throw new AppException(400, "Bạn đang có Offer hoạt động. Vui lòng hoàn thành Offer cũ để có thể tạo mới");
+            }
+
             var offer = _mapper.Map<Offer>(request);
             offer.Id = Guid.NewGuid();
             offer.DriverId = driverId;
@@ -174,7 +168,20 @@ namespace AppGroupCar.Services.Market.OfferServices
                 TotalSeats = vehicle.SeatCapacity,
             };
 
+            foreach (var item in request.OfferRoutePoints)
+            {
+                var newOfferRoutePoint = new OfferRoutePoint
+                {
+                    Id = Guid.NewGuid(),
+                    OfferId = offer.Id,
+                    Sequence = item.Sequence,
+                    LocationId = item.LocationId
+                };
+                await _repoOfferRoutePoint.AddAsync(newOfferRoutePoint);
+            }
+
             await _repo.AddAsync(offer);
+
             await _repoOfferDetail.AddAsync(newOfferDetail);
 
             await _repo.SaveChangesAsync();

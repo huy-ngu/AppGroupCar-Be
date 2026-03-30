@@ -5,7 +5,7 @@ using AppGroupCar.Entities.Market;
 using AppGroupCar.Services.Market.BookingItemServices;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AppGroupCar.Controllers
+namespace AppGroupCar.Controllers.Market
 {
     [ApiController]
     [Route("api/[controller]")]

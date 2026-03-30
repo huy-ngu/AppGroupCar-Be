@@ -9,6 +9,7 @@ namespace AppGroupCar.DTO.ResponseDTO.Market
         public Guid BookingId { get; set; }
         public Guid OfferId { get; set; }
         public Guid CustomerId { get; set; }
+        public int Quantity { get; set; }
         public decimal TotalPrice { get; set; } = 0;
         public BookingStatus Status { get; set; } = BookingStatus.Pending;
         public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Unpaid;

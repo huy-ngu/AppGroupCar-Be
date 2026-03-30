@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Security.Claims;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace AppGroupCar.Controllers
+namespace AppGroupCar.Controllers.Market
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -46,7 +46,7 @@ namespace AppGroupCar.Controllers
             return Ok(new ApiResponse<ShipmentRequest> { Data = data });
         }
         [HttpPatch("update")]
-        public async Task<IActionResult> Update([FromBody]UpdateShipmentRequestDTO request)
+        public async Task<IActionResult> Update([FromBody] UpdateShipmentRequestDTO request)
         {
             await _shipmentRequestServices.UpdateAsync(request);
             return Ok(new ApiResponse<ShipmentRequest> { });

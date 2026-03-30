@@ -32,6 +32,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using System.Text;
+using AppGroupCar.Services.Market.OfferRoutePointServices;
 
 namespace AppGroupCar
 {
@@ -179,6 +180,8 @@ namespace AppGroupCar
                 builder.Services.AddScoped<ISharedRideOfferDetailService, SharedRideOfferDetailService>();
                 builder.Services.AddScoped<IBookingService, BookingService>();
                 builder.Services.AddScoped<IBookingItemService, BookingItemService>();
+                builder.Services.AddScoped<IOfferRoutePointService, OfferRoutePointService>();
+
 
                 // Map section trong appsettings vào class CloudinarySettings
                 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));

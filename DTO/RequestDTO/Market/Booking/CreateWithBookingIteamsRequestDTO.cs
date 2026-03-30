@@ -1,5 +1,6 @@
 ﻿using AppGroupCar.DTO.RequestDTO.Market.BookingItem;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace AppGroupCar.DTO.RequestDTO.Market.Booking
 {
@@ -10,6 +11,20 @@ namespace AppGroupCar.DTO.RequestDTO.Market.Booking
         [DefaultValue("189fce95-911d-4a59-3705-08de76e0be83")]
         public Guid CustomerId { get; set; }
         //public IEnumerable<CreateBookingItemRequestDTO> ItemRequestDTOs { get; set; }
-        public IEnumerable<CreateBookingItemRequestDTO> ItemRequestDTOs { get; set; }
+        public IEnumerable<BookingItemRequestDTO> ItemRequestDTOs { get; set; }
+    }
+    public class BookingItemRequestDTO
+    {
+        [Required]
+        [DefaultValue("a63177d3-2c21-48c8-bc9b-08de832bc18c")]
+        public Guid PickupLocationId { get; set; }
+
+        [Required]
+        [DefaultValue("89c8eb10-273a-4987-bc9c-08de832bc18c")]
+        public Guid DropoffLocationId { get; set; }
+
+        [Required]
+        [DefaultValue(100000)]
+        public decimal Price { get; set; }
     }
 }

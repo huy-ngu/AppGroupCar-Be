@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace AppGroupCar.Controllers
+namespace AppGroupCar.Controllers.Market
 {
     [ApiController]
     [Route("api/[controller]")]

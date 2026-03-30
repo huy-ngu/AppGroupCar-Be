@@ -4,7 +4,7 @@ using AppGroupCar.DTO.ResponseDTO.Market;
 using AppGroupCar.Services.Market.SharedRideOfferDetailServices;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AppGroupCar.Controllers
+namespace AppGroupCar.Controllers.Market
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -28,15 +28,15 @@ namespace AppGroupCar.Controllers
             {
                 Data = new
                 {
-                    Items = details.Items,
+                    details.Items,
                     Pagination = new
                     {
-                        TotalCount = details.TotalCount,
-                        PageNumber = details.PageNumber,
-                        PageSize = details.PageSize,
-                        TotalPages = details.TotalPages,
-                        HasPreviousPage = details.HasPreviousPage,
-                        HasNextPage = details.HasNextPage
+                        details.TotalCount,
+                        details.PageNumber,
+                        details.PageSize,
+                        details.TotalPages,
+                        details.HasPreviousPage,
+                        details.HasNextPage
                     }
                 }
             });

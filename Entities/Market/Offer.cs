@@ -39,10 +39,10 @@ namespace AppGroupCar.Entities.Market
 
     public enum OfferStatus
     {
-        Draft = 1,
-        Active = 2,
-        Paused = 3,
-        Closed = 4
+        Active = 1,
+        Paused = 2,
+        Closed = 3,
+        Complete = 4
     }
 
     public enum ServiceType
