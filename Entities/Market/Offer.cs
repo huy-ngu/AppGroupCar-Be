@@ -41,7 +41,8 @@ namespace AppGroupCar.Entities.Market
     {
         Active = 1,
         Paused = 2,
-        Closed = 3
+        Closed = 3,
+        Complete = 4
     }
 
     public enum ServiceType

@@ -5,7 +5,7 @@ using AppGroupCar.DTO.ResponseDTO.Market;
 using AppGroupCar.Services.Market.BookingServices;
 using Azure;
 using Microsoft.AspNetCore.Mvc;
-namespace AppGroupCar.Controllers
+namespace AppGroupCar.Controllers.Market
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -30,7 +30,7 @@ namespace AppGroupCar.Controllers
             return Ok(new ApiResponse<object> { Data = response });
         }
 
-        [HttpPost("create_with_items")]
+        [HttpPost]
         public async Task<IActionResult> CreateWithItems(CreateWithBookingIteamsRequestDTO request)
         {
             var data = await _bookingService.CreateWithBookingIteamsAsync(request);
