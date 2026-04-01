@@ -17,7 +17,6 @@ using AppGroupCar.Services.Market.BookingItemServices;
 using AppGroupCar.Services.Market.BookingServices;
 using AppGroupCar.Services.Bus.CompanyServices;
 using AppGroupCar.Services.Market.MarketDriverServices;
-using AppGroupCar.Services.Market.OfferServices;
 using AppGroupCar.Services.Market.RideRequestServices;
 using AppGroupCar.Services.Market.SharedRideOfferDetailServices;
 using AppGroupCar.Services.Market.ShipmentRequestServices;
@@ -33,6 +32,8 @@ using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using System.Text;
 using AppGroupCar.Services.Market.OfferRoutePointServices;
+using AppGroupCar.Services.Market.OfferServices;
+using AppGroupCar.Services.Market.OfferServices.OfferShipmentServices;
 
 namespace AppGroupCar
 {
@@ -181,6 +182,7 @@ namespace AppGroupCar
                 builder.Services.AddScoped<IBookingService, BookingService>();
                 builder.Services.AddScoped<IBookingItemService, BookingItemService>();
                 builder.Services.AddScoped<IOfferRoutePointService, OfferRoutePointService>();
+                builder.Services.AddScoped<IOfferShipmentSerivce, OfferShipmentService>();
 
 
                 // Map section trong appsettings vào class CloudinarySettings

@@ -7,7 +7,6 @@ namespace AppGroupCar.Entities.Market
     [Table("Shipments")]
     public class Shipment : BaseEntity
     {
-
         [Required]
         public Guid ShipmentOfferId { get; set; }
 
@@ -21,7 +20,6 @@ namespace AppGroupCar.Entities.Market
         [ForeignKey(nameof(ShipmentOfferId))]
         public ShipmentOffer ShipmentOffer { get; set; } = null!;
     }
-
     public enum ShipmentStatus
     {
         Created = 1,

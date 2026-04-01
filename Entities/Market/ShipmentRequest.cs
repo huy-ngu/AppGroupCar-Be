@@ -27,18 +27,8 @@ namespace AppGroupCar.Entities.Market
         [MaxLength(500)]
         public string? Description { get; set; }
 
-        // Flags
         [Required]
-        public bool IsFragile { get; set; } = false; //hàng dễ vỡ
-
-        [Required]
-        public bool IsPerishable { get; set; } = false; //hàng dễ hỏng (thực phẩm, hoa quả...)
-
-        [Required]
-        public bool RequiresCooler { get; set; } = false; //cần thùng lạnh (thực phẩm đông lạnh, dược phẩm...)
-
-        [Required]
-        public bool AvoidSunLight { get; set; } = false; // tránh ánh nắng (hàng dễ hỏng, hóa chất...)
+        public bool IsFragile { get; set; } = false;
 
         [MaxLength(500)]
         public string? HandlingNote { get; set; }

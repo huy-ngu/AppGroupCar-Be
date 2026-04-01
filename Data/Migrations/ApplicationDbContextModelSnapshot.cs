@@ -1180,9 +1180,6 @@ namespace AppGroupCar.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<bool>("AvoidSunLight")
-                        .HasColumnType("bit");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -1209,17 +1206,11 @@ namespace AppGroupCar.Migrations
                     b.Property<bool>("IsFragile")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsPerishable")
-                        .HasColumnType("bit");
-
                     b.Property<DateTime?>("LastUpdateAt")
                         .HasColumnType("datetime2");
 
                     b.Property<Guid>("PickupLocationId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("RequiresCooler")
-                        .HasColumnType("bit");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
