@@ -3,6 +3,8 @@ using AppGroupCar.DTO.ResponseDTO;
 using AppGroupCar.Entities.Market;
 using AppGroupCar.Helpers;
 using AppGroupCar.Services.Market.MarketDriverServices;
+using CloudinaryDotNet.Actions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.SqlServer.Query.Internal;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -24,7 +26,7 @@ namespace AppGroupCar.Controllers.Market
             var data = await _marketDriverService.GetByIdAsync(id);
             return Ok(new ApiResponse<Driver> { Data = data });
         }
-        [HttpPost("create")]
+        [HttpPost]
         public async Task<IActionResult> Create([FromForm] CreateDriverRequestDTO request)
         {
             var userIdNullable = User.GetUserId();
@@ -47,6 +49,14 @@ namespace AppGroupCar.Controllers.Market
             var driver = await _marketDriverService.UpdateAsync(userId, request);
             return Ok(new ApiResponse<Driver> { Data = driver });
 
+        }
+
+        [HttpPatch("approval-driver")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ApprovalDriver(Guid userId)
+        {
+            await _marketDriverService.ApprovalDriverAsync(userId);
+            return Ok(new ApiResponse<Driver> { });
         }
     }
 }

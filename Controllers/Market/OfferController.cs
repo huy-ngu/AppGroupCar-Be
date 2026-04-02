@@ -90,7 +90,7 @@ namespace AppGroupCar.Controllers.Market
                 return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
             }
 
-            var offer = await _offerService.UpdateAsync(userId, offerId, request);
+            var offer = await _offerService.UpdateAsync(userId, request);
             return Ok(new ApiResponse<GetOfferDTO> { Data = offer });
         }
 

@@ -17,6 +17,9 @@ namespace AppGroupCar.Entities.Market
         public Guid DropoffLocationId { get; set; }
 
         [Required]
+        public DateTime DeliveryDate { get; set; }
+
+        [Required]
         [Column(TypeName = "decimal(10,2)")]
         public decimal Weight { get; set; }
 

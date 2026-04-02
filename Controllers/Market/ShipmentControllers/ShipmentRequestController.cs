@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Security.Claims;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace AppGroupCar.Controllers.Market
+namespace AppGroupCar.Controllers.Market.ShipmentControllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -28,7 +28,7 @@ namespace AppGroupCar.Controllers.Market
             return Ok(new ApiResponse<PagedResult<ShipmentRequest>> { Data = data });
         }
 
-        [HttpPost("create")]
+        [HttpPost]
         public async Task<IActionResult> CreateShipmentRequest([FromForm] CreateShipmentRequestDTO request)
         {
             var userIdNullable = User.GetUserId();
@@ -45,7 +45,7 @@ namespace AppGroupCar.Controllers.Market
             var data = await _shipmentRequestServices.GetByIdAsync(id);
             return Ok(new ApiResponse<ShipmentRequest> { Data = data });
         }
-        [HttpPatch("update")]
+        [HttpPatch]
         public async Task<IActionResult> Update([FromBody] UpdateShipmentRequestDTO request)
         {
             await _shipmentRequestServices.UpdateAsync(request);

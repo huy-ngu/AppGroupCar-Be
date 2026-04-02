@@ -7,12 +7,15 @@ namespace AppGroupCar.DTO.RequestDTO.Market.ShipmentRequest
     public class CreateShipmentRequestDTO
     {
         [Required]
-        [DefaultValue("2576628b-2325-45a4-33ad-08de76eb22d1")]
+        [DefaultValue("A63177D3-2C21-48C8-BC9B-08DE832BC18C")]
         public Guid PickupLocationId { get; set; }
 
         [Required]
-        [DefaultValue("a4054762-067d-4627-35bc-08de76ebe4bb")]
+        [DefaultValue("89C8EB10-273A-4987-BC9C-08DE832BC18C")]
         public Guid DropoffLocationId { get; set; }
+
+        [Required]
+        public DateTime DeliveryDate { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(10,2)")]

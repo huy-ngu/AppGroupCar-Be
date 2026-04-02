@@ -90,11 +90,11 @@ namespace AppGroupCar.Services.Market.OfferServices
             return _mapper.Map<GetOfferDTO>(offer);
         }
 
-        public async Task<GetOfferDTO> UpdateAsync(Guid driverId, Guid id, UpdateOfferRequestDTO request)
+        public async Task<GetOfferDTO> UpdateAsync(Guid driverId, UpdateOfferRequestDTO request)
         {
             // Khi update, ta cũng nên include luôn các bảng để map DTO trả về sau đó
             var offer = await GetOfferWithRelationsQuery()
-                                .FirstOrDefaultAsync(x => x.Id == id);
+                                .FirstOrDefaultAsync(x => x.Id == request.Id);
 
             if (offer == null || offer.DeleteAt != null || offer.DriverId != driverId)
             {
@@ -109,7 +109,7 @@ namespace AppGroupCar.Services.Market.OfferServices
                     throw new AppException(400, "Vehicle không tồn tại hoặc không thuộc về bạn");
                 }
                 offer.VehicleId = (Guid)request.VehicleId;
-                offer.Vehicle = vehicle; // Gán để tí trả về map DTO không bị lỗi
+                offer.Vehicle = vehicle;
             }
 
             // Map đè dữ liệu từ request vào offer hiện tại

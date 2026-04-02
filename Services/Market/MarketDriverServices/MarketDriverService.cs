@@ -1,9 +1,16 @@
-﻿using AppGroupCar.DTO.RequestDTO.Market.MarketDriver;
+﻿using AppGroupCar.Data;
+using AppGroupCar.DTO.RequestDTO.Market.MarketDriver;
+using AppGroupCar.Entities;
+using AppGroupCar.Entities.Identity;
 using AppGroupCar.Entities.Market;
 using AppGroupCar.Exceptions;
 using AppGroupCar.Repositories.BaseRepo;
+using AppGroupCar.Services.Auth.RoleServices;
 using AppGroupCar.Services.Mytoys.Photo;
 using AutoMapper;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using System.Transactions;
 
 namespace AppGroupCar.Services.Market.MarketDriverServices
 {
@@ -12,12 +19,50 @@ namespace AppGroupCar.Services.Market.MarketDriverServices
         private readonly IBaseRepository<Driver> _repo;
         private readonly IMapper _mapper;
         private readonly IPhotoService _photoService;
-
-        public MarketDriverService(IBaseRepository<Driver> repo, IMapper mapper, IPhotoService photoService)
+        private readonly UserManager<ApplicationUser> _user;
+        private readonly ApplicationDbContext _dbContext;
+        public MarketDriverService(IBaseRepository<Driver> repo, IMapper mapper, IPhotoService photoService, UserManager<ApplicationUser> user, ApplicationDbContext dbContext)
         {
             _repo = repo;
             _mapper = mapper;
             _photoService = photoService;
+            _user = user;
+            _dbContext = dbContext;
+        }
+
+        public async Task ApprovalDriverAsync(Guid id)
+        {
+            // 3. Lấy Strategy từ DbContext để dập tắt cái lỗi Retry
+            var strategy = _dbContext.Database.CreateExecutionStrategy();
+
+            await strategy.ExecuteAsync(async () =>
+            {
+                // Nhớ using System.Transactions; ở đầu file nhé!
+                using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+
+                string userId = id.ToString();
+
+                var user = await _user.FindByIdAsync(userId);
+                if (user == null)
+                {
+                    throw new AppException(404, "Người dùng không tồn tại");
+                }
+
+                var rs = await _user.AddToRoleAsync(user, "Driver");
+                if (!rs.Succeeded)
+                {
+                    throw new AppException(500, "Thêm vai trò thất bại");
+                }
+
+                var driver = await _repo.GetByIdAsync(id) ?? throw new AppException(404, "Tài xế không tồn tại");
+
+                driver.VerificationStatus = DriverVerificationStatus.Approved;
+                _repo.Update(driver);
+                await _repo.SaveChangesAsync();
+
+                // Chạy qua hết thì chốt đơn!
+                scope.Complete();
+            });
         }
 
         public async Task<Driver> CreatAsync(Guid id, CreateDriverRequestDTO request)
