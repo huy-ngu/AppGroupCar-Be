@@ -1,4 +1,5 @@
-﻿using AppGroupCar.Entities;
+﻿using AppGroupCar.DTO.RequestDTO;
+using AppGroupCar.Entities;
 using AppGroupCar.Services.Mytoys.LocationServices;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,9 +29,9 @@ namespace AppGroupCar.Controllers
             return Ok(location);
         }
         [HttpPost("Create")]
-        public async Task<IActionResult> CreateLocation(string name, LocationType type)
+        public async Task<IActionResult> CreateLocation(CreateLocationRequestDTO request)
         {
-            var location = await _locationService.CreateLocationAsync(name, type);
+            var location = await _locationService.CreateLocationAsync(request);
             return Ok(location);
         }
     }

@@ -401,15 +401,41 @@ namespace AppGroupCar.Data
 
             });
 
-            // Shipment1-1 ShipmentOffer
+            // Cấu hình cho bảng Shipment
             builder.Entity<Shipment>(b =>
             {
+                // 1. Luồng Đấu giá: Quan hệ 1-1 với ShipmentOffer
                 b.HasOne(x => x.ShipmentOffer)
-                    .WithOne(o => o.Shipment)
+                    .WithOne(o => o.Shipment) // Lưu ý: Class ShipmentOffer của em phải có property 'public virtual Shipment? Shipment { get; set; }'
                     .HasForeignKey<Shipment>(x => x.ShipmentOfferId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                    .IsRequired(false) // BẮT BUỘC: Thêm cái này để EF Core biết trường này được phép NULL
+                    .OnDelete(DeleteBehavior.Cascade); // Thầy nhắc nhẹ: Xóa Offer mà Cascade bay luôn Vận Đơn thực tế là đền ốm tiền đấy nhé, nhưng DB em đang thiết kế thế thì thầy tôn trọng.
 
-                b.HasQueryFilter(b => b.DeleteAt == null);
+                // 2. Luồng Tiện chuyến: Quan hệ N-1 với Offer (1 Chuyến xe ghép có thể chở NHIỀU đơn hàng)
+                b.HasOne(x => x.Offer)
+                    .WithMany() // Nếu class Offer em có List<Shipment> thì viết là .WithMany(o => o.Shipments)
+                    .HasForeignKey(x => x.OfferId)
+                    .IsRequired(false) // BẮT BUỘC: Phải cho phép NULL
+                    .OnDelete(DeleteBehavior.Restrict); // Chỗ này nên để Restrict, xe đang chở hàng cấm không cho xóa chuyến.
+
+                b.HasOne(x => x.PickupLocation)
+                    .WithMany()
+                    .HasForeignKey(x => x.PickupLocationId)
+                    .OnDelete(DeleteBehavior.Restrict); // Rút thẻ đỏ: Cấm xóa Location nếu có Shipment xài
+
+                // 2. Cấu hình cấm xóa lan truyền cho Điểm trả
+                b.HasOne(x => x.DropoffLocation)
+                    .WithMany()
+                    .HasForeignKey(x => x.DropoffLocationId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                // 3. Query Filter xóa mềm (Giữ nguyên của em)
+                b.HasQueryFilter(x => x.DeleteAt == null);
+
+                // 4. "MÀI PHẢI KIỂM TRA KỸ" - Ráp vào đây!
+                b.ToTable(t => t.HasCheckConstraint(
+                    name: "CK_Shipment_Must_Have_Only_One_Offer_Source",
+                    sql: "(OfferId IS NOT NULL AND ShipmentOfferId IS NULL) OR (OfferId IS NULL AND ShipmentOfferId IS NOT NULL)"
+                 ));
             });
 
         }

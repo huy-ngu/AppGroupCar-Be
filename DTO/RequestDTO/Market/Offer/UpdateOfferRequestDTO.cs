@@ -5,6 +5,7 @@ namespace AppGroupCar.DTO.RequestDTO.Market.Offer
 {
     public class UpdateOfferRequestDTO
     {
+        public Guid Id { get; set; }
         public Guid? VehicleId { get; set; }
         public ServiceType? ServiceType { get; set; }
         public DateTime? DepartureTime { get; set; }

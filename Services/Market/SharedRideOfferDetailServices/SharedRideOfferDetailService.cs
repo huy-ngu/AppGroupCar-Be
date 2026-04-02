@@ -1,6 +1,6 @@
 ﻿using AppGroupCar.DTO;
 using AppGroupCar.DTO.RequestDTO.Market.SharedRideOfferDetail;
-using AppGroupCar.DTO.ResponseDTO.Market;
+using AppGroupCar.DTO.ResponseDTO.Market.Offer;
 using AppGroupCar.Entities.Market;
 using AppGroupCar.Exceptions;
 using AppGroupCar.Repositories.BaseRepo;

@@ -11,7 +11,6 @@ namespace AppGroupCar.Services.Market.MarketDriverServices
         Task<Driver> UpdateAsync(Guid id, UpdateDriverRequestDTO request);
         Task<Driver> GetByIdAsync(Guid id);
         Task DeleteAsync(Guid id);
-        //Task<PagedResult<Driver>> FilterAsync(ShipmentRequestParameters param);
-
+        Task ApprovalDriverAsync(Guid id);
     }
 }

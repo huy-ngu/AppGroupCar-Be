@@ -1,4 +1,4 @@
-namespace AppGroupCar.DTO.ResponseDTO.Market
+namespace AppGroupCar.DTO.ResponseDTO.Market.Offer
 {
     public class GetSharedRideOfferDetailDTO
     {

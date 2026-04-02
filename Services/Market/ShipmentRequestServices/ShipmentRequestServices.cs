@@ -38,6 +38,8 @@ namespace AppGroupCar.Services.Market.ShipmentRequestServices
             shipmentRequest.CustomerId = userId;
             shipmentRequest.Status = ShipmentRequestStatus.Open;
             shipmentRequest.ImageUrl = imgUrl;
+            shipmentRequest.DropoffLocationId = request.DropoffLocationId;
+            shipmentRequest.PickupLocationId = request.PickupLocationId;
 
             await _repo.AddAsync(shipmentRequest);
             await _repo.SaveChangesAsync();
