@@ -320,7 +320,9 @@ namespace AppGroupCar.Services.Bus.CompanyServices
                         await _ucService.GetActiveCompanyByUserAsync(
                             user.Id,
                             company.Id,
-                            new UpdateCUStatusRequestDto { IsActive = false });
+                            new UpdateCUStatusRequestDto { IsActive = false },
+                            null,
+                            true);
                 }
             }
             else if (dto.Status == CompanyStatus.Pending || dto.Status == CompanyStatus.Rejected)
@@ -336,7 +338,9 @@ namespace AppGroupCar.Services.Bus.CompanyServices
                         await _ucService.GetActiveCompanyByUserAsync(
                             user.Id,
                             company.Id,
-                            new UpdateCUStatusRequestDto { IsActive = false });
+                            new UpdateCUStatusRequestDto { IsActive = false },
+                            null,
+                            true);
                 }
             }
 

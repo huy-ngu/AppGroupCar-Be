@@ -194,6 +194,10 @@ namespace AppGroupCar.Data
             // CompanyVehicle
             builder.Entity<CompanyVehicle>(b =>
             {
+                b.HasIndex(x => x.PlateNumber)
+                    .IsUnique()
+                    .HasFilter("[DeleteAt] IS NULL");
+
                 b.HasOne(x => x.Company)
                     .WithMany()
                     .HasForeignKey(x => x.CompanyId)

@@ -25,6 +25,8 @@ namespace AppGroupCar.Services.Bus.UserCompanyServices
             GetActiveCompanyByUserAsync(
                 Guid userId,
                 Guid companyId,
-                UpdateCUStatusRequestDto request);
+                UpdateCUStatusRequestDto request,
+                Guid? actorUserId = null,
+                bool isSystemAction = false);
     }
 }

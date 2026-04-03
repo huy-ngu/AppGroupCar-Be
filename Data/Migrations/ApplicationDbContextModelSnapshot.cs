@@ -141,8 +141,7 @@ namespace AppGroupCar.Migrations
                     b.Property<decimal>("TotalPrice")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<Guid?>("UserId")
-                        .IsRequired()
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
@@ -501,6 +500,10 @@ namespace AppGroupCar.Migrations
 
                     b.HasIndex("CompanyId");
 
+                    b.HasIndex("PlateNumber")
+                        .IsUnique()
+                        .HasFilter("[DeleteAt] IS NULL");
+
                     b.HasIndex("SeatLayoutId");
 
                     b.ToTable("CompanyVehicles", (string)null);
@@ -706,6 +709,10 @@ namespace AppGroupCar.Migrations
 
                     b.Property<int>("SeatCapacity")
                         .HasColumnType("int");
+
+                    b.Property<string>("SeatLayoutName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 

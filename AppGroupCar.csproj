@@ -34,7 +34,6 @@
 		<Folder Include="Documents\" />
 		<Folder Include="Repositories\Market\" />
 		<Folder Include="Repositories\Bus\" />
-		<Folder Include="Services\Bus\" />
 	</ItemGroup>
 
 </Project>

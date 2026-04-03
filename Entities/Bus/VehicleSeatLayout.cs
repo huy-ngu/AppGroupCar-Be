@@ -9,6 +9,8 @@ namespace AppGroupCar.Entities.Bus
     {
 
         [Required]
+        public string SeatLayoutName{ get; set; }
+        [Required]
         public int SeatCapacity { get; set; } // 16, 29, 45
 
         [Required]

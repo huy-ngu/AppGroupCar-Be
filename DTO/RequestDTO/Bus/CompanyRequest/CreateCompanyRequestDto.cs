@@ -43,6 +43,6 @@ namespace AppGroupCar.DTO.RequestDTO.Bus.CompanyRequest
         // Loại công ty
         [Required]
         [Range(1, 5, ErrorMessage = "Giá trị phải nằm trong khoảng từ 1 đến 5.")]
-        public int CompanyType { get; set; }
+        public CompanyType CompanyType { get; set; }
     }
 }

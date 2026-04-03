@@ -110,8 +110,16 @@ namespace AppGroupCar.Services.Bus.UserCompanyServices
             public async Task<CUResponseDto> GetActiveCompanyByUserAsync(
                 Guid userId,
                 Guid companyId,
-                UpdateCUStatusRequestDto request)
+                UpdateCUStatusRequestDto request,
+                Guid? actorUserId = null,
+                bool isSystemAction = false)
             {
+                var company = await _context.Companies
+                    .FirstOrDefaultAsync(c => c.Id == companyId && c.DeleteAt == null);
+
+                if (company == null)
+                    throw new AppException(404, "Company not found");
+
                 var companyUser = await _context.CompanyUsers
                     .FirstOrDefaultAsync(cu =>
                         cu.UserId == userId &&
@@ -120,6 +128,48 @@ namespace AppGroupCar.Services.Bus.UserCompanyServices
 
                 if (companyUser == null)
                     throw new AppException(404, "Company user not found");
+
+                var targetUser = await _userManager.FindByIdAsync(userId.ToString());
+                if (targetUser == null)
+                    throw new AppException(404, "User not found");
+
+                var isTargetAdmin = await _userManager.IsInRoleAsync(targetUser, "ADMIN_COMPANY");
+                var isTargetStaff = await _userManager.IsInRoleAsync(targetUser, "STAFF_COMPANY");
+
+                if (isSystemAction)
+                {
+                    if (isTargetAdmin && request.IsActive && company.Status != CompanyStatus.Approved)
+                        throw new AppException(400, "Admin company can only be active when company is approved");
+                }
+                else
+                {
+                    if (actorUserId == null)
+                        throw new AppException(401, "Invalid token");
+
+                    if (actorUserId == userId)
+                        throw new AppException(403, "Admin cannot update their own active status");
+
+                    var actorCompanyUser = await _context.CompanyUsers
+                        .FirstOrDefaultAsync(cu =>
+                            cu.UserId == actorUserId &&
+                            cu.CompanyId == companyId &&
+                            cu.DeleteAt == null &&
+                            cu.IsActive);
+
+                    if (actorCompanyUser == null)
+                        throw new AppException(403, "You are not active in this company");
+
+                    var actorUser = await _userManager.FindByIdAsync(actorUserId.ToString()!);
+                    if (actorUser == null)
+                        throw new AppException(404, "User not found");
+
+                    var isActorAdmin = await _userManager.IsInRoleAsync(actorUser, "ADMIN_COMPANY");
+                    if (!isActorAdmin)
+                        throw new AppException(403, "Only ADMIN_COMPANY can update active status");
+
+                    if (!isTargetStaff || isTargetAdmin)
+                        throw new AppException(403, "ADMIN_COMPANY can only update STAFF_COMPANY active status");
+                }
 
                 companyUser.IsActive = request.IsActive;
                 companyUser.LastUpdateAt = DateTime.UtcNow;

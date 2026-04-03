@@ -128,6 +128,12 @@ namespace AppGroupCar.Controllers.Bus
 			Guid userId,
 			[FromBody] UpdateCUStatusRequestDto request)
 		{
+			var actorUserIdNullable = User.GetUserId();
+			if (actorUserIdNullable is not Guid actorUserId)
+			{
+				return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
+			}
+
 			var companyIdNullable = User.GetCompanyId();
 			if (companyIdNullable is not Guid tokenCompanyId)
 			{
@@ -139,7 +145,7 @@ namespace AppGroupCar.Controllers.Bus
 				return StatusCode(403, new ApiResponse<string> { Message = "Không có quyền trên công ty này" });
 			}
 
-			var result = await _ucService.GetActiveCompanyByUserAsync(userId, companyId, request);
+			var result = await _ucService.GetActiveCompanyByUserAsync(userId, companyId, request, actorUserId);
 			return Ok(new ApiResponse<CUResponseDto> { Data = result });
 		}
 	}
