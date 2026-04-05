@@ -1,26 +1,30 @@
 using AppGroupCar.DTO.RequestDTO.Market.Offer;
 using AppGroupCar.DTO.ResponseDTO;
-using AppGroupCar.DTO.ResponseDTO.Market;
+using AppGroupCar.DTO.ResponseDTO.Market.Offer;
 using AppGroupCar.Entities.Market;
 using AppGroupCar.Helpers;
+using AppGroupCar.Services.Market.OfferRoutePointServices;
 using AppGroupCar.Services.Market.OfferServices;
+using AppGroupCar.Services.Market.OfferServices.OfferShipmentServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace AppGroupCar.Controllers
+namespace AppGroupCar.Controllers.Market
 {
     [ApiController]
     [Route("api/[controller]")]
     public class OfferController : ControllerBase
     {
         private readonly IOfferService _offerService;
+        private readonly IOfferShipmentSerivce _offerShipmentSerivce;
 
-        public OfferController(IOfferService offerService)
+        public OfferController(IOfferService offerService, IOfferShipmentSerivce offerShipmentSerivce)
         {
             _offerService = offerService;
+            _offerShipmentSerivce = offerShipmentSerivce;
         }
 
         [HttpGet]
@@ -50,16 +54,29 @@ namespace AppGroupCar.Controllers
             return Ok(new ApiResponse<GetOfferDTO> { Data = data });
         }
 
-        [HttpPost]
+        [HttpPost("shared-ride")]
         [Authorize]
-        public async Task<IActionResult> Create([FromBody] CreateOfferRequestDTO request)
+        public async Task<IActionResult> CreateSharedRideOffer([FromBody] CreateOfferSharedRidelRequestDTO request)
         {
             var userIdNullable = User.GetUserId();
             if (userIdNullable is not Guid userId)
             {
                 return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
             }
-            var offer = await _offerService.CreateAsync(userId, request);
+            var offer = await _offerService.CreateWithDetailAsync(userId, request);
+            return Ok(new ApiResponse<GetOfferDTO> { Data = offer });
+        }
+
+        [HttpPost("shipment")]
+        [Authorize]
+        public async Task<IActionResult> CreateShipmentOffer([FromBody] CreateOfferShipmentRequestDTO request)
+        {
+            var userIdNullable = User.GetUserId();
+            if (userIdNullable is not Guid userId)
+            {
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
+            }
+            var offer = await _offerShipmentSerivce.CreateWithCargoAsync(userId, request);
             return Ok(new ApiResponse<GetOfferDTO> { Data = offer });
         }
 
@@ -73,7 +90,7 @@ namespace AppGroupCar.Controllers
                 return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
             }
 
-            var offer = await _offerService.UpdateAsync(userId, offerId, request);
+            var offer = await _offerService.UpdateAsync(userId, request);
             return Ok(new ApiResponse<GetOfferDTO> { Data = offer });
         }
 

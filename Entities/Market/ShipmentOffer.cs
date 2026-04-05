@@ -23,7 +23,6 @@ namespace AppGroupCar.Entities.Market
         [Required]
         public ShipmentOfferStatus Status { get; set; }
 
-
         // Navigation
         [ForeignKey(nameof(RequestId))]
         public ShipmentRequest Request { get; set; } = null!;

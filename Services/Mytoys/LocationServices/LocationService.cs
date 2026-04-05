@@ -1,7 +1,8 @@
-﻿using System.Linq.Expressions;
+﻿using AppGroupCar.DTO.RequestDTO;
 using AppGroupCar.Entities;
-using Microsoft.EntityFrameworkCore;
 using AppGroupCar.Repositories.BaseRepo;
+using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace AppGroupCar.Services.Mytoys.LocationServices
 {
@@ -19,12 +20,14 @@ namespace AppGroupCar.Services.Mytoys.LocationServices
         /// <summary>
         /// Thêm một xe mới
         /// </summary>
-        public async Task<Location> CreateLocationAsync(string name, LocationType type)
+        public async Task<Location> CreateLocationAsync(CreateLocationRequestDTO request)
         {
             var newLocation = new Location
             {
-                Name = name,
-                LocationType = type
+                Name = request.Name,
+                Address = request.Address,
+                ParentLocationId = request.ParentLocationId,
+                LocationType = request.LocationType,
             };
 
             await _repo.AddAsync(newLocation);
@@ -49,9 +52,6 @@ namespace AppGroupCar.Services.Mytoys.LocationServices
             return await _repo.GetAllAsync();
 
         }
-        /// <summary>
-        /// Xóa xe (Soft Delete)
-        /// </summary>
         public async Task DeleteLocationAsync(Guid id)
         {
             var location = await _repo.GetByIdAsync(id);
@@ -59,7 +59,6 @@ namespace AppGroupCar.Services.Mytoys.LocationServices
 
             _repo.Delete(location);
 
-            // Lưu thay đổi
             await _repo.SaveChangesAsync();
         }
 

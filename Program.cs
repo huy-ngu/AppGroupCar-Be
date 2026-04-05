@@ -14,12 +14,13 @@ using AppGroupCar.Services.Auth.RoleServices;
 using AppGroupCar.Services.Auth.TokenServices;
 using AppGroupCar.Services.Auth.UserServices;
 using AppGroupCar.Services.Bus.BusRoute;
+using AppGroupCar.Services.Market.BookingItemServices;
+using AppGroupCar.Services.Market.BookingServices;
 using AppGroupCar.Services.Bus.CompanyServices;
 using AppGroupCar.Services.Bus.CompanyVehicleServices;
 using AppGroupCar.Services.Bus.SeatLayoutServices;
 using AppGroupCar.Services.Bus.UserCompanyServices;
 using AppGroupCar.Services.Market.MarketDriverServices;
-using AppGroupCar.Services.Market.OfferServices;
 using AppGroupCar.Services.Market.RideRequestServices;
 using AppGroupCar.Services.Market.SharedRideOfferDetailServices;
 using AppGroupCar.Services.Market.ShipmentRequestServices;
@@ -34,6 +35,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using System.Text;
+using AppGroupCar.Services.Market.OfferRoutePointServices;
+using AppGroupCar.Services.Market.OfferServices;
+using AppGroupCar.Services.Market.OfferServices.OfferShipmentServices;
+using AppGroupCar.Services.Market.ShipmentOfferServices;
+using AppGroupCar.Services.Market.ShipmentServices;
 
 namespace AppGroupCar
 {
@@ -144,13 +150,14 @@ namespace AppGroupCar
                 {
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
+                        ValidateIssuer = false,
+                        ValidateAudience = false,
                         ValidateLifetime = true,
                         ValidateIssuerSigningKey = true,
                         ValidIssuer = jwtSettings["Issuer"],
                         ValidAudience = jwtSettings["Audience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(key)
+                        IssuerSigningKey = new SymmetricSecurityKey(key),
+                        RoleClaimType = "Roles"
                     };
                 })
                 .AddGoogle(options =>
@@ -183,6 +190,12 @@ namespace AppGroupCar
                 builder.Services.AddScoped<IEmailService, EmailService>();
                 builder.Services.AddScoped<IOfferService, OfferService>();
                 builder.Services.AddScoped<ISharedRideOfferDetailService, SharedRideOfferDetailService>();
+                builder.Services.AddScoped<IBookingService, BookingService>();
+                builder.Services.AddScoped<IBookingItemService, BookingItemService>();
+                builder.Services.AddScoped<IOfferRoutePointService, OfferRoutePointService>();
+                builder.Services.AddScoped<IOfferShipmentSerivce, OfferShipmentService>();
+                builder.Services.AddScoped<IShipmentOfferService, ShipmentOfferService>();
+                builder.Services.AddScoped<IShipmentService, ShipmentService>();
 
                 // Map section trong appsettings vào class CloudinarySettings
                 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));

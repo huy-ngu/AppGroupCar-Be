@@ -925,6 +925,9 @@ namespace AppGroupCar.Migrations
                     b.Property<int>("PaymentStatus")
                         .HasColumnType("int");
 
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
@@ -955,18 +958,25 @@ namespace AppGroupCar.Migrations
                     b.Property<DateTime?>("DeleteAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("DropoffLocationId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime?>("LastUpdateAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<Guid>("PickupLocationId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("BookingId");
+
+                    b.HasIndex("DropoffLocationId");
+
+                    b.HasIndex("PickupLocationId");
 
                     b.ToTable("BookingItems", (string)null);
                 });
@@ -1207,24 +1217,66 @@ namespace AppGroupCar.Migrations
                     b.Property<DateTime?>("DeleteAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime>("DeliveryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid>("DropoffLocationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("HandlingNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsFragile")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime?>("LastUpdateAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("OfferId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("PaymentStatus")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("ShipmentOfferId")
+                    b.Property<Guid>("PickupLocationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ShipmentOfferId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("ShipmentStatus")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("Volume")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<decimal>("Weight")
+                        .HasColumnType("decimal(10,2)");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("ShipmentOfferId")
-                        .IsUnique();
+                    b.HasIndex("DropoffLocationId");
 
-                    b.ToTable("Shipments", (string)null);
+                    b.HasIndex("OfferId");
+
+                    b.HasIndex("PickupLocationId");
+
+                    b.HasIndex("ShipmentOfferId")
+                        .IsUnique()
+                        .HasFilter("[ShipmentOfferId] IS NOT NULL");
+
+                    b.ToTable("Shipments", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Shipment_Must_Have_Only_One_Offer_Source", "(OfferId IS NOT NULL AND ShipmentOfferId IS NULL) OR (OfferId IS NULL AND ShipmentOfferId IS NOT NULL)");
+                        });
                 });
 
             modelBuilder.Entity("AppGroupCar.Entities.Market.ShipmentOffer", b =>
@@ -1274,9 +1326,6 @@ namespace AppGroupCar.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<bool>("AvoidSunLight")
-                        .HasColumnType("bit");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -1284,6 +1333,9 @@ namespace AppGroupCar.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DeliveryDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
@@ -1303,17 +1355,11 @@ namespace AppGroupCar.Migrations
                     b.Property<bool>("IsFragile")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsPerishable")
-                        .HasColumnType("bit");
-
                     b.Property<DateTime?>("LastUpdateAt")
                         .HasColumnType("datetime2");
 
                     b.Property<Guid>("PickupLocationId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("RequiresCooler")
-                        .HasColumnType("bit");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -1696,7 +1742,23 @@ namespace AppGroupCar.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("AppGroupCar.Entities.Location", "DropoffLocation")
+                        .WithMany()
+                        .HasForeignKey("DropoffLocationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AppGroupCar.Entities.Location", "PickupLocation")
+                        .WithMany()
+                        .HasForeignKey("PickupLocationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Booking");
+
+                    b.Navigation("DropoffLocation");
+
+                    b.Navigation("PickupLocation");
                 });
 
             modelBuilder.Entity("AppGroupCar.Entities.Market.CargoOfferDetail", b =>
@@ -1797,11 +1859,33 @@ namespace AppGroupCar.Migrations
 
             modelBuilder.Entity("AppGroupCar.Entities.Market.Shipment", b =>
                 {
+                    b.HasOne("AppGroupCar.Entities.Location", "DropoffLocation")
+                        .WithMany()
+                        .HasForeignKey("DropoffLocationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AppGroupCar.Entities.Market.Offer", "Offer")
+                        .WithMany()
+                        .HasForeignKey("OfferId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("AppGroupCar.Entities.Location", "PickupLocation")
+                        .WithMany()
+                        .HasForeignKey("PickupLocationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("AppGroupCar.Entities.Market.ShipmentOffer", "ShipmentOffer")
                         .WithOne("Shipment")
                         .HasForeignKey("AppGroupCar.Entities.Market.Shipment", "ShipmentOfferId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("DropoffLocation");
+
+                    b.Navigation("Offer");
+
+                    b.Navigation("PickupLocation");
 
                     b.Navigation("ShipmentOffer");
                 });

@@ -17,6 +17,6 @@ namespace AppGroupCar.DTO.Filters
             set => _pageSize = (value > maxPageSize) ? maxPageSize : value;
         }
         //public string? OrderBy { get; set; }
-
+        public string? Search { get; set; }
     }
 }

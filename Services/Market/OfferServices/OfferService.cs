@@ -1,5 +1,6 @@
 using AppGroupCar.DTO.RequestDTO.Market.Offer;
 using AppGroupCar.DTO.ResponseDTO.Market;
+using AppGroupCar.DTO.ResponseDTO.Market.Offer;
 using AppGroupCar.Entities.Market;
 using AppGroupCar.Exceptions;
 using AppGroupCar.Repositories.BaseRepo;
@@ -16,40 +17,22 @@ namespace AppGroupCar.Services.Market.OfferServices
     {
         private readonly IBaseRepository<Offer> _repo;
         private readonly IBaseRepository<Vehicle> _vehicleRepo;
-        // Chú ý: Đã loại bỏ _driverRepo và _sharedRideRepo vì không cần gọi lắt nhắt nữa
+        private readonly IBaseRepository<SharedRideOfferDetail> _repoOfferDetail;
+        private readonly IBaseRepository<OfferRoutePoint> _repoOfferRoutePoint;
         private readonly IMapper _mapper;
 
         public OfferService(
             IBaseRepository<Offer> repo,
             IBaseRepository<Vehicle> vehicleRepo,
+            IBaseRepository<SharedRideOfferDetail> repoOfferDetail,
+            IBaseRepository<OfferRoutePoint> repoOfferRoutePoint,
             IMapper mapper)
         {
             _repo = repo;
             _vehicleRepo = vehicleRepo;
             _mapper = mapper;
-        }
-
-        public async Task<GetOfferDTO> CreateAsync(Guid driverId, CreateOfferRequestDTO request)
-        {
-            var vehicle = await _vehicleRepo.GetByIdAsync(request.VehicleId);
-            if (vehicle == null || vehicle.DriverId != driverId || vehicle.DeleteAt != null)
-            {
-                throw new AppException(400, "Vehicle không tồn tại hoặc không thuộc về bạn");
-            }
-
-            // Dùng AutoMapper để chuyển Request thành Entity
-            var offer = _mapper.Map<Offer>(request);
-            offer.DriverId = driverId;
-
-            await _repo.AddAsync(offer);
-            await _repo.SaveChangesAsync();
-
-            // Lấy lại dữ liệu vừa tạo kèm theo các bảng liên quan (Eager Loading)
-            var createdOffer = await GetOfferWithRelationsQuery()
-                                .FirstOrDefaultAsync(x => x.Id == offer.Id);
-
-            // Tự động map sang DTO
-            return _mapper.Map<GetOfferDTO>(createdOffer);
+            _repoOfferDetail = repoOfferDetail;
+            _repoOfferRoutePoint = repoOfferRoutePoint;
         }
 
         public async Task DeleteAsync(Guid driverId, Guid id)
@@ -77,9 +60,19 @@ namespace AppGroupCar.Services.Market.OfferServices
         public async Task<IEnumerable<GetOfferDTO>> GetMyOffersAsync(Guid driverId)
         {
             // Truy vấn kết hợp lọc dữ liệu ngay tại DB (tiết kiệm bộ nhớ server)
-            var offers = await GetOfferWithRelationsQuery()
-                                .Where(x => x.DeleteAt == null && x.DriverId == driverId)
-                                .ToListAsync();
+            var offers = await _repo.GetQueryable().Select(o => new GetOfferDTO
+            {
+                Id = o.Id,
+                DriverId = o.DriverId,
+                DriverName = o.Driver.Name,
+                VehicleId = o.VehicleId,
+                VehicleName = o.Vehicle.Brand,
+                ServiceType = o.ServiceType,
+                DepartureTime = o.DepartureTime,
+                BasePrice = o.BasePrice,
+                Status = o.Status,
+
+            }).ToListAsync();
 
             return _mapper.Map<IEnumerable<GetOfferDTO>>(offers);
         }
@@ -97,11 +90,11 @@ namespace AppGroupCar.Services.Market.OfferServices
             return _mapper.Map<GetOfferDTO>(offer);
         }
 
-        public async Task<GetOfferDTO> UpdateAsync(Guid driverId, Guid id, UpdateOfferRequestDTO request)
+        public async Task<GetOfferDTO> UpdateAsync(Guid driverId, UpdateOfferRequestDTO request)
         {
             // Khi update, ta cũng nên include luôn các bảng để map DTO trả về sau đó
             var offer = await GetOfferWithRelationsQuery()
-                                .FirstOrDefaultAsync(x => x.Id == id);
+                                .FirstOrDefaultAsync(x => x.Id == request.Id);
 
             if (offer == null || offer.DeleteAt != null || offer.DriverId != driverId)
             {
@@ -116,7 +109,7 @@ namespace AppGroupCar.Services.Market.OfferServices
                     throw new AppException(400, "Vehicle không tồn tại hoặc không thuộc về bạn");
                 }
                 offer.VehicleId = (Guid)request.VehicleId;
-                offer.Vehicle = vehicle; // Gán để tí trả về map DTO không bị lỗi
+                offer.Vehicle = vehicle;
             }
 
             // Map đè dữ liệu từ request vào offer hiện tại
@@ -136,8 +129,71 @@ namespace AppGroupCar.Services.Market.OfferServices
             return _repo.GetQueryable()
                         .Include(o => o.Driver)
                         .Include(o => o.Vehicle)
-                        // Giả sử 1 Offer có 1 SharedRideDetail, bạn map khóa ngoại chuẩn trong Entity nhé
                         .Include(o => o.SharedRideDetail);
+        }
+
+        public async Task<GetOfferDTO> CreateWithDetailAsync(Guid driverId, CreateOfferSharedRidelRequestDTO request)
+        {
+            var vehicle = await _vehicleRepo.GetByIdAsync(request.VehicleId);
+            if (vehicle == null || vehicle.DriverId != driverId)
+            {
+                throw new AppException(400, "Vehicle không tồn tại hoặc không thuộc về bạn");
+            }
+            if (request.DepartureTime < DateTime.Now)
+            {
+                throw new AppException(400, "Thời gian không hợp lệ");
+            }
+            if (request.OfferRoutePoints.Count() < 2)
+            {
+                throw new AppException(400, "Offer phải có ít nhất 2 Route Point");
+            }
+
+            var recentOffer = await _repo.GetQueryable()
+                                            .Where(o => o.DriverId == driverId && o.DepartureTime <= DateTimeOffset.UtcNow && o.Status == OfferStatus.Active)
+                                            .OrderByDescending(o => o.DepartureTime)
+                                            .FirstOrDefaultAsync();
+            if (recentOffer != null)
+            {
+                throw new AppException(400, "Bạn đang có Offer hoạt động. Vui lòng hoàn thành Offer cũ để có thể tạo mới");
+            }
+
+            var offer = _mapper.Map<Offer>(request);
+            offer.Id = Guid.NewGuid();
+            offer.DriverId = driverId;
+            offer.ServiceType = ServiceType.Shared;
+
+            var newOfferDetail = new SharedRideOfferDetail
+            {
+                Id = offer.Id,
+                AvailableSeats = vehicle.SeatCapacity,
+                TotalSeats = vehicle.SeatCapacity,
+            };
+
+            foreach (var item in request.OfferRoutePoints)
+            {
+                int i = 1;
+                var newOfferRoutePoint = new OfferRoutePoint
+                {
+                    Id = Guid.NewGuid(),
+                    OfferId = offer.Id,
+                    Sequence = i,
+                    LocationId = item.LocationId
+                };
+                await _repoOfferRoutePoint.AddAsync(newOfferRoutePoint);
+                i++;
+            }
+
+            await _repo.AddAsync(offer);
+
+            await _repoOfferDetail.AddAsync(newOfferDetail);
+
+            await _repo.SaveChangesAsync();
+
+
+            var offerResponse = _mapper.Map<GetOfferDTO>(offer);
+
+
+            return offerResponse;
         }
     }
 }

@@ -21,24 +21,25 @@ public class TokenService : ITokenService
         _context = context;
     }
 
-    // Hàm cũ của bạn (tôi giữ nguyên logic, chỉ chỉnh format lại cho đỡ ngứa mắt)
     public string CreateToken(ApplicationUser user, IList<string> roles)
     {
         var jwtSettings = _configuration.GetSection("Jwt");
         var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
 
         var claims = new List<Claim>
-        {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), // Quan trọng: Thêm Jti để định danh token
-            new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
-            new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
-            new Claim("fullname", user.FullName ?? string.Empty)
-        };
+    {
+        new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
+        new Claim("fullname", user.FullName ?? string.Empty)
+    };
 
-        foreach (var role in roles)
+        if (roles != null && roles.Any())
         {
-            claims.Add(new Claim(ClaimTypes.Role, role));
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim("Roles", role));
+            }
         }
 
         if (roles.Contains("ADMIN_COMPANY") || roles.Contains("STAFF_COMPANY"))
@@ -56,22 +57,19 @@ public class TokenService : ITokenService
 
         var creds = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
 
-        // Parse an toàn hơn
-        var expireMinutes = int.TryParse(jwtSettings["ExpireMinutes"], out var m) ? m : 60;
-        var expires = DateTime.UtcNow.AddMinutes(expireMinutes);
-
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
-            Expires = expires,
-            Issuer = jwtSettings["Issuer"],
-            Audience = jwtSettings["Audience"],
+            Expires = DateTime.UtcNow.AddMinutes(60),
             SigningCredentials = creds
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
-        var token = tokenHandler.CreateToken(tokenDescriptor);
 
+        // TRICK LỎ: Xóa nbf và iat bằng cách set flag này về false
+        tokenHandler.SetDefaultTimesOnTokenCreation = false;
+
+        var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
     }
 

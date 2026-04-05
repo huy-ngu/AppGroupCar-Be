@@ -4,6 +4,7 @@ using AppGroupCar.Entities.Identity;
 using AppGroupCar.Entities.Market;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 
 namespace AppGroupCar.Data
 {
@@ -161,6 +162,9 @@ namespace AppGroupCar.Data
                 entity.HasIndex(x => x.SeatId);
 
                 entity.HasIndex(x => x.ChangedAt);
+
+                b.HasQueryFilter(b => b.DeleteAt == null);
+
             });
 
             // CompanyUser
@@ -175,6 +179,9 @@ namespace AppGroupCar.Data
                     .WithMany()
                     .HasForeignKey(x => x.UserId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasQueryFilter(b => b.DeleteAt == null);
+
             });
 
             // CompanyDriver
@@ -207,6 +214,9 @@ namespace AppGroupCar.Data
                     .WithMany()
                     .HasForeignKey(x => x.SeatLayoutId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasQueryFilter(b => b.DeleteAt == null);
+
             });
 
             // BusRoutePoint
@@ -221,6 +231,9 @@ namespace AppGroupCar.Data
                     .WithMany()
                     .HasForeignKey(x => x.LocationId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasQueryFilter(b => b.DeleteAt == null);
+
             });
 
             // BusShowtime
@@ -240,6 +253,9 @@ namespace AppGroupCar.Data
                     .WithMany(r => r.Showtimes)
                     .HasForeignKey(x => x.RouteId)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                b.HasQueryFilter(b => b.DeleteAt == null);
+
             });
 
             // ShowtimeLog
@@ -249,6 +265,9 @@ namespace AppGroupCar.Data
                     .WithMany(s => s.Logs)
                     .HasForeignKey(x => x.ShowtimeId)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                b.HasQueryFilter(b => b.DeleteAt == null);
+
             });
 
             // BusBooking
@@ -263,6 +282,9 @@ namespace AppGroupCar.Data
                     .WithMany()
                     .HasForeignKey(x => x.UserId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasQueryFilter(b => b.DeleteAt == null);
+
             });
 
             // BusBookingSeat
@@ -285,6 +307,9 @@ namespace AppGroupCar.Data
                     .WithMany()
                     .HasForeignKey(x => x.Id)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasQueryFilter(b => b.DeleteAt == null);
+
             });
 
             // Offer
@@ -299,6 +324,9 @@ namespace AppGroupCar.Data
                     .WithMany() // nếu Vehicle có nav Offers thì đổi thành WithMany(v => v.Offers)
                     .HasForeignKey(x => x.VehicleId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasQueryFilter(b => b.DeleteAt == null);
+
             });
 
             // OfferRoutePoint: composite key, route order
@@ -316,6 +344,9 @@ namespace AppGroupCar.Data
                     .WithMany()
                     .HasForeignKey(x => x.LocationId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasQueryFilter(b => b.DeleteAt == null);
+
             });
 
             // SharedRideOfferDetail1-1 Offer
@@ -325,6 +356,9 @@ namespace AppGroupCar.Data
                     .WithOne(o => o.SharedRideDetail)
                     .HasForeignKey<SharedRideOfferDetail>(x => x.Id)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                b.HasQueryFilter(b => b.DeleteAt == null);
+
             });
 
             // CargoOfferDetail1-1 Offer
@@ -334,6 +368,9 @@ namespace AppGroupCar.Data
                     .WithOne(o => o.CargoDetail)
                     .HasForeignKey<CargoOfferDetail>(x => x.Id)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                b.HasQueryFilter(b => b.DeleteAt == null);
+
             });
 
             // Booking
@@ -348,6 +385,9 @@ namespace AppGroupCar.Data
                     .WithMany()
                     .HasForeignKey(x => x.CustomerId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasQueryFilter(b => b.DeleteAt == null);
+
             });
 
             // BookingItem
@@ -357,6 +397,19 @@ namespace AppGroupCar.Data
                     .WithMany(bk => bk.Items)
                     .HasForeignKey(x => x.BookingId)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                b.HasOne(bi => bi.PickupLocation)
+                    .WithMany() // Để trống nếu Location không chứa danh sách BookingItems
+                    .HasForeignKey(bi => bi.PickupLocationId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasOne(bi => bi.DropoffLocation)
+                   .WithMany() // Để trống nếu Location không chứa danh sách BookingItems
+                   .HasForeignKey(bi => bi.DropoffLocationId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasQueryFilter(b => b.DeleteAt == null);
+
             });
 
             // RideRequest
@@ -376,6 +429,9 @@ namespace AppGroupCar.Data
                     .WithMany()
                     .HasForeignKey(x => x.ToLocationId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasQueryFilter(b => b.DeleteAt == null);
+
             });
 
             // ShipmentRequest
@@ -395,6 +451,9 @@ namespace AppGroupCar.Data
                     .WithMany()
                     .HasForeignKey(x => x.DropoffLocationId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasQueryFilter(b => b.DeleteAt == null);
+
             });
 
             // ShipmentOffer
@@ -414,15 +473,46 @@ namespace AppGroupCar.Data
                     .WithMany()
                     .HasForeignKey(x => x.VehicleId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasQueryFilter(b => b.DeleteAt == null);
+
             });
 
-            // Shipment1-1 ShipmentOffer
+            // Cấu hình cho bảng Shipment
             builder.Entity<Shipment>(b =>
             {
+                // 1. Luồng Đấu giá: Quan hệ 1-1 với ShipmentOffer
                 b.HasOne(x => x.ShipmentOffer)
-                    .WithOne(o => o.Shipment)
+                    .WithOne(o => o.Shipment) // Lưu ý: Class ShipmentOffer của em phải có property 'public virtual Shipment? Shipment { get; set; }'
                     .HasForeignKey<Shipment>(x => x.ShipmentOfferId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                    .IsRequired(false) // BẮT BUỘC: Thêm cái này để EF Core biết trường này được phép NULL
+                    .OnDelete(DeleteBehavior.Cascade); // Thầy nhắc nhẹ: Xóa Offer mà Cascade bay luôn Vận Đơn thực tế là đền ốm tiền đấy nhé, nhưng DB em đang thiết kế thế thì thầy tôn trọng.
+
+                // 2. Luồng Tiện chuyến: Quan hệ N-1 với Offer (1 Chuyến xe ghép có thể chở NHIỀU đơn hàng)
+                b.HasOne(x => x.Offer)
+                    .WithMany() // Nếu class Offer em có List<Shipment> thì viết là .WithMany(o => o.Shipments)
+                    .HasForeignKey(x => x.OfferId)
+                    .IsRequired(false) // BẮT BUỘC: Phải cho phép NULL
+                    .OnDelete(DeleteBehavior.Restrict); // Chỗ này nên để Restrict, xe đang chở hàng cấm không cho xóa chuyến.
+
+                b.HasOne(x => x.PickupLocation)
+                    .WithMany()
+                    .HasForeignKey(x => x.PickupLocationId)
+                    .OnDelete(DeleteBehavior.Restrict); // Rút thẻ đỏ: Cấm xóa Location nếu có Shipment xài
+
+                // 2. Cấu hình cấm xóa lan truyền cho Điểm trả
+                b.HasOne(x => x.DropoffLocation)
+                    .WithMany()
+                    .HasForeignKey(x => x.DropoffLocationId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                // 3. Query Filter xóa mềm (Giữ nguyên của em)
+                b.HasQueryFilter(x => x.DeleteAt == null);
+
+                // 4. "MÀI PHẢI KIỂM TRA KỸ" - Ráp vào đây!
+                b.ToTable(t => t.HasCheckConstraint(
+                    name: "CK_Shipment_Must_Have_Only_One_Offer_Source",
+                    sql: "(OfferId IS NOT NULL AND ShipmentOfferId IS NULL) OR (OfferId IS NULL AND ShipmentOfferId IS NOT NULL)"
+                 ));
             });
 
         }
