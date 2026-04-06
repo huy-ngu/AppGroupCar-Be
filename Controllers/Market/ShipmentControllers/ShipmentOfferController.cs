@@ -1,6 +1,7 @@
 ﻿using AppGroupCar.DTO.RequestDTO.Market.Shipment;
 using AppGroupCar.DTO.ResponseDTO;
 using AppGroupCar.DTO.ResponseDTO.Market.ShipmentDTO;
+using AppGroupCar.Entities.Market;
 using AppGroupCar.Helpers;
 using AppGroupCar.Services.Market.ShipmentOfferServices;
 using Microsoft.AspNetCore.Authorization;
@@ -25,6 +26,20 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
             var data = await _shipmentOfferService.CreateAsync(userId, request);
 
             return Ok(new ApiResponse<GetShipmentOfferDTO> { Code = 201, Data = data });
+        }
+        [HttpGet()]
+        public async Task<IActionResult> GetByShipmentRequest()
+        {
+            var data = await _shipmentOfferService.GetAll();
+            return Ok(new ApiResponse<IEnumerable<ShipmentOffer>> { Code = 201, Data = data });
+        }
+
+        [HttpGet("shipmentRequestId")]
+        [Authorize]
+        public async Task<IActionResult> GetByShipmentRequest(Guid shipmentRequestId)
+        {
+            var data = await _shipmentOfferService.GetByRequestId(shipmentRequestId);
+            return Ok(new ApiResponse<IEnumerable<GetShipmentOfferDTO>> { Code = 201, Data = data });
         }
     }
 }

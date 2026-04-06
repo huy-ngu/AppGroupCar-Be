@@ -8,9 +8,6 @@ namespace AppGroupCar.DTO.RequestDTO
         [MaxLength(200)]
         public string Name { get; set; } = null!;
 
-        [MaxLength(50)]
-        //public string? Code { get; set; }
-
         [Required]
         public LocationType LocationType { get; set; }
 
@@ -19,9 +16,5 @@ namespace AppGroupCar.DTO.RequestDTO
         [MaxLength(300)]
         public string? Address { get; set; }
 
-        //public NetTopologySuite.Geometries.Point? Coordinate { get; set; }
-
-        //[MaxLength(100)]
-        //public string? GooglePlaceId { get; set; }
     }
 }

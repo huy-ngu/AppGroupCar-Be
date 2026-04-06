@@ -26,33 +26,23 @@ namespace AppGroupCar.Services.Market.ShipmentServices
 
         public async Task<GetShipmentDTO> CreateFromShipmentOffer(CreateShipmentFromShipmentOfferDTO request)
         {
-            var shipmentOffer = await _shipmentOfferRepo.GetByIdAsync(request.ShipmentOfferId);
-            if (shipmentOffer == null)
+
+            var shipmentOffer = await _shipmentOfferRepo.GetByIdAsync(request.ShipmentOfferId) ?? throw new AppException(404, "Không tìm thấy shipmentOffer");
+
+            if (shipmentOffer.Status != ShipmentOfferStatus.Accepted)
             {
-                throw new AppException(404, "Không tìm thấy shipmentOffer");
+                throw new AppException(400, "Không được phép tạo!");
             }
 
-            var shipmentRequest = await _shipmentRequestRepo.GetByIdAsync(request.ShipmentRequestId);
-            if (shipmentRequest == null)
-            {
-                throw new AppException(404, "Không tìm thấy shipmentRequest");
-            }
+            var shipmentRequest = await _shipmentRequestRepo.GetByIdAsync(request.ShipmentRequestId) ?? throw new AppException(404, "Không tìm thấy shipmentRequest");
+
 
             var newShipment = new Shipment
             {
                 Id = Guid.NewGuid(),
                 ShipmentOfferId = shipmentOffer.Id,
-                DropoffLocationId = shipmentRequest.DropoffLocationId,
-                PickupLocationId = shipmentRequest.PickupLocationId,
-                Weight = shipmentRequest.Weight,
-                Volume = shipmentRequest.Volume,
-                HandlingNote = shipmentRequest.HandlingNote,
-                ImageUrl = shipmentRequest.ImageUrl,
-                Description = shipmentRequest.Description,
-                IsFragile = shipmentRequest.IsFragile,
                 ShipmentStatus = ShipmentStatus.Created,
                 PaymentStatus = PaymentStatus.Unpaid,
-                DeliveryDate = shipmentRequest.DeliveryDate,
             };
 
             await _shipmentRepo.AddAsync(newShipment);
@@ -62,20 +52,17 @@ namespace AppGroupCar.Services.Market.ShipmentServices
             {
                 Id = newShipment.Id,
                 ShipmentOfferId = shipmentOffer.Id,
-                DropoffLocationId = shipmentRequest.DropoffLocationId,
-                PickupLocationId = shipmentRequest.PickupLocationId,
-                Weight = shipmentRequest.Weight,
-                Volume = shipmentRequest.Volume,
-                HandlingNote = shipmentRequest.HandlingNote,
-                ImageUrl = shipmentRequest.ImageUrl,
-                Description = shipmentRequest.Description,
-                IsFragile = shipmentRequest.IsFragile,
+                DeliveryDate = shipmentRequest.DeliveryDate,
                 ShipmentStatus = ShipmentStatus.Created,
                 PaymentStatus = PaymentStatus.Unpaid,
-                DeliveryDate = shipmentRequest.DeliveryDate,
             };
 
             return response;
+        }
+
+        Task<GetShipmentDTO> IShipmentService.CreateFromOffer()
+        {
+            throw new NotImplementedException();
         }
     }
 }

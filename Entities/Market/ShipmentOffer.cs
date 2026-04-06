@@ -11,6 +11,8 @@ namespace AppGroupCar.Entities.Market
         public Guid RequestId { get; set; }
 
         [Required]
+        public Guid? OfferId { get; set; }
+        [Required]
         public Guid DriverId { get; set; }
 
         [Required]
@@ -26,6 +28,9 @@ namespace AppGroupCar.Entities.Market
         // Navigation
         [ForeignKey(nameof(RequestId))]
         public ShipmentRequest Request { get; set; } = null!;
+
+        [ForeignKey(nameof(OfferId))]
+        public Offer Offer { get; set; } = null!;
 
         [ForeignKey(nameof(DriverId))]
         public Driver Driver { get; set; } = null!;
