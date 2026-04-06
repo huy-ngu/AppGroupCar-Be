@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AppGroupCar.DTO.RequestDTO.User;
@@ -62,7 +63,7 @@ namespace AppGroupCar.Services.Auth.UserServices
             return userResponse;
         }
 
-        public async Task CreateAsync(CreateUserDTO dto)
+        public async Task<UserDto> CreateAsync(CreateUserDTO dto)
         {
             //var existing = await _userManager.FindByEmailAsync(dto.Email);
             //if (existing != null) throw new AppException(400, "Email already exists");
@@ -101,6 +102,12 @@ namespace AppGroupCar.Services.Auth.UserServices
 
                 await _userManager.AddToRolesAsync(user, dto.Roles);
             }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var userResponse = _mapper.Map<UserDto>(user);
+            userResponse.Roles = roles;
+
+            return userResponse;
         }
 
         public async Task UpdateAsync(string id, UpdateUserDTO dto)
@@ -133,8 +140,18 @@ namespace AppGroupCar.Services.Auth.UserServices
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null) throw new AppException(404, "User not found");
-            var result = await _userManager.DeleteAsync(user);
+            user.DeleteAt = DateTime.UtcNow;
+            var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded) throw new AppException(400, "Delete failed", new { errors = result.Errors.Select(e => e.Description) });
+        }
+
+        public async Task RestoreAsync(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) throw new AppException(404, "User not found");
+            user.DeleteAt = null;
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded) throw new AppException(400, "Restore failed", new { errors = result.Errors.Select(e => e.Description) });
         }
 
         public async Task ChangePassword(Guid id, string oldPassword, string newPassword)
@@ -149,6 +166,6 @@ namespace AppGroupCar.Services.Auth.UserServices
                 throw new AppException(400, "Change password failed",
                     new { errors = result.Errors.Select(e => e.Description) });
         }
-
+        
     }
 }

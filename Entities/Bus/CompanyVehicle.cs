@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using AppGroupCar.Entities.Base;
+using AppGroupCar.Entities.Market;
 
 namespace AppGroupCar.Entities.Bus
 {
@@ -23,10 +24,18 @@ namespace AppGroupCar.Entities.Bus
         public int SeatCapacity { get; set; } // 29
 
         [Required]
-        public int VehicleType { get; set; } // Coach
+        [MaxLength(500)]
+        public string? UrlImage { get; set; }
 
         [Required]
-        public int Status { get; set; }
+        [MaxLength(500)]
+        public string? RegistrationDocumentUrl { get; set; }
+
+        [Required]
+        public VehicleType VehicleType { get; set; } // Coach
+
+        [Required]
+        public VehicleStatus Status { get; set; }
 
         // Navigation
         [ForeignKey(nameof(CompanyId))]

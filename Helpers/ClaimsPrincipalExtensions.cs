@@ -23,5 +23,30 @@ namespace AppGroupCar.Helpers
             return null;
         }
 
+        /// <summary>
+        /// Lấy CompanyId từ claim "companyId". Trả về null nếu không có hoặc sai định dạng.
+        /// </summary>
+        public static Guid? GetCompanyId(this ClaimsPrincipal user)
+        {
+            var companyIdString = user.FindFirstValue("companyId");
+
+            if (Guid.TryParse(companyIdString, out Guid companyId))
+            {
+                return companyId;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Lấy FullName từ claim "fullname". Trả về null nếu không có hoặc rỗng.
+        /// </summary>
+        public static string? GetFullName(this ClaimsPrincipal user)
+        {
+            var fullName = user.FindFirstValue("fullname");
+
+            return string.IsNullOrWhiteSpace(fullName) ? null : fullName;
+        }
+
     }
 }

@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Security.Cryptography; // Cần cái này để tạo Refresh Token chuẩn
 using System.Text;
 using AppGroupCar.Entities;
+using AppGroupCar.Data;
 using AppGroupCar.Services.Auth.TokenServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -12,10 +13,12 @@ using Microsoft.IdentityModel.Tokens;
 public class TokenService : ITokenService
 {
     private readonly IConfiguration _configuration;
+    private readonly ApplicationDbContext _context;
 
-    public TokenService(IConfiguration configuration)
+    public TokenService(IConfiguration configuration, ApplicationDbContext context)
     {
         _configuration = configuration;
+        _context = context;
     }
 
     public string CreateToken(ApplicationUser user, IList<string> roles)
@@ -36,6 +39,19 @@ public class TokenService : ITokenService
             foreach (var role in roles)
             {
                 claims.Add(new Claim("Roles", role));
+            }
+        }
+
+        if (roles.Contains("ADMIN_COMPANY") || roles.Contains("STAFF_COMPANY"))
+        {
+            var companyUser = _context.CompanyUsers
+                .Where(cu => cu.UserId == user.Id && cu.DeleteAt == null && cu.IsActive)
+                .OrderByDescending(cu => cu.JoinedAt)
+                .FirstOrDefault();
+
+            if (companyUser != null)
+            {
+                claims.Add(new Claim("companyId", companyUser.CompanyId.ToString()));
             }
         }
 

@@ -37,8 +37,8 @@ namespace AppGroupCar.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromForm] CreateUserDTO dto)
         {
-            await _userService.CreateAsync(dto);
-            return Ok(new ApiResponse<object> { Data = null, Message = "User created" });
+            var user = await _userService.CreateAsync(dto);
+            return Ok(new ApiResponse<UserDto> { Data = user, Message = "User created" });
         }
 
         [HttpPut("{id}")]
@@ -55,6 +55,14 @@ namespace AppGroupCar.Controllers
         {
             await _userService.DeleteAsync(id);
             return Ok(new ApiResponse<object> { Data = null, Message = "User deleted" });
+        }
+
+        [HttpPost("{id}/restore")]
+        [Authorize(Roles = "Admin,User")]
+        public async Task<IActionResult> Restore(string id)
+        {
+            await _userService.RestoreAsync(id);
+            return Ok(new ApiResponse<object> { Data = null, Message = "User restored" });
         }
 
         [HttpPost("{id}/change-password")]
