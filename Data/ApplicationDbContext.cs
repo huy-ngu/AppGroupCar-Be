@@ -163,7 +163,7 @@ namespace AppGroupCar.Data
 
                 entity.HasIndex(x => x.ChangedAt);
 
-                b.HasQueryFilter(b => b.DeleteAt == null);
+                entity.HasQueryFilter(b => b.DeleteAt == null);
 
             });
 
