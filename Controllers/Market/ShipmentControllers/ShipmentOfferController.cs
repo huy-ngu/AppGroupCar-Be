@@ -4,6 +4,7 @@ using AppGroupCar.DTO.ResponseDTO.Market.ShipmentDTO;
 using AppGroupCar.Entities.Market;
 using AppGroupCar.Helpers;
 using AppGroupCar.Services.Market.ShipmentOfferServices;
+using Hangfire.MemoryStorage.Database;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,6 +19,7 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
         public async Task<IActionResult> Create(CreateShipmentOfferRequestDTO request)
         {
             var userIdNullable = User.GetUserId();
+            ;
             if (userIdNullable is not Guid userId)
             {
                 return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
@@ -27,6 +29,16 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
 
             return Ok(new ApiResponse<GetShipmentOfferDTO> { Code = 201, Data = data });
         }
+
+        [HttpPost("{id}/accept")]
+        [Authorize]
+        public async Task<IActionResult> AcceptShipmentOffer(Guid id)
+        {
+            await _shipmentOfferService.AcceptAsync(id);
+            return Ok(new ApiResponse<GetShipmentOfferDTO> { Code = 200 });
+
+        }
+
         [HttpGet()]
         public async Task<IActionResult> GetByShipmentRequest()
         {
@@ -41,5 +53,7 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
             var data = await _shipmentOfferService.GetByRequestId(shipmentRequestId);
             return Ok(new ApiResponse<IEnumerable<GetShipmentOfferDTO>> { Code = 201, Data = data });
         }
+
+
     }
 }

@@ -6,6 +6,7 @@ namespace AppGroupCar.DTO.ResponseDTO.Market.ShipmentDTO
 {
     public class GetShipmentOfferDTO
     {
+        public Guid Id { get; set; }
         public Guid RequestId { get; set; }
 
         public Guid DriverId { get; set; }
