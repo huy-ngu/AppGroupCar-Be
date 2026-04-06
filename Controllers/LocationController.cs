@@ -22,7 +22,7 @@ namespace AppGroupCar.Controllers
             var location = await _locationService.GetLocationByIdAsync(id);
             return Ok(location);
         }
-        [HttpGet("GetAll")]
+        [HttpGet("")]
         public async Task<IActionResult> GetAllLocation()
         {
             var location = await _locationService.GetAllAsync();
