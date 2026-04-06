@@ -13,6 +13,7 @@ namespace AppGroupCar.Entities.Bus
         // FK
         [Required]
         public Guid BookingId { get; set; }
+        public Guid SeatId { get; set; }
 
         // Ghế
         [Required]
@@ -28,6 +29,9 @@ namespace AppGroupCar.Entities.Bus
         public bool IsCheckedIn { get; set; } = false;
 
         public DateTime? CheckedInAt { get; set; }
+
+        [ForeignKey(nameof(SeatId))]
+        public virtual Seat Seat { get; set; } = null!;
 
         // Navigation
         [ForeignKey(nameof(BookingId))]

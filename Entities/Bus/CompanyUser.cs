@@ -15,9 +15,11 @@ namespace AppGroupCar.Entities.Bus
         [Required]
         public Guid UserId { get; set; }
 
-        [Required]
-        [MaxLength(50)]
-        public string RoleId { get; set; } = null!;
+        public DateTime JoinedAt { get; set; }
+
+        //[Required]
+        //[MaxLength(50)]
+        //public string RoleId { get; set; } = null!;
 
         [Required]
         public bool IsActive { get; set; } = true;

@@ -1,6 +1,9 @@
 ﻿using AppGroupCar.DTO.RequestDTO.Bus.CompanyRequest;
 using AppGroupCar.DTO.ResponseDTO.Bus.CompanyResponse;
 using AppGroupCar.DTO;
+using AppGroupCar.DTO.Filters;
+using AppGroupCar.Entities.Market;
+using AppGroupCar.DTO.Filters.Bus;
 
 namespace AppGroupCar.Services.Bus.CompanyServices
 {
@@ -8,10 +11,7 @@ namespace AppGroupCar.Services.Bus.CompanyServices
     {
         Task<CompanyDetailResponseDto?> GetByIdAsync(Guid id);
 
-        Task<PagedResult<CompanyResponseDto>> GetCompaniesAsync(
-            int pageNumber,
-            int pageSize,
-            string? keyword);
+        public Task<PagedResult<CompanyResponseDto>> FilterAsync(CompanyParameters param);
 
         Task<CompanyResponseDto> CreateCompanyAsync(CreateCompanyRequestDto dto);//, Guid userId);
 
@@ -19,7 +19,8 @@ namespace AppGroupCar.Services.Bus.CompanyServices
 
         Task DeleteCompanyAsync(Guid id);
 
-        Task<PagedResult<CompanyResponseDto>> GetPendingCompaniesAsync(int pageNumber, int pageSize);
+        public Task<PagedResult<CompanyResponseDto>> GetPendingCompaniesAsync(
+    CompanyParameters param);
 
         Task<CompanyResponseDto> ApproveCompanyAsync(Guid id, ApproveCompanyRequestDto dto);
     }

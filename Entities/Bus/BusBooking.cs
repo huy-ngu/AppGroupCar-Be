@@ -12,7 +12,7 @@ namespace AppGroupCar.Entities.Bus
         public Guid ShowtimeId { get; set; }
 
         [Required]
-        public Guid? UserId { get; set; }
+        public Guid UserId { get; set; }
 
         // Giá
         [Required]

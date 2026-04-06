@@ -4,15 +4,15 @@ using AppGroupCar.Entities.Base;
 
 namespace AppGroupCar.Entities.Bus
 {
-    [Table("CompanyDrivers")]
-    public class CompanyDriver : BaseEntity
+    [Table("CompanyDrivers_old")]
+    public class Old_CompanyDriver : BaseEntity
     {
 
-        [Required]
-        public Guid CompanyId { get; set; }
+        //[Required]
+        //public Guid CompanyId { get; set; }
 
-        [Required]
-        public Guid UserId { get; set; }
+        //[Required]
+        //public Guid UserId { get; set; }
 
         [Required]
         [MaxLength(20)]
@@ -32,12 +32,12 @@ namespace AppGroupCar.Entities.Bus
 
         public Guid? VerifiedBy { get; set; }
 
-        // Navigation
-        [ForeignKey(nameof(CompanyId))]
-        public Company Company { get; set; } = null!;
+        //Navigation
+       //[ForeignKey(nameof(CompanyId))]
+       // public Company Company { get; set; } = null!;
 
-        [ForeignKey(nameof(UserId))]
-        public ApplicationUser User { get; set; } = null!;
+       // [ForeignKey(nameof(UserId))]
+       // public ApplicationUser User { get; set; } = null!;
     }
 
 }

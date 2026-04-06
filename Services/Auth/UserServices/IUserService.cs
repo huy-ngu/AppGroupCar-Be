@@ -7,9 +7,10 @@ namespace AppGroupCar.Services.Auth.UserServices
     {
         Task<IEnumerable<UserDto>> GetAllAsync();
         Task<UserDto> GetByIdAsync(string id);
-        Task CreateAsync(CreateUserDTO dto);
+        Task<UserDto> CreateAsync(CreateUserDTO dto);
         Task UpdateAsync(string id, UpdateUserDTO dto);
         Task DeleteAsync(string id);
+        Task RestoreAsync(string id);
         Task ChangePassword(Guid id, string oldPassword, string newPassword);
     }
 }

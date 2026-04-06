@@ -32,7 +32,7 @@ namespace AppGroupCar.Data
         public DbSet<BusRoutePoint> BusRoutePoints { get; set; }
         public DbSet<BusShowtime> BusShowtimes { get; set; }
         public DbSet<Company> Companies { get; set; }
-        public DbSet<CompanyDriver> CompanyDrivers { get; set; }
+        public DbSet<Old_CompanyDriver> CompanyDrivers { get; set; }
         public DbSet<CompanyUser> CompanyUsers { get; set; }
         public DbSet<CompanyVehicle> CompanyVehicles { get; set; }
         public DbSet<ShowtimeLog> ShowtimeLogs { get; set; }
@@ -50,6 +50,9 @@ namespace AppGroupCar.Data
         public DbSet<ShipmentOffer> ShipmentOffers { get; set; }
         public DbSet<ShipmentRequest> ShipmentRequests { get; set; }
         public DbSet<Vehicle> Vehicles { get; set; }
+        public DbSet<Seat> Seats { get; set; }
+        public DbSet<SeatStatusHistory> SeatStatusHistories { get; set; }
+
 
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -77,7 +80,7 @@ namespace AppGroupCar.Data
             builder.Entity<BusRoutePoint>(b => b.ToTable("BusRoutePoints"));
             builder.Entity<BusShowtime>(b => b.ToTable("BusShowtimes"));
             builder.Entity<Company>(b => b.ToTable("Companies"));
-            builder.Entity<CompanyDriver>(b => b.ToTable("CompanyDrivers"));
+            builder.Entity<Old_CompanyDriver>(b => b.ToTable("Old_CompanyDrivers"));
             builder.Entity<CompanyUser>(b => b.ToTable("CompanyUsers"));
             builder.Entity<CompanyVehicle>(b => b.ToTable("CompanyVehicles"));
             builder.Entity<ShowtimeLog>(b => b.ToTable("ShowtimeLogs"));
@@ -94,6 +97,75 @@ namespace AppGroupCar.Data
             builder.Entity<ShipmentRequest>(b => b.ToTable("ShipmentRequests"));
             builder.Entity<Vehicle>(b => b.ToTable("Vehicles"));
 
+            builder.Entity<Seat>(entity =>
+            {
+                entity.HasKey(x => x.SeatId);
+
+                entity.Property(x => x.SeatNumber)
+                    .IsRequired()
+                    .HasMaxLength(10);
+
+                entity.Property(x => x.Status)
+                    .HasConversion<int>();
+
+                entity.Property(x => x.LastUpdatedAt)
+                    .IsRequired();
+
+                entity.HasOne(x => x.Showtime)
+                    .WithMany(x => x.Seats)
+                    .HasForeignKey(x => x.ShowtimeId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(x => x.BookingSeats)
+                    .WithOne(x => x.Seat)
+                    .HasForeignKey(x => x.SeatId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasMany(x => x.SeatStatusHistories)
+                    .WithOne(x => x.Seat)
+                    .HasForeignKey(x => x.SeatId);
+
+                // Index cực quan trọng
+
+                entity.HasIndex(x => x.ShowtimeId);
+            });
+
+            builder.Entity<SeatStatusHistory>(entity =>
+            {
+                entity.HasKey(x => x.HistoryId);
+
+                entity.Property(x => x.OldStatus)
+                    .HasConversion<int>();
+
+                entity.Property(x => x.NewStatus)
+                    .HasConversion<int>();
+
+                entity.Property(x => x.Reason)
+                    .HasMaxLength(255);
+
+                entity.Property(x => x.ChangedBy)
+                    .IsRequired();
+
+                entity.Property(x => x.ChangedAt)
+                    .IsRequired();
+
+                entity.HasOne(x => x.User)
+                    .WithMany()
+                    .HasForeignKey(x => x.ChangedBy)
+                    .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(x => x.Seat)
+                    .WithMany(x => x.SeatStatusHistories)
+                    .HasForeignKey(x => x.SeatId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                // Index log
+
+                entity.HasIndex(x => x.SeatId);
+
+                entity.HasIndex(x => x.ChangedAt);
+
+                entity.HasQueryFilter(b => b.DeleteAt == null);
+
+            });
 
             // CompanyUser
             builder.Entity<CompanyUser>(b =>
@@ -113,25 +185,26 @@ namespace AppGroupCar.Data
             });
 
             // CompanyDriver
-            builder.Entity<CompanyDriver>(b =>
-            {
-                b.HasOne(x => x.Company)
-                    .WithMany()
-                    .HasForeignKey(x => x.CompanyId)
-                    .OnDelete(DeleteBehavior.Cascade);
+            //builder.Entity<CompanyDriver>(b =>
+            //{
+            //    b.HasOne(x => x.Company)
+            //        .WithMany()
+            //        .HasForeignKey(x => x.CompanyId)
+            //        .OnDelete(DeleteBehavior.Cascade);
 
-                b.HasOne(x => x.User)
-                    .WithMany()
-                    .HasForeignKey(x => x.UserId)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                b.HasQueryFilter(b => b.DeleteAt == null);
-
-            });
+            //    b.HasOne(x => x.User)
+            //        .WithMany()
+            //        .HasForeignKey(x => x.UserId)
+            //        .OnDelete(DeleteBehavior.Restrict);
+            //});
 
             // CompanyVehicle
             builder.Entity<CompanyVehicle>(b =>
             {
+                b.HasIndex(x => x.PlateNumber)
+                    .IsUnique()
+                    .HasFilter("[DeleteAt] IS NULL");
+
                 b.HasOne(x => x.Company)
                     .WithMany()
                     .HasForeignKey(x => x.CompanyId)
@@ -221,6 +294,10 @@ namespace AppGroupCar.Data
                     .WithMany(bk => bk.Seats)
                     .HasForeignKey(x => x.BookingId)
                     .OnDelete(DeleteBehavior.Cascade);
+                b.HasOne(x => x.Seat)
+        .WithMany(x => x.BookingSeats)
+        .HasForeignKey(x => x.SeatId)
+        .OnDelete(DeleteBehavior.Restrict);
             });
             // Driver: key = UserId,1-1 với ApplicationUser
             builder.Entity<Driver>(b =>

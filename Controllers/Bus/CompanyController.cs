@@ -1,4 +1,8 @@
-﻿using AppGroupCar.DTO.RequestDTO.Bus.CompanyRequest;
+﻿using AppGroupCar.DTO;
+using AppGroupCar.DTO.Filters.Bus;
+using AppGroupCar.DTO.RequestDTO.Bus.CompanyRequest;
+using AppGroupCar.DTO.ResponseDTO;
+using AppGroupCar.DTO.ResponseDTO.Bus.CompanyResponse;
 using AppGroupCar.Services.Bus.CompanyServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,6 +11,7 @@ namespace AppGroupCar.Controllers.Bus
 {
     [ApiController]
     [Route("companies")]
+    [Authorize(Roles = "Admin")]
     public class CompanyController : ControllerBase
     {
         private readonly ICompanyService _companyService;
@@ -37,18 +42,10 @@ namespace AppGroupCar.Controllers.Bus
 
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetCompanies(
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 10,
-            [FromQuery] string? keyword = null)
+        public async Task<IActionResult> GetCompanies([FromQuery]CompanyParameters param)
         {
-            var result = await _companyService.GetCompaniesAsync(
-                pageNumber,
-                pageSize,
-                keyword
-            );
-
-            return Ok(result);
+            var data = await _companyService.FilterAsync(param);
+            return Ok(new ApiResponse<PagedResult<CompanyResponseDto>> { Data = data });
         }
 
         [HttpPut("{id}")]
@@ -75,13 +72,10 @@ namespace AppGroupCar.Controllers.Bus
         //api lấy danh sách công ty đang ở trạng thái pending
         [HttpGet("pending")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetPendingCompanies(
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetPendingCompanies([FromQuery] CompanyParameters param)
         {
-            var result = await _companyService.GetPendingCompaniesAsync(pageNumber, pageSize);
-
-            return Ok(result);
+            var data = await _companyService.GetPendingCompaniesAsync(param);
+            return Ok(new ApiResponse<PagedResult<CompanyResponseDto>> { Data = data });
         }
 
         //api chuyển trạng thái công ty từ pending sang approved
