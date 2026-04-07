@@ -1,0 +1,16 @@
+using AppGroupCar.DTO.ResponseDTO.Bus.ShowtimeResponse;
+using AppGroupCar.Entities.Bus;
+using AutoMapper;
+
+namespace AppGroupCar.AutoMapper.Bus
+{
+    public class BusShowtimeMapping : Profile
+    {
+        public BusShowtimeMapping()
+        {
+            CreateMap<BusShowtime, BusShowtimeResponse>()
+                .ForMember(d => d.CompanyVehicleId, opt => opt.MapFrom(s => s.CompanyVehicleId))
+                .ForMember(d => d.SeatCount, opt => opt.MapFrom(s => s.Seats.Count(x => x.DeleteAt == null)));
+        }
+    }
+}

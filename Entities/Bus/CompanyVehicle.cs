@@ -8,6 +8,7 @@ namespace AppGroupCar.Entities.Bus
     [Table("CompanyVehicles")]
     public class CompanyVehicle : BaseEntity
     {
+        [Key]
         public Guid CompanyVehicleId { get; set; }
 
         [Required]

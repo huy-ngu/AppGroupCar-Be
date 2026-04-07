@@ -78,8 +78,8 @@ namespace AppGroupCar.Repositories.BaseRepo
             }
             else
             {
-                // Nếu lười không truyền OrderBy, tự động fallback sắp xếp theo Id của BaseEntity
-                query = query.OrderBy(e => e.Id);
+                // Fallback theo thời điểm tạo để tránh phụ thuộc vào cột Id tùy biến ở một số entity.
+                query = query.OrderBy(e => e.CreatedAt);
             }
 
             // 5. Cắt trang (Pagination)

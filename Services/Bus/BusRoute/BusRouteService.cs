@@ -193,6 +193,17 @@ namespace AppGroupCar.Services.Bus.BusRoute
             await _context.SaveChangesAsync();
         }
 
+        public async Task<bool> ExistsForCompanyAsync(
+            Guid routeId,
+            Guid companyId)
+        {
+            return await _context.BusRoutes
+                .AnyAsync(x =>
+                    x.Id == routeId &&
+                    x.CompanyId == companyId &&
+                    x.DeleteAt == null);
+        }
+
         // VALIDATE ROUTE
 
         private static void ValidateRoutePoints(

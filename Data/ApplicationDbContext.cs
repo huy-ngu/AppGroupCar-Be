@@ -99,6 +99,8 @@ namespace AppGroupCar.Data
 
             builder.Entity<Seat>(entity =>
             {
+                entity.Property(x => x.Id)
+                    .ValueGeneratedNever();
                 entity.HasKey(x => x.SeatId);
 
                 entity.Property(x => x.SeatNumber)
@@ -128,10 +130,16 @@ namespace AppGroupCar.Data
                 // Index cực quan trọng
 
                 entity.HasIndex(x => x.ShowtimeId);
+
+                entity.HasIndex(x => new { x.ShowtimeId, x.SeatNumber })
+                    .IsUnique()
+                    .HasFilter("[DeleteAt] IS NULL");
             });
 
             builder.Entity<SeatStatusHistory>(entity =>
             {
+                entity.Property(x => x.Id)
+                    .ValueGeneratedNever();
                 entity.HasKey(x => x.HistoryId);
 
                 entity.Property(x => x.OldStatus)
@@ -201,6 +209,9 @@ namespace AppGroupCar.Data
             // CompanyVehicle
             builder.Entity<CompanyVehicle>(b =>
             {
+                b.Ignore(x => x.Id);
+                b.HasKey(x => x.CompanyVehicleId);
+
                 b.HasIndex(x => x.PlateNumber)
                     .IsUnique()
                     .HasFilter("[DeleteAt] IS NULL");
@@ -247,6 +258,7 @@ namespace AppGroupCar.Data
                 b.HasOne(x => x.CompanyVehicle)
                     .WithMany()
                     .HasForeignKey(x => x.CompanyVehicleId)
+                    .HasPrincipalKey(x => x.CompanyVehicleId)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 b.HasOne(x => x.Route)
@@ -290,6 +302,10 @@ namespace AppGroupCar.Data
             // BusBookingSeat
             builder.Entity<BusBookingSeat>(b =>
             {
+                b.HasIndex(x => x.SeatId)
+                    .IsUnique()
+                    .HasFilter("[DeleteAt] IS NULL");
+
                 b.HasOne(x => x.Booking)
                     .WithMany(bk => bk.Seats)
                     .HasForeignKey(x => x.BookingId)

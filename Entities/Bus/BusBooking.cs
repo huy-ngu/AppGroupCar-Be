@@ -23,6 +23,9 @@ namespace AppGroupCar.Entities.Bus
         [Required]
         public BusBookingStatus Status { get; set; }
 
+        // Thời điểm hết hạn giữ chỗ khi booking đang Pending
+        public DateTime? ExpireAt { get; set; }
+
         // Navigation
         [ForeignKey(nameof(ShowtimeId))]
         public BusShowtime Showtime { get; set; } = null!;

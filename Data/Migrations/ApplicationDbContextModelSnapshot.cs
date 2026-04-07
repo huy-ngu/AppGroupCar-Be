@@ -129,6 +129,9 @@ namespace AppGroupCar.Migrations
                     b.Property<DateTime?>("DeleteAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("ExpireAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("LastUpdateAt")
                         .HasColumnType("datetime2");
 
@@ -180,8 +183,10 @@ namespace AppGroupCar.Migrations
                     b.Property<Guid>("SeatId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("SeatNumber")
-                        .HasColumnType("int");
+                    b.Property<string>("SeatNumber")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("TicketCode")
                         .IsRequired()
@@ -190,7 +195,9 @@ namespace AppGroupCar.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SeatId");
+                    b.HasIndex("SeatId")
+                        .IsUnique()
+                        .HasFilter("[DeleteAt] IS NULL");
 
                     b.HasIndex("TicketCode")
                         .IsUnique();
@@ -450,14 +457,11 @@ namespace AppGroupCar.Migrations
 
             modelBuilder.Entity("AppGroupCar.Entities.Bus.CompanyVehicle", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<Guid>("CompanyVehicleId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("CompanyId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CompanyVehicleId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
@@ -496,7 +500,7 @@ namespace AppGroupCar.Migrations
                     b.Property<int>("VehicleType")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.HasKey("CompanyVehicleId");
 
                     b.HasIndex("CompanyId");
 
@@ -566,7 +570,6 @@ namespace AppGroupCar.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("LastUpdateAt")
@@ -590,6 +593,10 @@ namespace AppGroupCar.Migrations
 
                     b.HasIndex("ShowtimeId");
 
+                    b.HasIndex("ShowtimeId", "SeatNumber")
+                        .IsUnique()
+                        .HasFilter("[DeleteAt] IS NULL");
+
                     b.ToTable("Seats");
                 });
 
@@ -612,7 +619,6 @@ namespace AppGroupCar.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("LastUpdateAt")
