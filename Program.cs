@@ -19,6 +19,8 @@ using AppGroupCar.Services.Market.BookingServices;
 using AppGroupCar.Services.Bus.CompanyServices;
 using AppGroupCar.Services.Bus.CompanyVehicleServices;
 using AppGroupCar.Services.Bus.SeatLayoutServices;
+using AppGroupCar.Services.Bus.ShowtimeSeatServices;
+using AppGroupCar.Services.Bus.ShowtimeServices;
 using AppGroupCar.Services.Bus.UserCompanyServices;
 using AppGroupCar.Services.Market.MarketDriverServices;
 using AppGroupCar.Services.Market.RideRequestServices;
@@ -185,6 +187,8 @@ namespace AppGroupCar
                 builder.Services.AddScoped<IUCService, UCService>();
                 builder.Services.AddScoped<ICompanyVehicleService, CompanyVehicleService>();
                 builder.Services.AddScoped<ISeatLayoutService, SeatLayoutService>();
+                builder.Services.AddScoped<IBusShowtimeService, BusShowtimeService>();
+                builder.Services.AddScoped<IShowtimeSeatService, ShowtimeSeatService>();
                 builder.Services.AddScoped<IMarketDriverService, MarketDriverService>();
                 builder.Services.AddScoped<IVehicleService, VehicleService>();
                 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -210,6 +214,7 @@ namespace AppGroupCar
                 builder.Services.AddAutoMapper(cfg => { }, typeof(BusRouteMapping).Assembly);
                 builder.Services.AddAutoMapper(cfg => { }, typeof(CompanyVehicleMapping).Assembly);
                 builder.Services.AddAutoMapper(cfg => { }, typeof(VehicleSeatLayoutMapping).Assembly);
+                builder.Services.AddAutoMapper(cfg => { }, typeof(BusShowtimeMapping).Assembly);
 
                 //Cấu hình Hangfire
                 builder.Services.AddHangfire(config => config

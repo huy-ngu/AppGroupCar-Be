@@ -24,5 +24,9 @@ namespace AppGroupCar.Services.Bus.BusRoute
         Task DeleteAsync(
             Guid id,
             Guid companyId);
+
+        Task<bool> ExistsForCompanyAsync(
+            Guid routeId,
+            Guid companyId);
     }
 }

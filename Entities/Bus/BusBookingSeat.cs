@@ -13,11 +13,14 @@ namespace AppGroupCar.Entities.Bus
         // FK
         [Required]
         public Guid BookingId { get; set; }
+
+        [Required]
         public Guid SeatId { get; set; }
 
         // Ghế
         [Required]
-        public int SeatNumber { get; set; }
+        [MaxLength(10)]
+        public string SeatNumber { get; set; } = null!;
 
         // Vé / QR
         [Required]

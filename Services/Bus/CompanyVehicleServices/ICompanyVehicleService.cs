@@ -10,5 +10,6 @@ namespace AppGroupCar.Services.Bus.CompanyVehicleServices
         Task<CompanyVehicleDetailResponseDto> CreateAsync(Guid companyId, CreateCompanyVehicleRequest dto);
         Task<CompanyVehicleResponseDto> UpdateAsync(Guid id, Guid companyId, UpdateCompanyVehicleRequest dto);
         Task DeleteAsync(Guid id, Guid companyId);
+        Task<string> GetSeatLayoutJsonByVehicleAsync(Guid companyVehicleId, Guid companyId);
     }
 }

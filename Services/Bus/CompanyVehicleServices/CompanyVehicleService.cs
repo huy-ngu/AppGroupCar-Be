@@ -128,11 +128,14 @@ namespace AppGroupCar.Services.Bus.CompanyVehicleServices
             if (entity == null)
                 throw new AppException(404, "Company vehicle not found");
 
-            var seatLayout = await _seatLayoutRepo.GetQueryable()
-                .FirstOrDefaultAsync(x => x.Id == dto.SeatLayoutId && x.DeleteAt == null);
+            if (dto.SeatLayoutId.HasValue)
+            {
+                var seatLayout = await _seatLayoutRepo.GetQueryable()
+                    .FirstOrDefaultAsync(x => x.Id == dto.SeatLayoutId.Value && x.DeleteAt == null);
 
-            if (seatLayout == null)
-                throw new AppException(404, "Seat layout not found");
+                if (seatLayout == null)
+                    throw new AppException(404, "Seat layout not found");
+            }
 
             var oldVehicleImageUrl = entity.UrlImage;
             var oldRegistrationDocumentUrl = entity.RegistrationDocumentUrl;
@@ -140,10 +143,30 @@ namespace AppGroupCar.Services.Bus.CompanyVehicleServices
             string? newVehicleImagePublicId = null;
             string? newRegistrationPublicId = null;
 
-            _mapper.Map(dto, entity);
-
             try
             {
+                if (dto.SeatLayoutId.HasValue)
+                    entity.SeatLayoutId = dto.SeatLayoutId.Value;
+
+                if (dto.SeatCapacity.HasValue)
+                    entity.SeatCapacity = dto.SeatCapacity.Value;
+
+                if (dto.VehicleType.HasValue)
+                {
+                    if (!Enum.IsDefined(typeof(Entities.Market.VehicleType), dto.VehicleType.Value))
+                        throw new AppException(400, "Invalid vehicle type");
+
+                    entity.VehicleType = (Entities.Market.VehicleType)dto.VehicleType.Value;
+                }
+
+                if (dto.Status.HasValue)
+                {
+                    if (!Enum.IsDefined(typeof(Entities.Market.VehicleStatus), dto.Status.Value))
+                        throw new AppException(400, "Invalid vehicle status");
+
+                    entity.Status = (Entities.Market.VehicleStatus)dto.Status.Value;
+                }
+
                 if (dto.UrlImage != null)
                 {
                     var vehicleUpload = await _photoService.UploadPhotoAsync(dto.UrlImage, "company-vehicles");
@@ -211,6 +234,24 @@ namespace AppGroupCar.Services.Bus.CompanyVehicleServices
             entity.DeleteAt = DateTime.UtcNow;
             _repo.Update(entity);
             await _repo.SaveChangesAsync();
+        }
+
+        public async Task<string> GetSeatLayoutJsonByVehicleAsync(Guid companyVehicleId, Guid companyId)
+        {
+            var entity = await _repo.GetQueryable()
+                .Include(x => x.VehicleSeatLayout)
+                .FirstOrDefaultAsync(x =>
+                    x.CompanyVehicleId == companyVehicleId &&
+                    x.CompanyId == companyId &&
+                    x.DeleteAt == null);
+
+            if (entity == null)
+                throw new AppException(404, "Company vehicle not found");
+
+            if (entity.VehicleSeatLayout == null || entity.VehicleSeatLayout.DeleteAt != null)
+                throw new AppException(404, "Vehicle seat layout not found");
+
+            return entity.VehicleSeatLayout.LayoutJson;
         }
     }
 }
