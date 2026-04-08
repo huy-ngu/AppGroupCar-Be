@@ -25,6 +25,7 @@ namespace AppGroupCar.Services.Market.BookingServices
         public async Task<IEnumerable<BookingResponseDTO>> GetAllAsync()
         {
             var bookings = await _bookingRepository.GetQueryable()
+                .Where(b => b.DeleteAt == null)
                 .Select(b => new BookingResponseDTO
                 {
                     BookingId = b.Id,
@@ -54,6 +55,40 @@ namespace AppGroupCar.Services.Market.BookingServices
 
             return bookings;
         }
+        public async Task<IEnumerable<BookingResponseDTO>> GetMyBookingsAsync(Guid customerId)
+        {
+            if (customerId == Guid.Empty) throw new AppException(400, "ID không hợp lệ");
+
+            var bookings = await _bookingRepository.GetQueryable()
+                .Where(b => b.CustomerId == customerId && b.DeleteAt == null)
+                .Select(b => new BookingResponseDTO
+                {
+                    BookingId = b.Id,
+                    OfferId = b.OfferId,
+                    CustomerId = b.CustomerId,
+                    Quantity = b.Quantity,
+                    Status = b.Status,
+                    TotalPrice = b.TotalPrice,
+                    PaymentStatus = b.PaymentStatus,
+                    Items = b.Items.Select(i => new BookingItemBooking
+                    {
+                        ItemId = i.Id,
+                        Price = i.Price,
+                        PickupLocation = new LocationBooking
+                        {
+                            LocationId = i.PickupLocation.Id,
+                            LocationName = i.PickupLocation.Name,
+                        },
+                        DropoffLocation = new LocationBooking
+                        {
+                            LocationId = i.DropoffLocation.Id,
+                            LocationName = i.DropoffLocation.Name,
+                        }
+                    })
+                }).ToListAsync();
+
+            return bookings;
+        }
 
         public async Task<BookingResponseDTO> GetByIdAsync(Guid bookingId)
         {
@@ -61,7 +96,7 @@ namespace AppGroupCar.Services.Market.BookingServices
 
             // Dùng .Select() NGAY TRÊN IQueryable
             var response = await _bookingRepository.GetQueryable()
-                .Where(b => b.Id == bookingId)
+                .Where(b => b.Id == bookingId && b.DeleteAt == null)
                 // Áp dụng luôn Mapping vào thẳng câu SQL
                 .Select(b => new BookingResponseDTO
                 {
@@ -112,9 +147,25 @@ namespace AppGroupCar.Services.Market.BookingServices
 
         public async Task<BookingResponseDTO> CreateWithBookingIteamsAsync(CreateWithBookingIteamsRequestDTO request)
         {
+            if (request == null)
+            {
+                throw new AppException(400, "Request không hợp lệ");
+            }
+
+            if (request.CustomerId == Guid.Empty)
+            {
+                throw new AppException(400, "CustomerId không hợp lệ");
+            }
+
             if (request.ItemRequestDTOs == null)
             {
                 throw new AppException(400, "Phải có bookingItems");
+            }
+
+            var bookingItems = request.ItemRequestDTOs.ToList();
+            if (!bookingItems.Any())
+            {
+                throw new AppException(400, "Phải có ít nhất 1 booking item");
             }
 
             var offer = await _offerRepository.GetQueryable()
@@ -128,9 +179,14 @@ namespace AppGroupCar.Services.Market.BookingServices
                 throw new AppException(400, "Không tìm thấy offer");
             }
 
+            if (offer.SharedRideDetail == null)
+            {
+                throw new AppException(400, "Offer không có thông tin SharedRideDetail");
+            }
+
             int availableSeats = offer.SharedRideDetail.AvailableSeats;
 
-            if (request.ItemRequestDTOs.Count() > availableSeats)
+            if (bookingItems.Count > availableSeats)
             {
                 throw new AppException(400, "Không đủ ghế");
             }
@@ -142,9 +198,16 @@ namespace AppGroupCar.Services.Market.BookingServices
 
 
             decimal totalprice = 0;
-
-            foreach (var item in request.ItemRequestDTOs)
+            foreach (var item in bookingItems)
             {
+                if (item.PickupLocationId == Guid.Empty || item.DropoffLocationId == Guid.Empty)
+                {
+                    throw new AppException(400, "PickupLocationId hoặc DropoffLocationId không hợp lệ");
+                }
+                if (item.Price <= 0)
+                {
+                    throw new AppException(400, "Giá tiền phải lớn hơn 0");
+                }
                 totalprice += item.Price;
             }
 
@@ -156,9 +219,9 @@ namespace AppGroupCar.Services.Market.BookingServices
                 Status = BookingStatus.Pending,
                 PaymentStatus = PaymentStatus.Unpaid,
                 CreatedAt = DateTime.UtcNow,
-                Quantity = request.ItemRequestDTOs.Count(),
+                Quantity = bookingItems.Count,
                 TotalPrice = totalprice,
-                Items = request.ItemRequestDTOs.Select(item => new BookingItem
+                Items = bookingItems.Select(item => new BookingItem
                 {
                     Id = Guid.NewGuid(),
                     Price = item.Price,
@@ -166,7 +229,7 @@ namespace AppGroupCar.Services.Market.BookingServices
                     PickupLocationId = item.PickupLocationId,
                 }).ToList()
             };
-            offer.SharedRideDetail.AvailableSeats = availableSeats - request.ItemRequestDTOs.Count();
+            offer.SharedRideDetail.AvailableSeats = availableSeats - bookingItems.Count;
 
             await _bookingRepository.AddAsync(newBooking);
 
@@ -176,14 +239,20 @@ namespace AppGroupCar.Services.Market.BookingServices
                 BookingId = newBooking.Id,
                 CustomerId = request.CustomerId,
                 OfferId = request.OfferId,
-                Quantity = request.ItemRequestDTOs.Count(),
+                Quantity = bookingItems.Count,
                 TotalPrice = totalprice
             };
         }
 
         public async Task UpdateAsync(UpdateBookingRequestDTO request)
         {
-            var booking = await _bookingRepository.GetByIdAsync(request.Id);
+            if (request.Id == Guid.Empty)
+            {
+                throw new AppException(400, "ID không hợp lệ");
+            }
+
+            var booking = await _bookingRepository.GetQueryable()
+                .FirstOrDefaultAsync(x => x.Id == request.Id && x.DeleteAt == null);
 
             if (booking == null)
             {
