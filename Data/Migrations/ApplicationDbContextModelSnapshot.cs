@@ -1256,7 +1256,7 @@ namespace AppGroupCar.Migrations
                     b.Property<DateTime?>("LastUpdateAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("OfferId")
+                    b.Property<Guid?>("OfferId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("ProposedPrice")
@@ -1842,8 +1842,7 @@ namespace AppGroupCar.Migrations
                     b.HasOne("AppGroupCar.Entities.Market.Offer", "Offer")
                         .WithMany()
                         .HasForeignKey("OfferId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("AppGroupCar.Entities.Market.ShipmentRequest", "Request")
                         .WithMany("Offers")

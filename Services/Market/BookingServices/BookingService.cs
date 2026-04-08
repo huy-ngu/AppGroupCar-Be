@@ -158,14 +158,12 @@ namespace AppGroupCar.Services.Market.BookingServices
                 CreatedAt = DateTime.UtcNow,
                 Quantity = request.ItemRequestDTOs.Count(),
                 TotalPrice = totalprice,
-                // Sử dụng Navigation Property thay vì dùng Repository con!
                 Items = request.ItemRequestDTOs.Select(item => new BookingItem
                 {
                     Id = Guid.NewGuid(),
                     Price = item.Price,
                     DropoffLocationId = item.DropoffLocationId,
                     PickupLocationId = item.PickupLocationId,
-
                 }).ToList()
             };
             offer.SharedRideDetail.AvailableSeats = availableSeats - request.ItemRequestDTOs.Count();

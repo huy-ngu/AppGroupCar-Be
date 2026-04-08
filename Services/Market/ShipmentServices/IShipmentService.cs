@@ -5,7 +5,6 @@ namespace AppGroupCar.Services.Market.ShipmentServices
 {
     public interface IShipmentService
     {
-        Task<GetShipmentDTO> CreateFromShipmentOffer(CreateShipmentFromShipmentOfferDTO request);
-        Task<GetShipmentDTO> CreateFromOffer();
+        Task UpdateAsync(UpdateShipmentDTO request);
     }
 }

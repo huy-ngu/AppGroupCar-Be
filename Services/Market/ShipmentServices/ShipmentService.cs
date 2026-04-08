@@ -6,63 +6,18 @@ using AppGroupCar.Repositories.BaseRepo;
 
 namespace AppGroupCar.Services.Market.ShipmentServices
 {
-    public class ShipmentService : IShipmentService
+    public class ShipmentService(
+            IBaseRepository<Shipment> _shipmentRepo
+        ) : IShipmentService
     {
-        private readonly IBaseRepository<Shipment> _shipmentRepo;
-        private readonly IBaseRepository<ShipmentRequest> _shipmentRequestRepo;
-        private readonly IBaseRepository<ShipmentOffer> _shipmentOfferRepo;
-
-
-        public ShipmentService(IBaseRepository<Shipment> shipmentRepo, IBaseRepository<ShipmentRequest> shipmentRequestRepo, IBaseRepository<ShipmentOffer> shipmentOfferRepo)
+        public async Task UpdateAsync(UpdateShipmentDTO request)
         {
-            _shipmentRepo = shipmentRepo;
-            _shipmentRequestRepo = shipmentRequestRepo;
-            _shipmentOfferRepo = shipmentOfferRepo;
-        }
-        public Task CreateFromOffer()
-        {
-            throw new NotImplementedException();
-        }
+            var shipment = await _shipmentRepo.GetByIdAsync(request.Id) ?? throw new AppException(404, "Không tìm thấy bản ghi");
+            if (request.ShipmentStatus is not null) shipment.ShipmentStatus = (ShipmentStatus)request.ShipmentStatus;
 
-        public async Task<GetShipmentDTO> CreateFromShipmentOffer(CreateShipmentFromShipmentOfferDTO request)
-        {
+            if (request.PaymentStatus is not null) { shipment.PaymentStatus = shipment.PaymentStatus; }
 
-            var shipmentOffer = await _shipmentOfferRepo.GetByIdAsync(request.ShipmentOfferId) ?? throw new AppException(404, "Không tìm thấy bản ghi");
-
-            if (shipmentOffer.Status != ShipmentOfferStatus.Accepted)
-            {
-                throw new AppException(400, "Không được phép tạo!");
-            }
-
-            var shipmentRequest = await _shipmentRequestRepo.GetByIdAsync(request.ShipmentRequestId) ?? throw new AppException(404, "Không tìm thấy bản ghi");
-
-
-            var newShipment = new Shipment
-            {
-                Id = Guid.NewGuid(),
-                ShipmentOfferId = shipmentOffer.Id,
-                ShipmentStatus = ShipmentStatus.Created,
-                PaymentStatus = PaymentStatus.Unpaid,
-            };
-
-            await _shipmentRepo.AddAsync(newShipment);
             await _shipmentRepo.SaveChangesAsync();
-
-            GetShipmentDTO response = new GetShipmentDTO
-            {
-                Id = newShipment.Id,
-                ShipmentOfferId = shipmentOffer.Id,
-                DeliveryDate = shipmentRequest.DeliveryDate,
-                ShipmentStatus = ShipmentStatus.Created,
-                PaymentStatus = PaymentStatus.Unpaid,
-            };
-
-            return response;
-        }
-
-        Task<GetShipmentDTO> IShipmentService.CreateFromOffer()
-        {
-            throw new NotImplementedException();
         }
     }
 }

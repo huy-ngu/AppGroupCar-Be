@@ -10,11 +10,11 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
     [Route("api/[controller]")]
     public class ShipmentController(IShipmentService shipmentService) : ControllerBase
     {
-        [HttpPost]
-        public async Task<IActionResult> CreateFromShipmentOffer(CreateShipmentFromShipmentOfferDTO request)
+        [HttpPatch]
+        public async Task<IActionResult> CreateFromShipmentOffer(UpdateShipmentDTO request)
         {
-            var data = await shipmentService.CreateFromShipmentOffer(request);
-            return Ok(new ApiResponse<GetShipmentDTO> { Code = 201, Data = data });
+            await shipmentService.UpdateAsync(request);
+            return Ok(new ApiResponse<GetShipmentDTO> { Code = 200 });
 
         }
     }

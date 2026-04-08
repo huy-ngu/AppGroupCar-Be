@@ -10,14 +10,20 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
     public class ShipmentOfferService(
         IBaseRepository<ShipmentOffer> _shipmentOfferRepo,
         IBaseRepository<Offer> _offerRepo,
-        IBaseRepository<Shipment> _shipmentRepo
+        IBaseRepository<Shipment> _shipmentRepo,
+        IBaseRepository<ShipmentRequest> _shipmentRequestRepo
         ) : IShipmentOfferService
     {
-        public async Task AcceptAsync(Guid shipmentOfferId)
+        public async Task AcceptAsync(Guid shipmentOfferId, Guid UserId)
         {
             var shipmentOffer = await _shipmentOfferRepo.GetByIdAsync(shipmentOfferId) ?? throw new AppException(404, "Không tìm thấy bản ghi");
 
+            var shipmentRequest = await _shipmentRequestRepo.GetByIdAsync(shipmentOffer.RequestId) ?? throw new AppException(404, "Không tìm thấy bản ghi");
 
+            if (UserId != shipmentRequest.CustomerId)
+            {
+                throw new AppException(403, "Bạn không được phép sửa bản ghi này");
+            }
             shipmentOffer.Status = ShipmentOfferStatus.Accepted;
             _shipmentOfferRepo.Update(shipmentOffer);
 
@@ -32,7 +38,6 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
 
             await _shipmentOfferRepo.SaveChangesAsync();
         }
-
         public async Task<GetShipmentOfferDTO> CreateAsync(Guid driverId, CreateShipmentOfferRequestDTO request)
         {
             var newShipmentOffer = new ShipmentOffer
@@ -42,6 +47,7 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
                 RequestId = request.RequestId,
                 VehicleId = request.VehicleId,
                 ProposedPrice = request.ProposedPrice,
+                OfferId = null
             };
             await _shipmentOfferRepo.AddAsync(newShipmentOffer);
 
@@ -79,6 +85,7 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
             var response = new GetShipmentOfferDTO
             {
                 Id = newShipmentOffer.Id,
+                OfferId = newShipmentOffer.OfferId,
                 RequestId = newShipmentOffer.RequestId,
                 DriverId = newShipmentOffer.DriverId,
                 VehicleId = newShipmentOffer.VehicleId,
@@ -94,20 +101,32 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
             return list;
         }
 
-        public async Task<IEnumerable<GetShipmentOfferDTO>> GetByRequestId(Guid ShipmentRequestId)
+        public async Task<IEnumerable<GetDetailShipmentOfferDTO>> GetByRequestId(Guid ShipmentRequestId)
         {
             var shipmentOffers = await _shipmentOfferRepo.GetQueryable()
                                 .AsNoTracking()
                                 .Where(s => s.Id == ShipmentRequestId)
-                                .Select(n => new GetShipmentOfferDTO
+                                .Select(n => new GetDetailShipmentOfferDTO
                                 {
                                     Id = n.Id,
                                     RequestId = n.RequestId,
-                                    DriverId = n.DriverId,
-                                    VehicleId = n.VehicleId,
                                     ProposedPrice = n.ProposedPrice,
+                                    Status = n.Status,
+                                    Driver = new DriverShipmentOfferDTO
+                                    {
+                                        DriverId = n.DriverId,
+                                        DriverName = n.Driver.Name
+                                    },
+                                    Vehicle = new VehicleShipmentOfferDTO
+                                    {
+                                        VehicleId = n.VehicleId,
+                                        VehicleBrand = n.Vehicle.Brand,
+                                    },
+
                                 }).ToListAsync();
             return shipmentOffers;
         }
+
+
     }
 }

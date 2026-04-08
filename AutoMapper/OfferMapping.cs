@@ -28,9 +28,8 @@ namespace AppGroupCar.AutoMapper
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
             CreateMap<Offer, GetOfferDTO>()
-                .ForMember(dest => dest.DriverName, opt => opt.MapFrom(src => src.Driver != null ? src.Driver.Name : string.Empty))
-                .ForMember(dest => dest.VehicleName, opt => opt.MapFrom(src => src.Vehicle != null ? src.Vehicle.Brand : string.Empty));
-
+            .ForMember(dest => dest.DriverName, opt => opt.MapFrom(src => src.Driver.Name))
+            .ForMember(dest => dest.VehicleName, opt => opt.MapFrom(src => src.Vehicle.Brand));
 
         }
     }

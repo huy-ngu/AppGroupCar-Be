@@ -14,12 +14,12 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
     [Route("api/[controller]")]
     public class ShipmentOfferController(IShipmentOfferService _shipmentOfferService) : ControllerBase
     {
-        [HttpPost]
+        [HttpPost("request")]
         [Authorize(Roles = "Driver")]
-        public async Task<IActionResult> Create(CreateShipmentOfferRequestDTO request)
+        public async Task<IActionResult> CreateFromRequest(CreateShipmentOfferRequestDTO request)
         {
             var userIdNullable = User.GetUserId();
-            ;
+
             if (userIdNullable is not Guid userId)
             {
                 return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
@@ -29,13 +29,35 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
 
             return Ok(new ApiResponse<GetShipmentOfferDTO> { Code = 201, Data = data });
         }
+        [HttpPost("offer")]
+        [Authorize]
+        public async Task<IActionResult> CreateFromOffer(Guid offerId, decimal proposedPrice)
+        {
+            var userIdNullable = User.GetUserId();
+
+            if (userIdNullable is not Guid userId)
+            {
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
+            }
+
+            var data = await _shipmentOfferService.CreateFromOfferAsync(offerId, proposedPrice);
+            return Ok(new ApiResponse<GetShipmentOfferDTO> { Code = 201, Data = data });
+
+        }
 
         [HttpPost("{id}/accept")]
         [Authorize]
-        public async Task<IActionResult> AcceptShipmentOffer(Guid id)
+        public async Task<IActionResult> CustomerAcceptShipmentOffer(Guid id)
         {
-            await _shipmentOfferService.AcceptAsync(id);
-            return Ok(new ApiResponse<GetShipmentOfferDTO> { Code = 200 });
+            var userIdNullable = User.GetUserId();
+
+            if (userIdNullable is not Guid userId)
+            {
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
+            }
+
+            await _shipmentOfferService.AcceptAsync(id, userId);
+            return Ok(new ApiResponse<string> { Code = 200 });
 
         }
 
@@ -43,7 +65,7 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
         public async Task<IActionResult> GetByShipmentRequest()
         {
             var data = await _shipmentOfferService.GetAll();
-            return Ok(new ApiResponse<IEnumerable<ShipmentOffer>> { Code = 201, Data = data });
+            return Ok(new ApiResponse<IEnumerable<ShipmentOffer>> { Code = 200, Data = data });
         }
 
         [HttpGet("shipmentRequestId")]
@@ -51,7 +73,7 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
         public async Task<IActionResult> GetByShipmentRequest(Guid shipmentRequestId)
         {
             var data = await _shipmentOfferService.GetByRequestId(shipmentRequestId);
-            return Ok(new ApiResponse<IEnumerable<GetShipmentOfferDTO>> { Code = 201, Data = data });
+            return Ok(new ApiResponse<IEnumerable<GetDetailShipmentOfferDTO>> { Code = 200, Data = data });
         }
 
 

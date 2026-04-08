@@ -6,6 +6,7 @@ using AppGroupCar.Repositories.BaseRepo;
 using Microsoft.EntityFrameworkCore;
 using System;
 using AutoMapper;
+using AppGroupCar.DTO;
 
 namespace AppGroupCar.Services.Market.OfferServices.OfferShipmentServices
 {
@@ -44,7 +45,8 @@ namespace AppGroupCar.Services.Market.OfferServices.OfferShipmentServices
                 throw new AppException(400, "Offer phải có ít nhất 2 Route Point");
             }
             var recentOffer = await _offerRepo.GetQueryable()
-                                            .Where(o => o.DriverId == driverId && o.Status == OfferStatus.Active)
+                                            .AsNoTracking()
+                                            .Where(o => o.DriverId == driverId && o.Status == OfferStatus.Active && o.DeleteAt == null)
                                             .OrderByDescending(o => o.DepartureTime)
                                             .FirstOrDefaultAsync();
             if (recentOffer != null)
@@ -57,20 +59,15 @@ namespace AppGroupCar.Services.Market.OfferServices.OfferShipmentServices
             offer.Status = OfferStatus.Active;
             offer.ServiceType = ServiceType.Truck;
 
-            foreach (var item in request.OfferRoutePoints)
-            {
-                int i = 1;
-                var newOfferRoutePoint = new OfferRoutePoint
-                {
-
-                    Id = Guid.NewGuid(),
-                    OfferId = offer.Id,
-                    Sequence = i,
-                    LocationId = item.LocationId
-                };
-                await _routePointRepo.AddAsync(newOfferRoutePoint);
-                i++;
-            }
+            var newRoutePoints = request.OfferRoutePoints
+                 .Select((item, index) => new OfferRoutePoint
+                 {
+                     Id = Guid.NewGuid(),
+                     OfferId = offer.Id,
+                     Sequence = index + 1,
+                     LocationId = item.LocationId
+                 })
+                 .ToList();
 
             var newCargo = new CargoOfferDetail
             {
@@ -79,6 +76,7 @@ namespace AppGroupCar.Services.Market.OfferServices.OfferShipmentServices
                 MaxWeight = request.Cargo.MaxWeight,
                 AcceptFragile = request.Cargo.AcceptFragile,
             };
+            await _routePointRepo.AddRangeAsync(newRoutePoints);
 
             await _offerRepo.AddAsync(offer);
             await _cargoRepo.AddAsync(newCargo);
@@ -88,6 +86,60 @@ namespace AppGroupCar.Services.Market.OfferServices.OfferShipmentServices
 
             return offerResponse;
 
+        }
+
+        public async Task<PagedResult<GetOfferDTO>> GetOfferShipmentAsync(GetOfferForUserRequestDTO request)
+        {
+            // BƯỚC 1: SỬA INCLUDE THÀNH CARGODETAIL! Nhìn cho kỹ vào!
+            var query = _offerRepo.GetQueryable()
+                .Include(o => o.CargoDetail)
+                .Include(o => o.RoutePoints)
+                .Include(o => o.Driver)
+                .Include(o => o.Vehicle)
+                .Where(o => o.Status == OfferStatus.Active && o.ServiceType == ServiceType.Truck);
+
+            // BƯỚC 2: Logic lọc thời gian giữ nguyên
+            if (request.startTime.HasValue)
+            {
+                query = query.Where(o => o.DepartureTime >= request.startTime.Value);
+            }
+
+            // BƯỚC 3: Logic lọc điểm đến/điểm đi (như đã hướng dẫn ở lần trước)
+            if (request.PickupLocationId.HasValue && request.DropoffLocationId.HasValue)
+            {
+                query = query.Where(o => o.RoutePoints.Any(pickup =>
+                    pickup.LocationId == request.PickupLocationId.Value &&
+                    o.RoutePoints.Any(dropoff =>
+                        dropoff.LocationId == request.DropoffLocationId.Value &&
+                        pickup.Sequence < dropoff.Sequence)));
+            }
+            else if (request.PickupLocationId.HasValue)
+            {
+                query = query.Where(o => o.RoutePoints.Any(rp => rp.LocationId == request.PickupLocationId.Value));
+            }
+            else if (request.DropoffLocationId.HasValue)
+            {
+                query = query.Where(o => o.RoutePoints.Any(rp => rp.LocationId == request.DropoffLocationId.Value));
+            }
+
+            var totalRecords = await query.CountAsync();
+
+            // BƯỚC 4: Mapping (NHỚ SỬA LẠI AUTOMAPPER NẾU CẦN THIẾT)
+            var data = await query
+                .OrderBy(o => o.DepartureTime)
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .AsNoTracking()
+                .Select(o => _mapper.Map<GetOfferDTO>(o))
+                .ToListAsync();
+
+            return new PagedResult<GetOfferDTO>
+            {
+                Items = data,
+                TotalCount = totalRecords,
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize
+            };
         }
     }
 }

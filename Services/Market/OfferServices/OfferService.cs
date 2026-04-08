@@ -1,3 +1,4 @@
+using AppGroupCar.DTO;
 using AppGroupCar.DTO.RequestDTO.Market.Offer;
 using AppGroupCar.DTO.ResponseDTO.Market;
 using AppGroupCar.DTO.ResponseDTO.Market.Offer;
@@ -121,8 +122,6 @@ namespace AppGroupCar.Services.Market.OfferServices
             return _mapper.Map<GetOfferDTO>(offer);
         }
 
-        // --- HÀM HỖ TRỢ DÙNG CHUNG ---
-        // Giúp tập trung logic Include bảng liên quan vào 1 chỗ để tránh lặp code
         private IQueryable<Offer> GetOfferWithRelationsQuery()
         {
             // Yêu cầu IBaseRepository phải có phương thức GetQueryable()
@@ -149,7 +148,8 @@ namespace AppGroupCar.Services.Market.OfferServices
             }
 
             var recentOffer = await _repo.GetQueryable()
-                                            .Where(o => o.DriverId == driverId && o.DepartureTime <= DateTimeOffset.UtcNow && o.Status == OfferStatus.Active)
+                                            .AsNoTracking()
+                                            .Where(o => o.DriverId == driverId && o.Status == OfferStatus.Active && o.DeleteAt == null)
                                             .OrderByDescending(o => o.DepartureTime)
                                             .FirstOrDefaultAsync();
             if (recentOffer != null)
@@ -161,6 +161,7 @@ namespace AppGroupCar.Services.Market.OfferServices
             offer.Id = Guid.NewGuid();
             offer.DriverId = driverId;
             offer.ServiceType = ServiceType.Shared;
+            offer.Status = OfferStatus.Active;
 
             var newOfferDetail = new SharedRideOfferDetail
             {
@@ -168,20 +169,16 @@ namespace AppGroupCar.Services.Market.OfferServices
                 AvailableSeats = vehicle.SeatCapacity,
                 TotalSeats = vehicle.SeatCapacity,
             };
-
-            foreach (var item in request.OfferRoutePoints)
-            {
-                int i = 1;
-                var newOfferRoutePoint = new OfferRoutePoint
-                {
-                    Id = Guid.NewGuid(),
-                    OfferId = offer.Id,
-                    Sequence = i,
-                    LocationId = item.LocationId
-                };
-                await _repoOfferRoutePoint.AddAsync(newOfferRoutePoint);
-                i++;
-            }
+            var newRoutePoints = request.OfferRoutePoints
+                 .Select((item, index) => new OfferRoutePoint
+                 {
+                     Id = Guid.NewGuid(),
+                     OfferId = offer.Id,
+                     Sequence = index + 1,
+                     LocationId = item.LocationId
+                 })
+                 .ToList();
+            await _repoOfferRoutePoint.AddRangeAsync(newRoutePoints);
 
             await _repo.AddAsync(offer);
 
@@ -194,6 +191,64 @@ namespace AppGroupCar.Services.Market.OfferServices
 
 
             return offerResponse;
+        }
+
+        public async Task<PagedResult<GetOfferDTO>> GetOfferSharedRideAsync(GetOfferForUserRequestDTO request)
+        {
+            var query = _repo.GetQueryable()
+                .Include(o => o.SharedRideDetail)
+                .Include(o => o.RoutePoints)
+                .Include(o => o.Driver)   // <--- THÊM VÀO NGAY
+                .Include(o => o.Vehicle)  // <--- THÊM VÀO NGAY
+                .Where(o => o.Status == OfferStatus.Active && o.ServiceType == ServiceType.Shared);
+
+            if (request.startTime.HasValue)
+            {
+                query = query.Where(o => o.DepartureTime >= request.startTime.Value);
+            }
+
+            // BƯỚC 3: Xử lý logic lọc lộ trình (Siêu quan trọng)
+            if (request.PickupLocationId.HasValue && request.DropoffLocationId.HasValue)
+            {
+                // Có cả 2 điểm: Tìm chuyến xe có điểm đón, và TRONG CÙNG CHUYẾN ĐÓ, 
+                // có điểm trả với thứ tự (OrderIndex) lớn hơn điểm đón.
+                // GIẢ ĐỊNH: Entity OfferRoutePoint của bạn có property OrderIndex. Nếu chưa có, THÊM VÀO NGAY!
+                query = query.Where(o => o.RoutePoints.Any(pickup =>
+                    pickup.LocationId == request.PickupLocationId.Value &&
+                    o.RoutePoints.Any(dropoff =>
+                        dropoff.LocationId == request.DropoffLocationId.Value &&
+                        pickup.Sequence < dropoff.Sequence)));
+            }
+            else if (request.PickupLocationId.HasValue)
+            {
+                // Chỉ có điểm đón: Lấy tất cả xe có đi qua điểm này
+                query = query.Where(o => o.RoutePoints.Any(rp => rp.LocationId == request.PickupLocationId.Value));
+            }
+            else if (request.DropoffLocationId.HasValue)
+            {
+                // Chỉ có điểm đến: Tương tự như trên
+                query = query.Where(o => o.RoutePoints.Any(rp => rp.LocationId == request.DropoffLocationId.Value));
+            }
+
+            // BƯỚC 4: Lấy tổng số để phục vụ Paging
+            var totalRecords = await query.CountAsync();
+
+            // BƯỚC 5: Phân trang, Mapping và trả về (Có AsNoTracking)
+            var data = await query
+                .OrderBy(o => o.DepartureTime)
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .AsNoTracking()
+                .Select(o => _mapper.Map<GetOfferDTO>(o))
+                .ToListAsync();
+
+            return new PagedResult<GetOfferDTO>
+            {
+                Items = data,
+                TotalCount = totalRecords,
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize
+            };
         }
     }
 }
