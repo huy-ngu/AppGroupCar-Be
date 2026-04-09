@@ -10,11 +10,10 @@ namespace AppGroupCar.Entities.Market
         public Guid? ShipmentOfferId { get; set; }
         [Required]
         public ShipmentStatus ShipmentStatus { get; set; }
-
         [Required]
         public PaymentStatus PaymentStatus { get; set; }
-
-        // --- NAVIGATION PROPERTIES ---
+        public decimal Price { get; set; }
+        public DateTime? DeliveredDate { get; set; }
 
         [ForeignKey(nameof(ShipmentOfferId))]
         public virtual ShipmentOffer? ShipmentOffer { get; set; }
@@ -26,6 +25,7 @@ namespace AppGroupCar.Entities.Market
         Created = 1,
         InTransit = 2,
         Delivered = 3,
-        Cancelled = 4
+        Cancelled = 4,
+        Return = 5
     }
 }

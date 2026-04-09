@@ -5,6 +5,10 @@ namespace AppGroupCar.Services.Market.ShipmentServices
 {
     public interface IShipmentService
     {
-        Task UpdateAsync(UpdateShipmentDTO request);
+        Task UpdateAsync(Guid userId, UpdateShipmentDTO request);
+        Task<IEnumerable<GetShipmentDTO>> GetMyShipmentsAsync(Guid userId);
+        Task<GetShipmentDetailDTO> GetDetailByIdAsync(Guid userId, Guid shipmentId);
+        Task Compelete(Guid shipmentId);
+        Task ReturnDelivery(Guid shipmentId);
     }
 }

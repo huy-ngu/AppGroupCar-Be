@@ -31,7 +31,7 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
         }
         [HttpPost("offer")]
         [Authorize]
-        public async Task<IActionResult> CreateFromOffer(Guid offerId, decimal proposedPrice)
+        public async Task<IActionResult> CreateFromOffer(Guid offerId, Guid requestId, decimal proposedPrice)
         {
             var userIdNullable = User.GetUserId();
 
@@ -40,7 +40,7 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
                 return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
             }
 
-            var data = await _shipmentOfferService.CreateFromOfferAsync(offerId, proposedPrice);
+            var data = await _shipmentOfferService.CreateFromOfferAsync(offerId, requestId, proposedPrice);
             return Ok(new ApiResponse<GetShipmentOfferDTO> { Code = 201, Data = data });
 
         }
@@ -57,6 +57,22 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
             }
 
             await _shipmentOfferService.AcceptAsync(id, userId);
+            return Ok(new ApiResponse<string> { Code = 200 });
+
+        }
+
+        [HttpPost("{id}/driver-accept")]
+        [Authorize(Roles = "Driver")]
+        public async Task<IActionResult> DriverAcceptShipmentOffer(Guid id)
+        {
+            var userIdNullable = User.GetUserId();
+
+            if (userIdNullable is not Guid userId)
+            {
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
+            }
+
+            await _shipmentOfferService.DriverAcceptAsync(userId, id);
             return Ok(new ApiResponse<string> { Code = 200 });
 
         }
