@@ -2,14 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AppGroupCar.DTO;
+using AppGroupCar.DTO.PagingParam;
 using AppGroupCar.DTO.RequestDTO.User;
 using AppGroupCar.DTO.ResponseDTO;
 using AppGroupCar.Entities;
 using AppGroupCar.Entities.Identity;
 using AppGroupCar.Exceptions;
+using AppGroupCar.Repositories.BaseRepo;
 using AppGroupCar.Services.Mytoys.Photo;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace AppGroupCar.Services.Auth.UserServices
 {
@@ -28,20 +32,83 @@ namespace AppGroupCar.Services.Auth.UserServices
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<UserDto>> GetAllAsync()
+        public async Task<PagedResult<UserDto>> GetAllAsync(UserParameters param)
         {
-            var users = _userManager.Users.ToList();
-            var result = new List<UserDto>();
+            // 1. Khởi tạo Query (Tuyệt đối CHƯA gọi ToList ở đây)
+            var query = _userManager.Users.AsQueryable();
 
-            foreach (var u in users)
+            // 2. Lọc theo Search (FullName, PhoneNumber, Email)
+            if (!string.IsNullOrWhiteSpace(param.Search))
             {
-                var roles = await _userManager.GetRolesAsync(u);
-                UserDto user = _mapper.Map<UserDto>(u);
-                user.Roles = roles;
-                result.Add(user);
+                var searchTerm = param.Search.Trim().ToLower();
+                query = query.Where(u =>
+                    (u.FullName != null && u.FullName.ToLower().Contains(searchTerm)) ||
+                    (u.PhoneNumber != null && u.PhoneNumber.ToLower().Contains(searchTerm)) ||
+                    (u.Email != null && u.Email.ToLower().Contains(searchTerm))
+                );
             }
 
-            return result;
+            // 3. Lọc theo IsActive (Dựa vào trường DeletedAt)
+            if (param.isActive.HasValue)
+            {
+                if (param.isActive.Value)
+                {
+                    query = query.Where(u => u.DeleteAt == null); // Đang hoạt động
+                }
+                else
+                {
+                    query = query.Where(u => u.DeleteAt != null); // Đã bị xóa (Soft Delete)
+                }
+            }
+
+            // 4. Lọc theo CreatedAt (Xử lý thông minh)
+            if (!string.IsNullOrWhiteSpace(param.CreatedAt))
+            {
+                var dateStr = param.CreatedAt.Trim();
+                // Cắt chuỗi theo dấu "-" (Ví dụ: "2026-04" hoặc "2026-04-15")
+                var dateParts = dateStr.Split('-');
+
+                if (dateParts.Length == 2 && int.TryParse(dateParts[0], out int year) && int.TryParse(dateParts[1], out int month))
+                {
+                    // Tình huống Frontend chỉ gửi Tháng và Năm ("yyyy-MM")
+                    query = query.Where(u => u.CreatedAt.Year == year && u.CreatedAt.Month == month);
+                }
+                else if (DateTime.TryParse(dateStr, out DateTime exactDate))
+                {
+                    // Tình huống Frontend gửi đầy đủ Ngày Tháng Năm ("yyyy-MM-dd")
+                    query = query.Where(u => u.CreatedAt.Date == exactDate.Date);
+                }
+            }
+
+            // 5. Tính tổng số bản ghi thỏa mãn điều kiện (Dùng cho UI phân trang)
+            var totalCount = await query.CountAsync();
+
+            // 6. Thực thi Phân trang (Lúc này mới gọi xuống Database để lấy đúng số lượng cần thiết)
+            var pagedUsers = await query
+                .Skip((param.PageNumber - 1) * param.PageSize)
+                .Take(param.PageSize)
+                .ToListAsync();
+
+            // 7. Map sang DTO và xử lý Role
+            var resultList = new List<UserDto>();
+            foreach (var u in pagedUsers)
+            {
+                var userDto = _mapper.Map<UserDto>(u);
+
+                // Vẫn phải dùng vòng lặp, nhưng lúc này nó chỉ chạy đúng 10 lần (PageSize) thay vì cả ngàn lần.
+                userDto.Roles = await _userManager.GetRolesAsync(u);
+
+                resultList.Add(userDto);
+            }
+
+            // 8. Trả về đúng format PagedResult
+            return new PagedResult<UserDto>
+            {
+                Items = resultList,         // Danh sách DTO đã map
+                TotalCount = totalCount,    // Tổng số lượng
+                PageNumber = param.PageNumber,
+                PageSize = param.PageSize
+            };
         }
 
         public async Task<UserDto> GetByIdAsync(string id)
@@ -166,6 +233,6 @@ namespace AppGroupCar.Services.Auth.UserServices
                 throw new AppException(400, "Change password failed",
                     new { errors = result.Errors.Select(e => e.Description) });
         }
-        
+
     }
 }
