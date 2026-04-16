@@ -61,6 +61,18 @@ namespace AppGroupCar
 
                 var builder = WebApplication.CreateBuilder(args);
 
+                // add cors
+                builder.Services.AddCors(options =>
+                {
+                    options.AddPolicy("AllowReactApp", policy =>
+                    {
+                        policy.WithOrigins("http://localhost:5173") // Thay bằng URL thật của React frontend
+                              .AllowAnyHeader()
+                              .AllowAnyMethod()
+                              .AllowCredentials(); // Bắt buộc phải có cái này nếu trò muốn gửi kèm Cookie/Token
+                    });
+                });
+
                 // thêm log
                 builder.Host.UseSerilog((context, services, configuration) => configuration
                 .ReadFrom.Configuration(context.Configuration)
@@ -259,6 +271,10 @@ namespace AppGroupCar
 
                 // add exception middleware
                 app.UseMiddleware<ExceptionMiddleware>();
+
+                app.UseRouting();
+                // 2. KÍCH HOẠT CORS: Bắt buộc phải nằm GIỮA UseRouting và UseAuthentication/UseAuthorization
+                app.UseCors("AllowReactApp");
 
                 app.UseAuthentication();
                 app.UseAuthorization();

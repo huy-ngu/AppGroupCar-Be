@@ -2,8 +2,10 @@
 using AppGroupCar.DTO.RequestDTO.Market.Booking;
 using AppGroupCar.DTO.ResponseDTO;
 using AppGroupCar.DTO.ResponseDTO.Market;
+using AppGroupCar.Helpers;
 using AppGroupCar.Services.Market.BookingServices;
 using Azure;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 namespace AppGroupCar.Controllers.Market
 {
@@ -23,6 +25,21 @@ namespace AppGroupCar.Controllers.Market
             return Ok(new ApiResponse<object> { Data = response });
 
         }
+
+        [HttpGet("me")]
+        [Authorize]
+        public async Task<IActionResult> GetMyBookings()
+        {
+            var userIdNullable = User.GetUserId();
+            if (userIdNullable is not Guid userId)
+            {
+                return Unauthorized(new ApiResponse<string> { Message = "Token khong hop le" });
+            }
+
+            var response = await _bookingService.GetMyBookingsAsync(userId);
+            return Ok(new ApiResponse<object> { Data = response });
+        }
+
         [HttpGet("id")]
         public async Task<IActionResult> GetById(Guid id)
         {

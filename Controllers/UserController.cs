@@ -1,9 +1,10 @@
-﻿using AppGroupCar.DTO.RequestDTO.User;
+﻿using AppGroupCar.DTO;
+using AppGroupCar.DTO.PagingParam;
+using AppGroupCar.DTO.RequestDTO.User;
 using AppGroupCar.DTO.ResponseDTO;
 using AppGroupCar.Services.Auth.UserServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace AppGroupCar.Controllers
 {
@@ -19,10 +20,10 @@ namespace AppGroupCar.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] UserParameters param)
         {
-            var users = await _userService.GetAllAsync();
-            return Ok(new ApiResponse<IEnumerable<UserDto>> { Data = users });
+            var users = await _userService.GetAllAsync(param);
+            return Ok(new ApiResponse<PagedResult<UserDto>> { Data = users });
         }
 
         [HttpGet("{id}")]

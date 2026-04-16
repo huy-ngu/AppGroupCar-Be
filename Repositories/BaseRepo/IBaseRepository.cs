@@ -13,6 +13,7 @@ namespace AppGroupCar.Repositories.BaseRepo
         void Delete(T entity);
         Task<int> SaveChangesAsync();
         IQueryable<T> GetQueryable();
+        Task AddRangeAsync(IEnumerable<T> entities);
         Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, int pageNumber, int pageSize);
         Task<PagedResult<T>> FindAndFilter(
             Expression<Func<T, bool>> predicate,
