@@ -152,7 +152,6 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
                                         VehicleId = n.VehicleId,
                                         VehicleBrand = n.Vehicle.Brand,
                                     },
-
                                 }).ToListAsync();
             return shipmentOffers;
         }

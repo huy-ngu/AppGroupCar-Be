@@ -157,12 +157,12 @@ namespace AppGroupCar.Services.Market.VehicleServices
                     v.DeleteAt == null &&
 
                     // Filter by driver name (search)
-                    (string.IsNullOrEmpty(parameters.DriverName) ||
-                     v.Driver.Name.Contains(parameters.DriverName)) &&
+                    (string.IsNullOrEmpty(parameters.Search) ||
+                     v.Driver.Name.Contains(parameters.Search)) &&
 
                     // Filter by brand (search)
-                    (string.IsNullOrEmpty(parameters.Brand) ||
-                     v.Brand.Contains(parameters.Brand)) &&
+                    (string.IsNullOrEmpty(parameters.Search) ||
+                     v.Brand.Contains(parameters.Search)) &&
 
                     // Filter by seat capacity (exact match)
                     (!parameters.SeatCapacity.HasValue ||

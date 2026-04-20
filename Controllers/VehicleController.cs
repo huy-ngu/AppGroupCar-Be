@@ -11,7 +11,7 @@ using System.Security.Claims;
 namespace AppGroupCar.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [Authorize]
     public class VehicleController : ControllerBase
     {

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace AppGroupCar.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class LocationController : ControllerBase
     {
         private readonly LocationService _locationService;

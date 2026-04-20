@@ -12,10 +12,6 @@ namespace AppGroupCar.Entities.Market
         public Guid Id { get; set; }
 
         [Required]
-        [MaxLength(200)]
-        public string Name { get; set; } = null!;
-
-        [Required]
         [MaxLength(20)]
         public string IdentityNumber { get; set; } = null!;
 

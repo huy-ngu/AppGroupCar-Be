@@ -1,4 +1,5 @@
 ﻿using AppGroupCar.Data;
+using AppGroupCar.DTO.PagingParam;
 using AppGroupCar.DTO.RequestDTO.Market.MarketDriver;
 using AppGroupCar.Entities;
 using AppGroupCar.Entities.Identity;
@@ -10,6 +11,7 @@ using AppGroupCar.Services.Mytoys.Photo;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using NetTopologySuite.Geometries;
 using System.Transactions;
 
 namespace AppGroupCar.Services.Market.MarketDriverServices
@@ -109,6 +111,11 @@ namespace AppGroupCar.Services.Market.MarketDriverServices
                 throw new AppException(404, "Không tìm thấy bản ghi");
             }
             return driver;
+        }
+
+        public Task<IEnumerable<Driver>> GetMarketDriversAsync(DriverParameters request)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task<Driver> UpdateAsync(Guid id, UpdateDriverRequestDTO request)
