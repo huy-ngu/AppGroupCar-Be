@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace AppGroupCar.Controllers.Market
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class BookingController : ControllerBase
     {
         private readonly IBookingService _bookingService;

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace AppGroupCar.Controllers.Market
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class BookingItemController : ControllerBase
     {
         private readonly IBookingItemService _service;

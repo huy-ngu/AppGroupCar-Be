@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace AppGroupCar.Controllers.Market
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class OfferRoutePointController : ControllerBase
     {
         private readonly IOfferRoutePointService _offerRoutePointService;

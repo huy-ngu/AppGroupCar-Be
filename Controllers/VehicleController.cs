@@ -90,9 +90,9 @@ namespace AppGroupCar.Controllers
         /// <summary>
         /// Search and filter vehicles with pagination
         /// </summary>
-        [HttpPost("search")]
+        [HttpGet()]
         [AllowAnonymous]
-        public async Task<IActionResult> SearchAndFilter(VehicleParameters parameters)
+        public async Task<IActionResult> SearchAndFilter([FromQuery] VehicleParameters parameters)
         {
             var result = await _vehicleService.SearchAndFilterAsync(parameters);
             return Ok(new ApiResponse<PagedResult<VehicleDTO>> { Data = result, Message = "Vehicles retrieved successfully" });

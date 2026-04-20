@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace AppGroupCar.Controllers.Market
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class OfferShipmentController : ControllerBase
     {
         private readonly IOfferShipmentSerivce _offerShipmentSerivce;

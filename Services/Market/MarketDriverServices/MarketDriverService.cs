@@ -1,4 +1,5 @@
 ﻿using AppGroupCar.Data;
+using AppGroupCar.DTO;
 using AppGroupCar.DTO.PagingParam;
 using AppGroupCar.DTO.RequestDTO.Market.MarketDriver;
 using AppGroupCar.Entities;
@@ -12,6 +13,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
+using System.Linq.Expressions;
 using System.Transactions;
 
 namespace AppGroupCar.Services.Market.MarketDriverServices
@@ -113,9 +115,26 @@ namespace AppGroupCar.Services.Market.MarketDriverServices
             return driver;
         }
 
-        public Task<IEnumerable<Driver>> GetMarketDriversAsync(DriverParameters request)
+        public async Task<PagedResult<Driver>> GetMarketDriversAsync(DriverParameters request)
         {
-            throw new NotImplementedException();
+            Expression<Func<Driver, bool>> predicate = driver =>
+            (!request.VerificationStatus.HasValue || driver.VerificationStatus == request.VerificationStatus.Value) &&
+            (string.IsNullOrWhiteSpace(request.LicenseClass) || driver.LicenseClass == request.LicenseClass) &&
+            (string.IsNullOrWhiteSpace(request.Search) ||
+            driver.Name.Contains(request.Search) ||
+            driver.IdentityNumber.Contains(request.Search) ||
+            driver.LicenseNumber.Contains(request.Search));
+
+
+            Func<IQueryable<Driver>, IOrderedQueryable<Driver>> orderBy = q => q.OrderByDescending(d => d.CreatedAt);
+
+            //  Gọi hàm FindAndFilter đã được dựng sẵn
+            return await _repo.FindAndFilter(
+                predicate: predicate,
+                orderBy: orderBy,
+                pageNumber: request.PageNumber,
+                pageSize: request.PageSize
+            );
         }
 
         public async Task<Driver> UpdateAsync(Guid id, UpdateDriverRequestDTO request)

@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 namespace AppGroupCar.Controllers.Market
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class OfferController(IOfferService _offerService, IOfferShipmentSerivce _offerShipmentSerivce) : ControllerBase
     {
 

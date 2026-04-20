@@ -44,7 +44,7 @@ namespace AppGroupCar.Services.Market.VehicleServices
 
             var vehicle = _mapper.Map<Vehicle>(dto);
             vehicle.DriverId = driverId;
-
+            vehicle.Status = VehicleStatus.Pending;
             if (dto.UrlImage != null && dto.UrlImage.Length > 0)
             {
                 var uploadResult = await _photoService.AddPhotoAsync(dto.UrlImage);
