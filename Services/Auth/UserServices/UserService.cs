@@ -215,7 +215,7 @@ namespace AppGroupCar.Services.Auth.UserServices
         public async Task RestoreAsync(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
-            if (user == null) throw new AppException(404, "User not found");
+            if (user == null) throw new AppException(404, "Không tìm thấy người dùng");
             user.DeleteAt = null;
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded) throw new AppException(400, "Restore failed", new { errors = result.Errors.Select(e => e.Description) });
@@ -233,6 +233,7 @@ namespace AppGroupCar.Services.Auth.UserServices
                 throw new AppException(400, "Change password failed",
                     new { errors = result.Errors.Select(e => e.Description) });
         }
+
 
     }
 }

@@ -60,7 +60,7 @@ namespace AppGroupCar.Services.Market.MarketDriverServices
 
                 var driver = await _repo.GetByIdAsync(id) ?? throw new AppException(404, "Tài xế không tồn tại");
 
-                driver.VerificationStatus = DriverVerificationStatus.Approved;
+                driver.VerificationStatus = DriverVerificationStatus.Active;
                 _repo.Update(driver);
                 await _repo.SaveChangesAsync();
 

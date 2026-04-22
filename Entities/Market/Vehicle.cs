@@ -53,6 +53,7 @@ namespace AppGroupCar.Entities.Market
         Pending = 1,
         Active = 2,
         Inactive = 3,
-        Maintenance = 4
+        Maintenance = 4,
+        Rejected = 5
     }
 }

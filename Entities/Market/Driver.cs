@@ -42,8 +42,9 @@ namespace AppGroupCar.Entities.Market
     public enum DriverVerificationStatus
     {
         Pending = 1,
-        Approved = 2,
-        Rejected = 3
+        Active = 2,
+        Inactive = 3,
+        Rejected = 4
     }
 
 }

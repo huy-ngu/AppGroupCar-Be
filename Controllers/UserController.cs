@@ -2,6 +2,7 @@
 using AppGroupCar.DTO.PagingParam;
 using AppGroupCar.DTO.RequestDTO.User;
 using AppGroupCar.DTO.ResponseDTO;
+using AppGroupCar.Helpers;
 using AppGroupCar.Services.Auth.UserServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -31,6 +32,19 @@ namespace AppGroupCar.Controllers
         public async Task<IActionResult> Get(string id)
         {
             var user = await _userService.GetByIdAsync(id);
+            return Ok(new ApiResponse<UserDto> { Data = user });
+        }
+        [HttpGet("me")]
+        [Authorize(Roles = "Admin,User,Driver")]
+        public async Task<IActionResult> Me()
+        {
+            var userIdNullable = User.GetUserId();
+            if (userIdNullable is not Guid userId)
+            {
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
+            }
+
+            var user = await _userService.GetByIdAsync(userId.ToString());
             return Ok(new ApiResponse<UserDto> { Data = user });
         }
 

@@ -192,5 +192,14 @@ namespace AppGroupCar.Services.Market.VehicleServices
 
             return result;
         }
+
+        public async Task AppovalAsync(Guid id)
+        {
+            var vehicle = await _vehicleRepo.GetByIdAsync(id) ?? throw new AppException(404, "Không tìm thấy xe");
+            vehicle.Status = VehicleStatus.Active;
+            _vehicleRepo.Update(vehicle);
+            await _vehicleRepo.SaveChangesAsync();
+            return;
+        }
     }
 }
