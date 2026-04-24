@@ -2,6 +2,7 @@
 using AppGroupCar.Entities.Bus;
 using AppGroupCar.Entities.Identity;
 using AppGroupCar.Entities.Market;
+using AppGroupCar.Entities.Wallet;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Emit;
@@ -53,6 +54,13 @@ namespace AppGroupCar.Data
         public DbSet<Seat> Seats { get; set; }
         public DbSet<SeatStatusHistory> SeatStatusHistories { get; set; }
 
+        // Wallet domain
+        public DbSet<Wallet> Wallets { get; set; }
+        public DbSet<Deposit> Deposits { get; set; }
+        public DbSet<Withdraw> Withdrawals { get; set; }
+        public DbSet<WalletTransaction> WalletTransactions { get; set; }
+        public DbSet<Payment> Payments { get; set; }
+
 
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -96,6 +104,124 @@ namespace AppGroupCar.Data
             builder.Entity<ShipmentOffer>(b => b.ToTable("ShipmentOffers"));
             builder.Entity<ShipmentRequest>(b => b.ToTable("ShipmentRequests"));
             builder.Entity<Vehicle>(b => b.ToTable("Vehicles"));
+            builder.Entity<Wallet>(b => b.ToTable("Wallets"));
+            builder.Entity<Deposit>(b => b.ToTable("Deposits"));
+            builder.Entity<Withdraw>(b => b.ToTable("Withdrawals"));
+            builder.Entity<WalletTransaction>(b => b.ToTable("WalletTransactions"));
+            builder.Entity<Payment>(b => b.ToTable("Payments"));
+
+            // Wallet
+            builder.Entity<Wallet>(b =>
+            {
+                b.Property(x => x.Balance)
+                    .HasColumnType("decimal(18,2)");
+
+                b.Property(x => x.Status)
+                    .HasConversion<int>();
+
+                b.HasIndex(x => x.UserId)
+                    .IsUnique();
+
+                b.HasCheckConstraint("CK_Wallet_Balance_NonNegative", "[Balance] >= 0");
+
+                b.HasOne(x => x.User)
+                    .WithMany()
+                    .HasForeignKey(x => x.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasMany(x => x.Deposits)
+                    .WithOne(x => x.Wallet)
+                    .HasForeignKey(x => x.WalletId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasMany(x => x.Withdrawals)
+                    .WithOne(x => x.Wallet)
+                    .HasForeignKey(x => x.WalletId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasMany(x => x.Transactions)
+                    .WithOne(x => x.Wallet)
+                    .HasForeignKey(x => x.WalletId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Deposit
+            builder.Entity<Deposit>(b =>
+            {
+                b.Property(x => x.Amount)
+                    .HasColumnType("decimal(18,2)");
+
+                b.Property(x => x.Status)
+                    .HasConversion<int>();
+
+                b.Property(x => x.Provider)
+                    .HasConversion<int>();
+
+                b.HasIndex(x => x.Code)
+                    .IsUnique();
+
+                b.HasIndex(x => x.ProviderTransactionId)
+                    .IsUnique()
+                    .HasFilter("[ProviderTransactionId] IS NOT NULL");
+
+                b.HasCheckConstraint("CK_Deposit_Amount_Positive", "[Amount] > 0");
+            });
+
+            // Withdrawal
+            builder.Entity<Withdraw>(b =>
+            {
+                b.Property(x => x.Amount)
+                    .HasColumnType("decimal(18,2)");
+
+                b.Property(x => x.Status)
+                    .HasConversion<int>();
+
+                b.HasCheckConstraint("CK_Withdraw_Amount_Positive", "[Amount] > 0");
+            });
+
+            // Wallet transaction
+            builder.Entity<WalletTransaction>(b =>
+            {
+                b.Property(x => x.Type)
+                    .HasConversion<int>();
+
+                b.Property(x => x.Status)
+                    .HasConversion<int>();
+
+                b.Property(x => x.Amount)
+                    .HasColumnType("decimal(18,2)");
+
+                b.Property(x => x.BalanceBefore)
+                    .HasColumnType("decimal(18,2)");
+
+                b.Property(x => x.BalanceAfter)
+                    .HasColumnType("decimal(18,2)");
+
+                b.HasIndex(x => new { x.ReferenceType, x.ReferenceId });
+
+                b.HasCheckConstraint("CK_WalletTransaction_Amount_Positive", "[Amount] > 0");
+                b.HasCheckConstraint("CK_WalletTransaction_BalanceAfter_NonNegative", "[BalanceAfter] >= 0");
+            });
+
+            // Payment
+            builder.Entity<Payment>(b =>
+            {
+                b.Property(x => x.PaymentMethod)
+                    .HasConversion<int>();
+
+                b.Property(x => x.Status)
+                    .HasConversion<int>();
+
+                b.Property(x => x.Amount)
+                    .HasColumnType("decimal(18,2)");
+
+                b.HasIndex(x => x.Code)
+                    .IsUnique();
+
+                b.HasIndex(x => x.BookingId);
+
+                b.HasCheckConstraint("CK_Payment_Amount_Positive", "[Amount] > 0");
+            });
 
             builder.Entity<Seat>(entity =>
             {
