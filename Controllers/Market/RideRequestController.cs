@@ -10,7 +10,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace AppGroupCar.Controllers.Market
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class RideRequestController : ControllerBase
     {
         private readonly IRideRequestService _service;

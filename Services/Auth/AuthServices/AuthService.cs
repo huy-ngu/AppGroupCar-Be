@@ -55,11 +55,12 @@ namespace AppGroupCar.Services.Auth.AuthServices
 
             var user = new ApplicationUser
             {
-                UserName = request.UserName,
+                UserName = Guid.NewGuid().ToString(),
                 Email = request.Email,
                 FullName = request.FullName,
                 PhoneNumber = request.PhoneNumber,
-                AvatarUrl = avatarUrl
+                AvatarUrl = avatarUrl,
+                CreatedAt = DateTime.Now,
             };
 
             var result = await _userRepository.CreateUserAsync(user, request.Password);

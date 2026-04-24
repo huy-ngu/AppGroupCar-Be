@@ -60,15 +60,13 @@ namespace AppGroupCar.Services.Bus.CompanyServices
         {
             var data = await _companyRepository.FindAndFilter(
                 predicate: c =>
-                    // Lọc theo CompanyName
-                    (string.IsNullOrEmpty(param.CompanyName)
-                        || c.CompanyName.Contains(param.CompanyName)) &&
-
-                    // Lọc theo Email
-                    (string.IsNullOrEmpty(param.Email)
-                        || c.Email.Contains(param.Email)) &&
-
-                    // Chỉ lấy Company chưa bị xóa
+                    (
+                        string.IsNullOrEmpty(param.Search) ||
+                        c.CompanyName.Contains(param.Search) ||
+                        c.Email.Contains(param.Search)
+                    )
+                    &&
+                    c.Status == param.CompanyStatus &&
                     c.DeleteAt == null,
 
                 orderBy: q => q.OrderByDescending(c => c.CompanyName),
@@ -92,6 +90,13 @@ namespace AppGroupCar.Services.Bus.CompanyServices
         public async Task<CompanyResponseDto> CreateCompanyAsync(CreateCompanyRequestDto dto)
         {
             var strategy = _context.Database.CreateExecutionStrategy();
+
+            var check = await _companyRepository.GetQueryable().Where(c => c.Email == dto.Email).FirstOrDefaultAsync();
+
+            if (check != null)
+            {
+                throw new AppException(400, "Email đã tồn tại");
+            }
 
             string? logoUrl = null;
             string? publicId = null;

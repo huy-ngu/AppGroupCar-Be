@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace AppGroupCar.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     //[Authorize("Admin")]
     public class RoleController : ControllerBase
     {

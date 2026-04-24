@@ -50,8 +50,10 @@ namespace AppGroupCar.Entities.Market
 
     public enum VehicleStatus
     {
-        Active = 1,
-        Inactive = 2,
-        Maintenance = 3
+        Pending = 1,
+        Active = 2,
+        Inactive = 3,
+        Maintenance = 4,
+        Rejected = 5
     }
 }

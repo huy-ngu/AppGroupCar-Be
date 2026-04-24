@@ -1,14 +1,16 @@
-﻿using AppGroupCar.DTO.RequestDTO.User;
+﻿using AppGroupCar.DTO;
+using AppGroupCar.DTO.PagingParam;
+using AppGroupCar.DTO.RequestDTO.User;
 using AppGroupCar.DTO.ResponseDTO;
+using AppGroupCar.Helpers;
 using AppGroupCar.Services.Auth.UserServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace AppGroupCar.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -19,10 +21,10 @@ namespace AppGroupCar.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] UserParameters param)
         {
-            var users = await _userService.GetAllAsync();
-            return Ok(new ApiResponse<IEnumerable<UserDto>> { Data = users });
+            var users = await _userService.GetAllAsync(param);
+            return Ok(new ApiResponse<PagedResult<UserDto>> { Data = users });
         }
 
         [HttpGet("{id}")]
@@ -30,6 +32,19 @@ namespace AppGroupCar.Controllers
         public async Task<IActionResult> Get(string id)
         {
             var user = await _userService.GetByIdAsync(id);
+            return Ok(new ApiResponse<UserDto> { Data = user });
+        }
+        [HttpGet("me")]
+        [Authorize(Roles = "Admin,User,Driver")]
+        public async Task<IActionResult> Me()
+        {
+            var userIdNullable = User.GetUserId();
+            if (userIdNullable is not Guid userId)
+            {
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
+            }
+
+            var user = await _userService.GetByIdAsync(userId.ToString());
             return Ok(new ApiResponse<UserDto> { Data = user });
         }
 

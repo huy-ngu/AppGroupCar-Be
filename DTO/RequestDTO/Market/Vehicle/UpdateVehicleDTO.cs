@@ -17,8 +17,6 @@ namespace AppGroupCar.DTO.RequestDTO.Market.Vehicle
 
         public VehicleType? VehicleType { get; set; }
 
-        public VehicleStatus? Status { get; set; }
-
         public IFormFile? UrlImage { get; set; }
 
         public IFormFile? RegistrationDocumentUrl { get; set; }

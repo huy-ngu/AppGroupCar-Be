@@ -44,7 +44,7 @@ namespace AppGroupCar.Services.Market.VehicleServices
 
             var vehicle = _mapper.Map<Vehicle>(dto);
             vehicle.DriverId = driverId;
-
+            vehicle.Status = VehicleStatus.Pending;
             if (dto.UrlImage != null && dto.UrlImage.Length > 0)
             {
                 var uploadResult = await _photoService.AddPhotoAsync(dto.UrlImage);
@@ -157,12 +157,12 @@ namespace AppGroupCar.Services.Market.VehicleServices
                     v.DeleteAt == null &&
 
                     // Filter by driver name (search)
-                    (string.IsNullOrEmpty(parameters.DriverName) ||
-                     v.Driver.Name.Contains(parameters.DriverName)) &&
+                    (string.IsNullOrEmpty(parameters.Search) ||
+                     v.Driver.Name.Contains(parameters.Search)) &&
 
                     // Filter by brand (search)
-                    (string.IsNullOrEmpty(parameters.Brand) ||
-                     v.Brand.Contains(parameters.Brand)) &&
+                    (string.IsNullOrEmpty(parameters.Search) ||
+                     v.Brand.Contains(parameters.Search)) &&
 
                     // Filter by seat capacity (exact match)
                     (!parameters.SeatCapacity.HasValue ||
@@ -191,6 +191,15 @@ namespace AppGroupCar.Services.Market.VehicleServices
             };
 
             return result;
+        }
+
+        public async Task AppovalAsync(Guid id)
+        {
+            var vehicle = await _vehicleRepo.GetByIdAsync(id) ?? throw new AppException(404, "Không tìm thấy xe");
+            vehicle.Status = VehicleStatus.Active;
+            _vehicleRepo.Update(vehicle);
+            await _vehicleRepo.SaveChangesAsync();
+            return;
         }
     }
 }

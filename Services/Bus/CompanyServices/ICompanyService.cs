@@ -19,8 +19,7 @@ namespace AppGroupCar.Services.Bus.CompanyServices
 
         Task DeleteCompanyAsync(Guid id);
 
-        public Task<PagedResult<CompanyResponseDto>> GetPendingCompaniesAsync(
-    CompanyParameters param);
+        public Task<PagedResult<CompanyResponseDto>> GetPendingCompaniesAsync(CompanyParameters param);
 
         Task<CompanyResponseDto> ApproveCompanyAsync(Guid id, ApproveCompanyRequestDto dto);
     }

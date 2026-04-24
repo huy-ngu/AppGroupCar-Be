@@ -1,7 +1,10 @@
+using AppGroupCar.DTO;
+using AppGroupCar.DTO.Filters;
 using AppGroupCar.DTO.RequestDTO.Market.Offer;
 using AppGroupCar.DTO.ResponseDTO.Market;
 using AppGroupCar.DTO.ResponseDTO.Market.Offer;
 using AppGroupCar.Entities.Market;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -16,5 +19,6 @@ namespace AppGroupCar.Services.Market.OfferServices
         Task<IEnumerable<GetOfferDTO>> GetAllAsync();
         Task<IEnumerable<GetOfferDTO>> GetMyOffersAsync(Guid driverId);
         Task DeleteAsync(Guid driverId, Guid id);
+        Task<PagedResult<GetOfferDTO>> GetOfferSharedRideAsync(GetOfferForUserRequestDTO request);
     }
 }

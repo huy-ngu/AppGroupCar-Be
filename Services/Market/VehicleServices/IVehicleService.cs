@@ -13,5 +13,6 @@ namespace AppGroupCar.Services.Market.VehicleServices
         Task UpdateAsync(Guid id, Guid driverId, UpdateVehicleDTO dto);
         Task DeleteAsync(Guid id, Guid driverId);
         Task<PagedResult<VehicleDTO>> SearchAndFilterAsync(VehicleParameters parameters);
+        Task AppovalAsync(Guid id);
     }
 }

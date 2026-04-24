@@ -1,4 +1,6 @@
 ﻿using AppGroupCar.Data;
+using AppGroupCar.DTO;
+using AppGroupCar.DTO.PagingParam;
 using AppGroupCar.DTO.RequestDTO.Market.MarketDriver;
 using AppGroupCar.Entities;
 using AppGroupCar.Entities.Identity;
@@ -10,6 +12,8 @@ using AppGroupCar.Services.Mytoys.Photo;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using NetTopologySuite.Geometries;
+using System.Linq.Expressions;
 using System.Transactions;
 
 namespace AppGroupCar.Services.Market.MarketDriverServices
@@ -56,7 +60,7 @@ namespace AppGroupCar.Services.Market.MarketDriverServices
 
                 var driver = await _repo.GetByIdAsync(id) ?? throw new AppException(404, "Tài xế không tồn tại");
 
-                driver.VerificationStatus = DriverVerificationStatus.Approved;
+                driver.VerificationStatus = DriverVerificationStatus.Active;
                 _repo.Update(driver);
                 await _repo.SaveChangesAsync();
 
@@ -109,6 +113,28 @@ namespace AppGroupCar.Services.Market.MarketDriverServices
                 throw new AppException(404, "Không tìm thấy bản ghi");
             }
             return driver;
+        }
+
+        public async Task<PagedResult<Driver>> GetMarketDriversAsync(DriverParameters request)
+        {
+            Expression<Func<Driver, bool>> predicate = driver =>
+            (!request.VerificationStatus.HasValue || driver.VerificationStatus == request.VerificationStatus.Value) &&
+            (string.IsNullOrWhiteSpace(request.LicenseClass) || driver.LicenseClass == request.LicenseClass) &&
+            (string.IsNullOrWhiteSpace(request.Search) ||
+            driver.Name.Contains(request.Search) ||
+            driver.IdentityNumber.Contains(request.Search) ||
+            driver.LicenseNumber.Contains(request.Search));
+
+
+            Func<IQueryable<Driver>, IOrderedQueryable<Driver>> orderBy = q => q.OrderByDescending(d => d.CreatedAt);
+
+            //  Gọi hàm FindAndFilter đã được dựng sẵn
+            return await _repo.FindAndFilter(
+                predicate: predicate,
+                orderBy: orderBy,
+                pageNumber: request.PageNumber,
+                pageSize: request.PageSize
+            );
         }
 
         public async Task<Driver> UpdateAsync(Guid id, UpdateDriverRequestDTO request)

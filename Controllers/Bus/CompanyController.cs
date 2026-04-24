@@ -23,9 +23,7 @@ namespace AppGroupCar.Controllers.Bus
         [HttpPost]
         public async Task<IActionResult> CreateCompany([FromForm] CreateCompanyRequestDto dto)
         {
-
             var result = await _companyService.CreateCompanyAsync(dto);
-
             return Ok(result);
         }
 
@@ -36,13 +34,12 @@ namespace AppGroupCar.Controllers.Bus
 
             if (result == null)
                 return NotFound(new { message = "Company not found" });
-
             return Ok(result);
         }
 
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetCompanies([FromQuery]CompanyParameters param)
+        public async Task<IActionResult> GetCompanies([FromQuery] CompanyParameters param)
         {
             var data = await _companyService.FilterAsync(param);
             return Ok(new ApiResponse<PagedResult<CompanyResponseDto>> { Data = data });
@@ -54,7 +51,6 @@ namespace AppGroupCar.Controllers.Bus
             [FromForm] UpdateCompanyRequestDto dto)
         {
             var result = await _companyService.UpdateCompanyAsync(id, dto);
-
             return Ok(result);
         }
 

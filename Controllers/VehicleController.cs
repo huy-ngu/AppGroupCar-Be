@@ -1,4 +1,4 @@
-using AppGroupCar.DTO;
+﻿using AppGroupCar.DTO;
 using AppGroupCar.DTO.Filters;
 using AppGroupCar.DTO.RequestDTO.Market.Vehicle;
 using AppGroupCar.DTO.ResponseDTO;
@@ -11,7 +11,7 @@ using System.Security.Claims;
 namespace AppGroupCar.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [Authorize]
     public class VehicleController : ControllerBase
     {
@@ -41,7 +41,7 @@ namespace AppGroupCar.Controllers
         {
             var driverId = GetDriverIdFromToken();
             var result = await _vehicleService.CreateAsync(driverId, dto);
-            return Ok(new ApiResponse<VehicleDTO> { Data = result, Message = "Vehicle created successfully" });
+            return Ok(new ApiResponse<VehicleDTO> { Data = result, Message = "Thêm mới thành công" });
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace AppGroupCar.Controllers
         {
             var driverId = GetDriverIdFromToken();
             await _vehicleService.UpdateAsync(id, driverId, dto);
-            return Ok(new ApiResponse<object> { Data = null, Message = "Vehicle updated successfully" });
+            return Ok(new ApiResponse<object> { Data = null, Message = "Cập nhật thành công" });
         }
 
         /// <summary>
@@ -84,18 +84,25 @@ namespace AppGroupCar.Controllers
         {
             var driverId = GetDriverIdFromToken();
             await _vehicleService.DeleteAsync(id, driverId);
-            return Ok(new ApiResponse<object> { Data = null, Message = "Vehicle deleted successfully" });
+            return Ok(new ApiResponse<object> { Data = null, Message = "Xóa thành công" });
         }
 
         /// <summary>
         /// Search and filter vehicles with pagination
         /// </summary>
-        [HttpPost("search")]
+        [HttpGet()]
         [AllowAnonymous]
-        public async Task<IActionResult> SearchAndFilter(VehicleParameters parameters)
+        public async Task<IActionResult> SearchAndFilter([FromQuery] VehicleParameters parameters)
         {
             var result = await _vehicleService.SearchAndFilterAsync(parameters);
             return Ok(new ApiResponse<PagedResult<VehicleDTO>> { Data = result, Message = "Vehicles retrieved successfully" });
+        }
+
+        [HttpPatch("approval/{id}")]
+        public async Task<IActionResult> Appoval(Guid id)
+        {
+            await _vehicleService.AppovalAsync(id);
+            return Ok(new ApiResponse<object> { Data = null, Message = "Phê duyệt thành công" });
         }
     }
 }

@@ -1,3 +1,4 @@
+using AppGroupCar.DTO;
 using AppGroupCar.DTO.RequestDTO.Market.Offer;
 using AppGroupCar.DTO.ResponseDTO;
 using AppGroupCar.DTO.ResponseDTO.Market.Offer;
@@ -8,6 +9,7 @@ using AppGroupCar.Services.Market.OfferServices;
 using AppGroupCar.Services.Market.OfferServices.OfferShipmentServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -15,26 +17,24 @@ using System.Threading.Tasks;
 namespace AppGroupCar.Controllers.Market
 {
     [ApiController]
-    [Route("api/[controller]")]
-    public class OfferController : ControllerBase
+    [Route("[controller]")]
+    public class OfferController(IOfferService _offerService, IOfferShipmentSerivce _offerShipmentSerivce) : ControllerBase
     {
-        private readonly IOfferService _offerService;
-        private readonly IOfferShipmentSerivce _offerShipmentSerivce;
 
-        public OfferController(IOfferService offerService, IOfferShipmentSerivce offerShipmentSerivce)
+        [HttpGet("shared-ride")]
+        public async Task<IActionResult> SearchOfferSharedRide([FromQuery] GetOfferForUserRequestDTO request)
         {
-            _offerService = offerService;
-            _offerShipmentSerivce = offerShipmentSerivce;
+            var data = await _offerService.GetOfferSharedRideAsync(request);
+            return Ok(new ApiResponse<PagedResult<GetOfferDTO>> { Data = data });
+        }
+        [HttpGet("shipment")]
+        public async Task<IActionResult> SearchOfferShipment([FromQuery] GetOfferForUserRequestDTO request)
+        {
+            var data = await _offerShipmentSerivce.GetOfferShipmentAsync(request);
+            return Ok(new ApiResponse<PagedResult<GetOfferDTO>> { Data = data });
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            var data = await _offerService.GetAllAsync();
-            return Ok(new ApiResponse<IEnumerable<GetOfferDTO>> { Data = data });
-        }
-
-        [HttpGet("my-offers")]
+        [HttpGet("me")]
         [Authorize]
         public async Task<IActionResult> GetMyOffers()
         {

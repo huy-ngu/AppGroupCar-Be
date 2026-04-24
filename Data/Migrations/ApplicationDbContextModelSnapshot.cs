@@ -1223,11 +1223,17 @@ namespace AppGroupCar.Migrations
                     b.Property<DateTime?>("DeleteAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("DeliveredDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("LastUpdateAt")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("PaymentStatus")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid?>("ShipmentOfferId")
                         .HasColumnType("uniqueidentifier");
