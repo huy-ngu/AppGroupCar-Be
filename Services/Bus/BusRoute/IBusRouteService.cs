@@ -1,4 +1,6 @@
-﻿using AppGroupCar.DTO.RequestDTO.Bus.RouteRequest;
+﻿using AppGroupCar.DTO;
+using AppGroupCar.DTO.PagingParam;
+using AppGroupCar.DTO.RequestDTO.Bus.RouteRequest;
 using AppGroupCar.DTO.ResponseDTO.Bus.RouteResponse;
 
 namespace AppGroupCar.Services.Bus.BusRoute
@@ -28,5 +30,7 @@ namespace AppGroupCar.Services.Bus.BusRoute
         Task<bool> ExistsForCompanyAsync(
             Guid routeId,
             Guid companyId);
+
+        Task<PagedResult<BusRouteResponse>> GetAsync(Guid companyId, BusRouteParameters param);
     }
 }

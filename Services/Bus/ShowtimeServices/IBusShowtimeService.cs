@@ -1,3 +1,5 @@
+using AppGroupCar.DTO;
+using AppGroupCar.DTO.PagingParam;
 using AppGroupCar.DTO.RequestDTO.Bus.ShowtimeRequest;
 using AppGroupCar.DTO.ResponseDTO.Bus.ShowtimeResponse;
 
@@ -5,6 +7,8 @@ namespace AppGroupCar.Services.Bus.ShowtimeServices
 {
     public interface IBusShowtimeService
     {
+        Task<IEnumerable<BusShowtimeResponse>> GetAsync();
+        Task<BusShowtimeResponse> GetById(Guid id);
         Task<BusShowtimeResponse> CreateAsync(
             Guid companyId,
             Guid userId,
@@ -13,11 +17,9 @@ namespace AppGroupCar.Services.Bus.ShowtimeServices
         Task<List<BusShowtimeResponse>> GetByCompanyAsync(
             Guid companyId);
 
-        Task<List<BusShowtimeResponse>> FilterAsync(
+        Task<PagedResult<BusShowtimeResponse>> FilterAsync(
             Guid companyId,
-            DateOnly departureDate,
-            string? plateNumber,
-            TimeOnly? departureTime);
+            BusShowtimeParameters param);
 
         Task<BusShowtimeResponse> UpdateAsync(
             Guid id,

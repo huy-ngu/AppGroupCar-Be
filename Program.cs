@@ -297,7 +297,7 @@ namespace AppGroupCar
         public static async Task SeedDataAsync(UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager)
         {
             // 1. Khởi tạo Roles
-            string[] roleNames = { "Admin", "User", "Driver", "Company" };
+            string[] roleNames = { "Admin", "User", "Driver", "Company", "ADMIN_COMPANY", "STAFF_COMPANY" };
             foreach (var roleName in roleNames)
             {
                 if (!await roleManager.RoleExistsAsync(roleName))

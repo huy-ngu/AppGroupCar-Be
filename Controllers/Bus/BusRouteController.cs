@@ -1,6 +1,12 @@
-﻿using AppGroupCar.DTO.RequestDTO.Bus.RouteRequest;
+﻿using AppGroupCar.DTO;
+using AppGroupCar.DTO.PagingParam;
+using AppGroupCar.DTO.RequestDTO.Bus.RouteRequest;
+using AppGroupCar.DTO.ResponseDTO;
+using AppGroupCar.DTO.ResponseDTO.Bus.CompanyResponse;
+using AppGroupCar.DTO.ResponseDTO.Bus.RouteResponse;
 using AppGroupCar.Helpers;
 using AppGroupCar.Services.Bus.BusRoute;
+using Hangfire.MemoryStorage.Database;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -40,21 +46,19 @@ namespace AppGroupCar.Controllers.Bus
             var result =
                 await _service.CreateAsync(companyId, dto);
 
-            return Ok(result);
+            return Ok(new ApiResponse<BusRouteResponse> { Data = result });
         }
 
         // GET ALL
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] BusRouteParameters param)
         {
             var companyId = GetCompanyId();
 
-            var result =
-                await _service
-                    .GetByCompanyAsync(companyId);
+            var result = await _service.GetAsync(companyId, param);
 
-            return Ok(result);
+            return Ok(new ApiResponse<PagedResult<BusRouteResponse>> { Data = result });
         }
 
         // GET BY ID
@@ -72,7 +76,7 @@ namespace AppGroupCar.Controllers.Bus
             if (result == null)
                 return NotFound();
 
-            return Ok(result);
+            return Ok(new ApiResponse<BusRouteResponse> { Data = result });
         }
 
         // UPDATE
@@ -86,7 +90,7 @@ namespace AppGroupCar.Controllers.Bus
             var result =
                 await _service.UpdateAsync(id, companyId, dto);
 
-            return Ok(result);
+            return Ok(new ApiResponse<BusRouteResponse> { Data = result });
         }
 
         // DELETE

@@ -1,4 +1,7 @@
+using AppGroupCar.DTO;
 using AppGroupCar.DTO.RequestDTO.Bus.SeatLayoutRequest;
+using AppGroupCar.DTO.ResponseDTO;
+using AppGroupCar.DTO.ResponseDTO.Bus.SeatLayoutResponse;
 using AppGroupCar.Services.Bus.SeatLayoutServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -28,7 +31,14 @@ namespace AppGroupCar.Controllers.Bus
         public async Task<IActionResult> GetAll()
         {
             var result = await _service.GetAllAsync();
-            return Ok(result);
+            return Ok(new ApiResponse<IEnumerable<VehicleSeatLayoutResponseDto>> { Data = result });
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var result = await _service.GetByIdAsync(id);
+            return Ok(new ApiResponse<VehicleSeatLayoutResponseDto> { Data = result });
         }
     }
 }

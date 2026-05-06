@@ -1,4 +1,5 @@
 ﻿using AppGroupCar.DTO.RequestDTO;
+using AppGroupCar.DTO.ResponseDTO;
 using AppGroupCar.Entities;
 using AppGroupCar.Services.Mytoys.LocationServices;
 using Microsoft.AspNetCore.Mvc;
@@ -20,19 +21,19 @@ namespace AppGroupCar.Controllers
         public async Task<IActionResult> GetLocationById(Guid id)
         {
             var location = await _locationService.GetLocationByIdAsync(id);
-            return Ok(location);
+            return Ok(new ApiResponse<Location> { Data = location });
         }
         [HttpGet("")]
         public async Task<IActionResult> GetAllLocation()
         {
             var location = await _locationService.GetAllAsync();
-            return Ok(location);
+            return Ok(new ApiResponse<object> { Data = location });
         }
         [HttpPost("Create")]
         public async Task<IActionResult> CreateLocation(CreateLocationRequestDTO request)
         {
             var location = await _locationService.CreateLocationAsync(request);
-            return Ok(location);
+            return Ok(new ApiResponse<Location> { Data = location });
         }
     }
 }

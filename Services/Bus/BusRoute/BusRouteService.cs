@@ -1,8 +1,11 @@
 ﻿using AppGroupCar.Data;
+using AppGroupCar.DTO;
+using AppGroupCar.DTO.PagingParam;
 using AppGroupCar.DTO.RequestDTO.Bus.RouteRequest;
 using AppGroupCar.DTO.ResponseDTO.Bus.RouteResponse;
 using AppGroupCar.Entities.Bus;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace AppGroupCar.Services.Bus.BusRoute
@@ -227,6 +230,45 @@ namespace AppGroupCar.Services.Bus.BusRoute
                     throw new Exception(
                         "Sequence must start at 1 and be continuous");
             }
+        }
+
+        public async Task<PagedResult<BusRouteResponse>> GetAsync(
+            Guid companyId,
+            BusRouteParameters param)
+        {
+            // 1. Khởi tạo query cơ bản: lọc theo công ty và chưa bị xóa
+            var query = _context.BusRoutes
+                .Where(x => x.CompanyId == companyId && x.DeleteAt == null)
+                .AsQueryable();
+
+            // 2. Truy vấn động: Xử lý Search theo Route Name
+            if (!string.IsNullOrWhiteSpace(param.Search))
+            {
+                var searchTerm = param.Search.Trim().ToLower();
+                query = query.Where(x => x.Name != null && x.Name.ToLower().Contains(searchTerm));
+            }
+
+            // Sắp xếp mặc định để phân trang hoạt động chính xác
+            query = query.OrderBy(x => x.Name);
+
+            // 3. Đếm tổng số lượng bản ghi thoả mãn bộ lọc
+            var totalCount = await query.CountAsync();
+
+            // 4. Phân trang VÀ Ánh xạ trực tiếp trên Database
+            var items = await query
+                .Skip((param.PageNumber - 1) * param.PageSize)
+                .Take(param.PageSize)
+                .ProjectTo<BusRouteResponse>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+
+            // 5. Trả về kết quả
+            return new PagedResult<BusRouteResponse>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                PageNumber = param.PageNumber,
+                PageSize = param.PageSize
+            };
         }
     }
 }

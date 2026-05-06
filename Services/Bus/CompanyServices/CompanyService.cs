@@ -66,7 +66,10 @@ namespace AppGroupCar.Services.Bus.CompanyServices
                         c.Email.Contains(param.Search)
                     )
                     &&
-                    c.Status == param.CompanyStatus &&
+                    (
+                        param.CompanyStatus == null || c.Status == param.CompanyStatus
+                    )
+                    &&
                     c.DeleteAt == null,
 
                 orderBy: q => q.OrderByDescending(c => c.CompanyName),
@@ -112,7 +115,7 @@ namespace AppGroupCar.Services.Bus.CompanyServices
                     company = _mapper.Map<Company>(dto);
                     company.Id = Guid.NewGuid();
                     company.Status = 0;
-
+                    company.CreatedAt = DateTime.Now;
                     await _companyRepository.AddAsync(company);
                     await _companyRepository.SaveChangesAsync();
 
@@ -280,7 +283,7 @@ namespace AppGroupCar.Services.Bus.CompanyServices
                 {
                     var newUser = new ApplicationUser
                     {
-                        UserName = $"{company.CompanyName}_Admin",
+                        UserName = $"{company.CompanyName}_Admin_{Guid.NewGuid()}",
                         FullName = $"{company.CompanyName}_Business",
                         Email = company.Email,
                         PhoneNumber = company.Phone,

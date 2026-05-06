@@ -2,6 +2,6 @@
 {
     public class CompanyParameters : PagingParameters
     {
-        public CompanyStatus CompanyStatus { get; set; }
+        public CompanyStatus? CompanyStatus { get; set; }
     }
 }

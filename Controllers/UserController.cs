@@ -35,7 +35,7 @@ namespace AppGroupCar.Controllers
             return Ok(new ApiResponse<UserDto> { Data = user });
         }
         [HttpGet("me")]
-        [Authorize(Roles = "Admin,User,Driver")]
+        [Authorize(Roles = "Admin,User,Driver,ADMIN_COMPANY")]
         public async Task<IActionResult> Me()
         {
             var userIdNullable = User.GetUserId();

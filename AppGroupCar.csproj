@@ -7,9 +7,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Documents\**" />
 	  <Compile Remove="Repositories\Bus\**" />
+	  <Content Remove="Documents\**" />
 	  <Content Remove="Repositories\Bus\**" />
+	  <EmbeddedResource Remove="Documents\**" />
 	  <EmbeddedResource Remove="Repositories\Bus\**" />
+	  <None Remove="Documents\**" />
 	  <None Remove="Repositories\Bus\**" />
 	</ItemGroup>
 
@@ -37,7 +41,6 @@
 	<ItemGroup>
 	  <Folder Include="Repositories\Market\" />
 	  <Folder Include="Repositories\Bus\" />
-		<Folder Include="Documents\" />
 		<Folder Include="Repositories\Market\" />
 		<Folder Include="Repositories\Bus\" />
 		<Folder Include="DTO\RequestDTO\Bus\" />

@@ -1,4 +1,5 @@
-﻿using AppGroupCar.DTO.RequestDTO.Bus.VehicleRequest;
+﻿using AppGroupCar.DTO.PagingParam;
+using AppGroupCar.DTO.RequestDTO.Bus.VehicleRequest;
 using AppGroupCar.Helpers;
 using AppGroupCar.Services.Bus.CompanyVehicleServices;
 using Microsoft.AspNetCore.Authorization;
@@ -47,10 +48,10 @@ namespace AppGroupCar.Controllers.Bus
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] CompanyVehicleParameters param)
         {
             var companyId = GetCompanyId();
-            var result = await _service.GetByCompanyAsync(companyId);
+            var result = await _service.GetByCompanyAsync(param, companyId);
 
             return Ok(result);
         }

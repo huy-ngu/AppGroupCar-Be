@@ -7,5 +7,6 @@ namespace AppGroupCar.Services.Bus.SeatLayoutServices
     {
         Task<VehicleSeatLayoutResponseDto> CreateAsync(CreateVehicleSeatLayoutRequest dto);
         Task<IEnumerable<VehicleSeatLayoutResponseDto>> GetAllAsync();
+        Task<VehicleSeatLayoutResponseDto> GetByIdAsync(Guid id);
     }
 }

@@ -1,6 +1,7 @@
 using AppGroupCar.DTO.RequestDTO.Bus.SeatLayoutRequest;
 using AppGroupCar.DTO.ResponseDTO.Bus.SeatLayoutResponse;
 using AppGroupCar.Entities.Bus;
+using AppGroupCar.Exceptions;
 using AppGroupCar.Repositories.BaseRepo;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -37,6 +38,18 @@ namespace AppGroupCar.Services.Bus.SeatLayoutServices
                 .ToListAsync();
 
             return _mapper.Map<IEnumerable<VehicleSeatLayoutResponseDto>>(items);
+        }
+
+        public async Task<VehicleSeatLayoutResponseDto> GetByIdAsync(Guid id)
+        {
+            var entity = await _repo.GetQueryable()
+                .Where(x => x.Id == id && x.DeleteAt == null && x.IsActive)
+                .FirstOrDefaultAsync();
+
+            if (entity == null)
+                throw new AppException(404, "Seat layout not found");
+
+            return _mapper.Map<VehicleSeatLayoutResponseDto>(entity);
         }
     }
 }

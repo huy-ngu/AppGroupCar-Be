@@ -1,10 +1,13 @@
 using AppGroupCar.Data;
+using AppGroupCar.DTO;
+using AppGroupCar.DTO.PagingParam;
 using AppGroupCar.DTO.RequestDTO.Bus.ShowtimeRequest;
 using AppGroupCar.DTO.ResponseDTO.Bus.ShowtimeResponse;
 using AppGroupCar.Entities.Bus;
 using AppGroupCar.Exceptions;
 using AppGroupCar.Services.Bus.BusRoute;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
@@ -93,35 +96,87 @@ namespace AppGroupCar.Services.Bus.ShowtimeServices
             return _mapper.Map<List<BusShowtimeResponse>>(entities);
         }
 
-        public async Task<List<BusShowtimeResponse>> FilterAsync(
-            Guid companyId,
-            DateOnly departureDate,
-            string? plateNumber,
-            TimeOnly? departureTime)
+        //public async Task<PagedResult<BusShowtimeResponse>> FilterAsync(
+        //    Guid companyId,
+        //    BusShowtimeParameters param
+        //    )
+        //{
+        //    var query = _context.BusShowtimes
+        //        .Where(x =>
+        //            x.CompanyId == companyId &&
+        //            x.DepartureDate == departureDate &&
+        //            x.DeleteAt == null)
+        //        .Include(x => x.CompanyVehicle)
+        //        .Include(x => x.Seats)
+        //        .AsQueryable();
+
+        //    if (!string.IsNullOrWhiteSpace(plateNumber))
+        //    {
+        //        var normalizedPlate = plateNumber.Trim().ToLower();
+        //        query = query.Where(x => x.CompanyVehicle.PlateNumber.ToLower() == normalizedPlate);
+        //    }
+
+        //    if (departureTime.HasValue)
+        //        query = query.Where(x => x.DepartureTime == departureTime.Value);
+
+        //    var entities = await query
+        //        .OrderBy(x => x.DepartureTime)
+        //        .ToListAsync();
+
+        //    return _mapper.Map<List<BusShowtimeResponse>>(entities);
+        //}
+
+        public async Task<PagedResult<BusShowtimeResponse>> FilterAsync(
+     Guid companyId,
+     BusShowtimeParameters param)
         {
+            // 1. Khởi tạo query cơ bản nhất (chỉ lọc theo Company và chưa bị xóa)
+            // KHÔNG dùng .Include() ở đây nữa vì ta sẽ dùng ProjectTo ở dưới
             var query = _context.BusShowtimes
-                .Where(x =>
-                    x.CompanyId == companyId &&
-                    x.DepartureDate == departureDate &&
-                    x.DeleteAt == null)
-                .Include(x => x.CompanyVehicle)
-                .Include(x => x.Seats)
+                .Where(x => x.CompanyId == companyId && x.DeleteAt == null)
                 .AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(plateNumber))
+            // 2. Xây dựng truy vấn động dựa trên các tham số Nullable
+            if (param.DepartureDate.HasValue)
             {
-                var normalizedPlate = plateNumber.Trim().ToLower();
+                // Chỉ thêm điều kiện lọc ngày nếu client thực sự truyền ngày lên
+                query = query.Where(x => x.DepartureDate == param.DepartureDate.Value);
+            }
+
+            if (param.Status.HasValue)
+            {
+                query = query.Where(x => x.Status == param.Status.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(param.PlateNumber))
+            {
+                var normalizedPlate = param.PlateNumber.Trim().ToLower();
                 query = query.Where(x => x.CompanyVehicle.PlateNumber.ToLower() == normalizedPlate);
             }
 
-            if (departureTime.HasValue)
-                query = query.Where(x => x.DepartureTime == departureTime.Value);
+            // Sắp xếp mặc định
+            query = query.OrderBy(x => x.DepartureTime);
 
-            var entities = await query
-                .OrderBy(x => x.DepartureTime)
+            // 3. Đếm tổng số lượng bản ghi thoả mãn bộ lọc
+            var totalCount = await query.CountAsync();
+
+            // 4. Phân trang VÀ Ánh xạ trực tiếp trên Database (Cực kỳ tối ưu)
+            // ProjectTo sẽ tự dịch cấu hình mapper của em thành câu lệnh SQL SELECT cần thiết,
+            // tự động đếm SeatCount dưới DB mà không cần lôi toàn bộ dữ liệu Seats về RAM.
+            var items = await query
+                .Skip((param.PageNumber - 1) * param.PageSize)
+                .Take(param.PageSize)
+                .ProjectTo<BusShowtimeResponse>(_mapper.ConfigurationProvider)
                 .ToListAsync();
 
-            return _mapper.Map<List<BusShowtimeResponse>>(entities);
+            // 5. Trả về kết quả
+            return new PagedResult<BusShowtimeResponse>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                PageNumber = param.PageNumber,
+                PageSize = param.PageSize
+            };
         }
 
         public async Task<BusShowtimeResponse> UpdateAsync(
@@ -318,6 +373,24 @@ namespace AppGroupCar.Services.Bus.ShowtimeServices
             });
 
             await _context.SaveChangesAsync();
+        }
+
+        public Task<IEnumerable<BusShowtimeResponse>> GetAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<BusShowtimeResponse> GetById(Guid id)
+        {
+            var entity = await _context.BusShowtimes
+                .Where(x => x.Id == id && x.DeleteAt == null)
+                .Include(x => x.CompanyVehicle)
+                .Include(x => x.Seats)
+                .FirstOrDefaultAsync();
+
+            return entity == null
+                ? throw new AppException(404, "Showtime not found")
+                : _mapper.Map<BusShowtimeResponse>(entity);
         }
     }
 }

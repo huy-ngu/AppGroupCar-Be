@@ -17,10 +17,6 @@ namespace AppGroupCar.Entities.Bus
 
         public DateTime JoinedAt { get; set; }
 
-        //[Required]
-        //[MaxLength(50)]
-        //public string RoleId { get; set; } = null!;
-
         [Required]
         public bool IsActive { get; set; } = true;
 

@@ -17,7 +17,6 @@ namespace AppGroupCar.Entities.Bus
         [ForeignKey(nameof(CompanyId))]
         public Company Company { get; set; } = null!;
 
-        // Navigation
         public ICollection<BusRoutePoint> RoutePoints { get; set; } = new List<BusRoutePoint>();
 
         public ICollection<BusShowtime> Showtimes { get; set; } = new List<BusShowtime>();

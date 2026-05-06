@@ -1,4 +1,9 @@
+using AppGroupCar.DTO;
+using AppGroupCar.DTO.PagingParam;
 using AppGroupCar.DTO.RequestDTO.Bus.ShowtimeRequest;
+using AppGroupCar.DTO.ResponseDTO;
+using AppGroupCar.DTO.ResponseDTO.Bus.RouteResponse;
+using AppGroupCar.DTO.ResponseDTO.Bus.ShowtimeResponse;
 using AppGroupCar.Helpers;
 using AppGroupCar.Services.Bus.ShowtimeServices;
 using Microsoft.AspNetCore.Authorization;
@@ -45,28 +50,24 @@ namespace AppGroupCar.Controllers.Bus
             var userId = GetUserId();
 
             var result = await _service.CreateAsync(companyId, userId, dto);
-            return Ok(result);
+            return Ok(new ApiResponse<BusShowtimeResponse> { Data = result });
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> Filter(
+            [FromQuery] BusShowtimeParameters param)
         {
             var companyId = GetCompanyId();
-            var result = await _service.GetByCompanyAsync(companyId);
+            var result = await _service.FilterAsync(companyId, param);
 
-            return Ok(result);
+            return Ok(new ApiResponse<PagedResult<BusShowtimeResponse>> { Data = result });
         }
 
-        [HttpGet("filter")]
-        public async Task<IActionResult> Filter(
-            [FromQuery] DateOnly departureDate,
-            [FromQuery] string? plateNumber,
-            [FromQuery] TimeOnly? departureTime)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(Guid id)
         {
-            var companyId = GetCompanyId();
-            var result = await _service.FilterAsync(companyId, departureDate, plateNumber, departureTime);
-
-            return Ok(result);
+            var result = await _service.GetById(id);
+            return Ok(new ApiResponse<BusShowtimeResponse> { Data = result });
         }
 
         [HttpPut("{id}")]
@@ -75,7 +76,7 @@ namespace AppGroupCar.Controllers.Bus
             var companyId = GetCompanyId();
             var result = await _service.UpdateAsync(id, companyId, dto);
 
-            return Ok(result);
+            return Ok(new ApiResponse<BusShowtimeResponse> { Data = result });
         }
 
         [HttpDelete("{id}")]
@@ -85,7 +86,7 @@ namespace AppGroupCar.Controllers.Bus
             var userId = GetUserId();
 
             await _service.DeleteAsync(id, companyId, userId);
-            return NoContent();
+            return Ok(new ApiResponse<string> { });
         }
 
         [HttpPatch("{id}/status")]
@@ -95,7 +96,7 @@ namespace AppGroupCar.Controllers.Bus
             var userId = GetUserId();
 
             var result = await _service.ChangeStatusAsync(id, companyId, userId, dto);
-            return Ok(result);
+            return Ok(new ApiResponse<BusShowtimeResponse> { Data = result });
         }
     }
 }

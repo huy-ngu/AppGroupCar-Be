@@ -1,10 +1,12 @@
-﻿using AppGroupCar.DTO.ResponseDTO.Bus.CompanyVehicleResponse;
+﻿using AppGroupCar.DTO;
+using AppGroupCar.DTO.PagingParam;
+using AppGroupCar.DTO.RequestDTO.Bus.VehicleRequest;
+using AppGroupCar.DTO.ResponseDTO.Bus.CompanyVehicleResponse;
 using AppGroupCar.Entities.Bus;
 using AppGroupCar.Exceptions;
-using AppGroupCar.DTO.RequestDTO.Bus.VehicleRequest;
 using AppGroupCar.Repositories.BaseRepo;
-using AutoMapper;
 using AppGroupCar.Services.Mytoys.Photo;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
 namespace AppGroupCar.Services.Bus.CompanyVehicleServices
@@ -42,17 +44,59 @@ namespace AppGroupCar.Services.Bus.CompanyVehicleServices
             return entity == null ? null : _mapper.Map<CompanyVehicleDetailResponseDto>(entity);
         }
 
-        public async Task<List<CompanyVehicleResponseDto>> GetByCompanyAsync(Guid companyId)
+        //public async Task<List<CompanyVehicleResponseDto>> GetByCompanyAsync(CompanyVehicleParameters param ,Guid companyId)
+        //{
+        //    var entities = await _repo.GetQueryable()
+        //        .Where(x =>
+        //            x.CompanyId == companyId &&
+        //            x.DeleteAt == null)
+        //        .OrderByDescending(x => x.CreatedAt)
+        //        .ToListAsync();
+
+        //    return _mapper.Map<List<CompanyVehicleResponseDto>>(entities);
+        //}
+
+
+        public async Task<PagedResult<CompanyVehicleResponseDto>> GetByCompanyAsync(
+            CompanyVehicleParameters param,
+            Guid companyId)
         {
-            var entities = await _repo.GetQueryable()
-                .Where(x =>
-                    x.CompanyId == companyId &&
-                    x.DeleteAt == null)
+            var query = _repo.GetQueryable()
+                .AsNoTracking()
+                .Where(x => x.CompanyId == companyId && x.DeleteAt == null);
+
+            if (!string.IsNullOrWhiteSpace(param.Search))
+            {
+                query = query.Where(x => x.PlateNumber.Contains(param.Search));
+            }
+
+            if (param.VehicleType.HasValue)
+            {
+                query = query.Where(x => x.VehicleType == param.VehicleType.Value);
+            }
+
+            if (param.Status.HasValue)
+            {
+                query = query.Where(x => x.Status == param.Status.Value);
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var entities = await query
                 .OrderByDescending(x => x.CreatedAt)
+                .Skip((param.PageNumber - 1) * param.PageSize)
+                .Take(param.PageSize)
                 .ToListAsync();
 
-            return _mapper.Map<List<CompanyVehicleResponseDto>>(entities);
+            return new PagedResult<CompanyVehicleResponseDto>
+            {
+                Items = _mapper.Map<List<CompanyVehicleResponseDto>>(entities),
+                TotalCount = totalCount,
+                PageNumber = param.PageNumber,
+                PageSize = param.PageSize
+            };
         }
+
 
         public async Task<CompanyVehicleDetailResponseDto> CreateAsync(Guid companyId, CreateCompanyVehicleRequest dto)
         {

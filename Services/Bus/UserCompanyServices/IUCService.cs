@@ -1,4 +1,6 @@
-﻿using AppGroupCar.DTO.RequestDTO.Bus.UCRequest;
+﻿using AppGroupCar.DTO;
+using AppGroupCar.DTO.PagingParam;
+using AppGroupCar.DTO.RequestDTO.Bus.UCRequest;
 using AppGroupCar.DTO.ResponseDTO.Bus.CUResponse;
 
 namespace AppGroupCar.Services.Bus.UserCompanyServices
@@ -16,9 +18,8 @@ namespace AppGroupCar.Services.Bus.UserCompanyServices
                 LeaveCompanyRequestDto request);
 
         // hàm để lấy tất cả người dùng thuộc một công ty, trả về một danh sách CUResponseDto chứa thông tin của các người dùng
-        Task<IEnumerable<CUResponseDto>>
-            GetUsersByCompanyAsync(
-                Guid companyId);
+        Task<PagedResult<CUResponseDto>>
+            GetUsersByCompanyAsync(UserCompanyparameters param, Guid companyId);
 
         // hàm để cập nhật thông tin staff theo UserId và CompanyId
         Task<CUResponseDto>
