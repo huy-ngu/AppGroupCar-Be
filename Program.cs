@@ -14,11 +14,13 @@ using AppGroupCar.Services.Auth.RoleServices;
 using AppGroupCar.Services.Auth.TokenServices;
 using AppGroupCar.Services.Auth.UserServices;
 using AppGroupCar.Services.Bus.BusRoute;
+using AppGroupCar.Services.Bus.BookingServices;
 using AppGroupCar.Services.Market.BookingItemServices;
 using AppGroupCar.Services.Market.BookingServices;
 using AppGroupCar.Services.Bus.CompanyServices;
 using AppGroupCar.Services.Bus.CompanyVehicleServices;
 using AppGroupCar.Services.Bus.SeatLayoutServices;
+using AppGroupCar.Services.Bus.SeatStatusHistoryServices;
 using AppGroupCar.Services.Bus.ShowtimeSeatServices;
 using AppGroupCar.Services.Bus.ShowtimeServices;
 using AppGroupCar.Services.Bus.UserCompanyServices;
@@ -201,6 +203,8 @@ namespace AppGroupCar
                 builder.Services.AddScoped<ISeatLayoutService, SeatLayoutService>();
                 builder.Services.AddScoped<IBusShowtimeService, BusShowtimeService>();
                 builder.Services.AddScoped<IShowtimeSeatService, ShowtimeSeatService>();
+                builder.Services.AddScoped<IBusBookingService, BusBookingService>();
+                builder.Services.AddScoped<ISeatStatusHistoryService, SeatStatusHistoryService>();
                 builder.Services.AddScoped<IMarketDriverService, MarketDriverService>();
                 builder.Services.AddScoped<IVehicleService, VehicleService>();
                 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -227,6 +231,8 @@ namespace AppGroupCar
                 builder.Services.AddAutoMapper(cfg => { }, typeof(CompanyVehicleMapping).Assembly);
                 builder.Services.AddAutoMapper(cfg => { }, typeof(VehicleSeatLayoutMapping).Assembly);
                 builder.Services.AddAutoMapper(cfg => { }, typeof(BusShowtimeMapping).Assembly);
+                builder.Services.AddAutoMapper(cfg => { }, typeof(BusBookingMapping).Assembly);
+                builder.Services.AddAutoMapper(cfg => { }, typeof(SeatStatusHistoryMapping).Assembly);
 
                 //Cấu hình Hangfire
                 builder.Services.AddHangfire(config => config
