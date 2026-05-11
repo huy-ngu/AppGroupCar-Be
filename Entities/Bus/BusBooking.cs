@@ -23,7 +23,7 @@ namespace AppGroupCar.Entities.Bus
         [Required]
         public BusBookingStatus Status { get; set; }
 
-        // Thời điểm hết hạn giữ chỗ khi booking đang Pending
+        // Thời điểm hết hạn giữ chỗ khi booking chưa thanh toán
         public DateTime? ExpireAt { get; set; }
 
         // Navigation
@@ -38,7 +38,7 @@ namespace AppGroupCar.Entities.Bus
 
     public enum BusBookingStatus
     {
-        Pending = 1,
+        Cash = 1,
         Paid = 2,
         Cancelled = 3,
         Expired = 4

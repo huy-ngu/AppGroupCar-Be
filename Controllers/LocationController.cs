@@ -1,4 +1,6 @@
 ﻿using AppGroupCar.DTO.RequestDTO;
+using AppGroupCar.DTO;
+using AppGroupCar.DTO.Filters;
 using AppGroupCar.DTO.ResponseDTO;
 using AppGroupCar.Entities;
 using AppGroupCar.Services.Mytoys.LocationServices;
@@ -21,9 +23,15 @@ namespace AppGroupCar.Controllers
         public async Task<IActionResult> GetLocationById(Guid id)
         {
             var location = await _locationService.GetLocationByIdAsync(id);
-            return Ok(new ApiResponse<Location> { Data = location });
+            return Ok(new ApiResponse<Location?> { Data = location });
         }
         [HttpGet("")]
+        public async Task<IActionResult> SearchLocations([FromQuery] LocationSearchParameters parameters)
+        {
+            var locations = await _locationService.SearchLocationsAsync(parameters);
+            return Ok(new ApiResponse<PagedResult<LocationSearchResultDTO>> { Data = locations });
+        }
+        [HttpGet("all")]
         public async Task<IActionResult> GetAllLocation()
         {
             var location = await _locationService.GetAllAsync();
