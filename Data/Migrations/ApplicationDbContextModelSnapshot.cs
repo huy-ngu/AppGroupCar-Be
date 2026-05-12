@@ -1028,6 +1028,12 @@ namespace AppGroupCar.Migrations
                     b.Property<DateTime?>("DeleteAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<decimal>("DriverRatingAverage")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("DriverRatingCount")
+                        .HasColumnType("int");
+
                     b.Property<string>("IdentityNumber")
                         .IsRequired()
                         .HasMaxLength(20)
