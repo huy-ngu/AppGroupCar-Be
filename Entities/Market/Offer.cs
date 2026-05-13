@@ -50,7 +50,7 @@ namespace AppGroupCar.Entities.Market
         Shared = 1,
         Contract = 2,
         Truck = 3,
-        Bus
+        Bus = 4
     }
 
 }
