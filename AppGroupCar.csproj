@@ -43,8 +43,6 @@
 	  <Folder Include="Repositories\Bus\" />
 		<Folder Include="Repositories\Market\" />
 		<Folder Include="Repositories\Bus\" />
-		<Folder Include="DTO\RequestDTO\Bus\" />
-		<Folder Include="DTO\ResponseDTO\Bus\" />
 	</ItemGroup>
 
 </Project>

@@ -34,7 +34,7 @@ namespace AppGroupCar.Data
         public DbSet<BusRoutePoint> BusRoutePoints { get; set; }
         public DbSet<BusShowtime> BusShowtimes { get; set; }
         public DbSet<Company> Companies { get; set; }
-        public DbSet<Old_CompanyDriver> CompanyDrivers { get; set; }
+        public DbSet<CompanyDriver> CompanyDrivers { get; set; }
         public DbSet<CompanyUser> CompanyUsers { get; set; }
         public DbSet<CompanyVehicle> CompanyVehicles { get; set; }
         public DbSet<ShowtimeLog> ShowtimeLogs { get; set; }
@@ -90,7 +90,7 @@ namespace AppGroupCar.Data
             builder.Entity<BusRoutePoint>(b => b.ToTable("BusRoutePoints"));
             builder.Entity<BusShowtime>(b => b.ToTable("BusShowtimes"));
             builder.Entity<Company>(b => b.ToTable("Companies"));
-            builder.Entity<Old_CompanyDriver>(b => b.ToTable("Old_CompanyDrivers"));
+            builder.Entity<CompanyDriver>(b => b.ToTable("CompanyDrivers"));
             builder.Entity<CompanyUser>(b => b.ToTable("CompanyUsers"));
             builder.Entity<CompanyVehicle>(b => b.ToTable("CompanyVehicles"));
             builder.Entity<ShowtimeLog>(b => b.ToTable("ShowtimeLogs"));
@@ -356,19 +356,19 @@ namespace AppGroupCar.Data
 
             });
 
-            // CompanyDriver
-            //builder.Entity<CompanyDriver>(b =>
-            //{
-            //    b.HasOne(x => x.Company)
-            //        .WithMany()
-            //        .HasForeignKey(x => x.CompanyId)
-            //        .OnDelete(DeleteBehavior.Cascade);
+            //CompanyDriver
+            builder.Entity<CompanyDriver>(b =>
+            {
+                b.HasOne(x => x.Company)
+                    .WithMany()
+                    .HasForeignKey(x => x.CompanyId)
+                    .OnDelete(DeleteBehavior.Cascade);
 
-            //    b.HasOne(x => x.User)
-            //        .WithMany()
-            //        .HasForeignKey(x => x.UserId)
-            //        .OnDelete(DeleteBehavior.Restrict);
-            //});
+                b.HasOne(x => x.User)
+                    .WithMany()
+                    .HasForeignKey(x => x.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
 
             // CompanyVehicle
             builder.Entity<CompanyVehicle>(b =>

@@ -19,6 +19,7 @@ using AppGroupCar.Services.Market.BookingItemServices;
 using AppGroupCar.Services.Market.BookingServices;
 using AppGroupCar.Services.Bus.CompanyServices;
 using AppGroupCar.Services.Bus.CompanyVehicleServices;
+using AppGroupCar.Services.Bus.CompanyDriverServices;
 using AppGroupCar.Services.Bus.SeatLayoutServices;
 using AppGroupCar.Services.Bus.SeatStatusHistoryServices;
 using AppGroupCar.Services.Bus.ShowtimeSeatServices;
@@ -201,6 +202,7 @@ namespace AppGroupCar
                 builder.Services.AddScoped<IBusRouteService, BusRouteService>();
                 builder.Services.AddScoped<IUCService, UCService>();
                 builder.Services.AddScoped<ICompanyVehicleService, CompanyVehicleService>();
+                builder.Services.AddScoped<ICompanyDriverService, CompanyDriverService>();
                 builder.Services.AddScoped<ISeatLayoutService, SeatLayoutService>();
                 builder.Services.AddScoped<IBusShowtimeService, BusShowtimeService>();
                 builder.Services.AddScoped<IShowtimeSeatService, ShowtimeSeatService>();
