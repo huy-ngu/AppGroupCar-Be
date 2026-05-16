@@ -9,6 +9,8 @@ namespace AppGroupCar.DTO.ResponseDTO.Bus.ShowtimeResponse
         public Guid CompanyVehicleId { get; set; }
         public string PlateNumber { get; set; } = null!;
         public Guid RouteId { get; set; }
+        public Guid CompanyDriverId { get; set; }
+        public string DriverName { get; set; } = null!;
         public DateOnly DepartureDate { get; set; }
         public TimeOnly DepartureTime { get; set; }
         public decimal Price { get; set; }
