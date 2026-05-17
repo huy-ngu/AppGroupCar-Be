@@ -111,11 +111,11 @@ namespace AppGroupCar
                 });
                 });
 
-                //var connectionString =
-                //    builder.Configuration.GetConnectionString("AzureConnection")
-                //    ?? throw new InvalidOperationException("AzureConnection is missing");
                 var connectionString =
-                    builder.Configuration.GetConnectionString("DefaultConnection");
+                    builder.Configuration.GetConnectionString("AzureConnection")
+                    ?? throw new InvalidOperationException("AzureConnection is missing");
+                //var connectionString =
+                //    builder.Configuration.GetConnectionString("DefaultConnection");
 
                 builder.Services.AddDbContext<ApplicationDbContext>(options =>
                     options.UseSqlServer(
