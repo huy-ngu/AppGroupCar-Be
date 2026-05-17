@@ -1,5 +1,7 @@
 using AppGroupCar.DTO.PagingParam;
 using AppGroupCar.DTO.RequestDTO.Bus.CompanyDriverRequest;
+using AppGroupCar.DTO.ResponseDTO;
+using AppGroupCar.Exceptions;
 using AppGroupCar.Helpers;
 using AppGroupCar.Services.Bus.CompanyDriverServices;
 using Microsoft.AspNetCore.Authorization;
@@ -24,7 +26,7 @@ namespace AppGroupCar.Controllers.Bus
             var companyId = User.GetCompanyId();
 
             if (companyId == null)
-                throw new Exception("Company not found in token");
+                throw new AppException(401, "Company not found in token");
 
             return companyId.Value;
         }
@@ -35,7 +37,7 @@ namespace AppGroupCar.Controllers.Bus
             var companyId = GetCompanyId();
             var result = await _service.CreateAsync(companyId, dto);
 
-            return Ok(result);
+            return Ok(new ApiResponse<object> { Code = 201, Message = "Create success", Data = result });
         }
 
         [HttpGet("{id}")]
@@ -44,7 +46,10 @@ namespace AppGroupCar.Controllers.Bus
             var companyId = GetCompanyId();
             var result = await _service.GetByIdAsync(id, companyId);
 
-            return result == null ? NotFound(new { message = "Company driver not found" }) : Ok(result);
+            if (result == null)
+                throw new AppException(404, "Company driver not found");
+
+            return Ok(new ApiResponse<object> { Data = result });
         }
 
         [HttpGet]
@@ -53,7 +58,7 @@ namespace AppGroupCar.Controllers.Bus
             var companyId = GetCompanyId();
             var result = await _service.GetByCompanyAsync(param, companyId);
 
-            return Ok(result);
+            return Ok(new ApiResponse<object> { Data = result });
         }
 
         [HttpPut("{id}")]
@@ -62,7 +67,7 @@ namespace AppGroupCar.Controllers.Bus
             var companyId = GetCompanyId();
             var result = await _service.UpdateAsync(id, companyId, dto);
 
-            return Ok(result);
+            return Ok(new ApiResponse<object> { Data = result });
         }
 
         [HttpDelete("{id}")]
@@ -72,7 +77,7 @@ namespace AppGroupCar.Controllers.Bus
 
             await _service.DeleteAsync(id, companyId);
 
-            return Ok(new { message = "Company driver deleted (soft)" });
+            return Ok(new ApiResponse<object> { Message = "Company driver deleted (soft)" });
         }
     }
 }

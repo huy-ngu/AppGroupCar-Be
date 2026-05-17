@@ -43,6 +43,7 @@
 	  <Folder Include="Repositories\Bus\" />
 		<Folder Include="Repositories\Market\" />
 		<Folder Include="Repositories\Bus\" />
+		<Folder Include="Services\NewFolder\" />
 	</ItemGroup>
 
 </Project>

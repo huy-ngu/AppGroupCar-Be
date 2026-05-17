@@ -1,6 +1,7 @@
 using AppGroupCar.DTO.ResponseDTO;
 using AppGroupCar.DTO.RequestDTO.Bus.BookingRequest;
 using AppGroupCar.DTO.ResponseDTO.Bus.BookingResponse;
+using AppGroupCar.Exceptions;
 using AppGroupCar.Helpers;
 using AppGroupCar.Services.Bus.BookingServices;
 using Microsoft.AspNetCore.Authorization;
@@ -25,7 +26,7 @@ namespace AppGroupCar.Controllers.Bus
             var userId = User.GetUserId();
 
             if (userId == null)
-                throw new Exception("User not found in token");
+                throw new AppException(401, "User not found in token");
 
             return userId.Value;
         }
