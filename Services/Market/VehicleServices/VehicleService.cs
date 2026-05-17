@@ -32,36 +32,80 @@ namespace AppGroupCar.Services.Market.VehicleServices
         public async Task<VehicleDTO> CreateAsync(Guid driverId, CreateVehicleDTO dto)
         {
             var driver = await _driverRepo.GetByIdAsync(driverId);
+
             if (driver == null)
                 throw new AppException(404, "Driver not found");
 
             var existingVehicle = await _vehicleRepo.FindAsync(
                 v => v.PlateNumber == dto.PlateNumber && v.DeleteAt == null,
-                1, 1
+                1,
+                1
             );
+
             if (existingVehicle.Any())
                 throw new AppException(400, "Plate number already exists");
 
             var vehicle = _mapper.Map<Vehicle>(dto);
+
             vehicle.DriverId = driverId;
+
             vehicle.Status = VehicleStatus.Pending;
+
+            // Upload vehicle image
             if (dto.UrlImage != null && dto.UrlImage.Length > 0)
             {
-                var uploadResult = await _photoService.AddPhotoAsync(dto.UrlImage);
+                var uploadResult = await _photoService.UploadPhotoAsync(
+                    dto.UrlImage,
+                    "vehicle-market-imgs"
+                );
+
+                if (uploadResult == null)
+                {
+                    throw new AppException(400, "Vehicle image upload failed");
+                }
+
                 if (uploadResult.Error != null)
-                    throw new AppException(400, "Cloudinary upload failed: " + uploadResult.Error.Message);
+                {
+                    throw new AppException(
+                        400,
+                        "Cloudinary upload failed: " + uploadResult.Error.Message
+                    );
+                }
+
                 vehicle.UrlImage = uploadResult.SecureUrl.AbsoluteUri;
             }
 
-            if (dto.RegistrationDocumentUrl != null && dto.RegistrationDocumentUrl.Length > 0)
+            // Upload registration document
+            if (dto.RegistrationDocumentUrl != null &&
+                dto.RegistrationDocumentUrl.Length > 0)
             {
-                var uploadResult = await _photoService.AddPhotoAsync(dto.RegistrationDocumentUrl);
+                var uploadResult = await _photoService.UploadPhotoAsync(
+                    dto.RegistrationDocumentUrl,
+                    "vehicle-market-imgs"
+                );
+
+                if (uploadResult == null)
+                {
+                    throw new AppException(
+                        400,
+                        "Registration document upload failed"
+                    );
+                }
+
                 if (uploadResult.Error != null)
-                    throw new AppException(400, "Cloudinary upload failed: " + uploadResult.Error.Message);
-                vehicle.RegistrationDocumentUrl = uploadResult.SecureUrl.AbsoluteUri;
+                {
+                    throw new AppException(
+                        400,
+                        "Cloudinary upload failed: " + uploadResult.Error.Message
+                    );
+                }
+
+                vehicle.RegistrationDocumentUrl =
+                    uploadResult.SecureUrl.AbsoluteUri;
             }
 
             await _vehicleRepo.AddAsync(vehicle);
+
             await _vehicleRepo.SaveChangesAsync();
 
             return _mapper.Map<VehicleDTO>(vehicle);
@@ -94,44 +138,103 @@ namespace AppGroupCar.Services.Market.VehicleServices
         public async Task UpdateAsync(Guid id, Guid driverId, UpdateVehicleDTO dto)
         {
             var vehicle = await _vehicleRepo.GetByIdAsync(id);
+
             if (vehicle == null || vehicle.DeleteAt != null)
                 throw new AppException(404, "Vehicle not found");
 
             // quyền sở hữu
             if (vehicle.DriverId != driverId)
-                throw new AppException(403, "You don't have permission to update this vehicle");
+                throw new AppException(
+                    403,
+                    "You don't have permission to update this vehicle"
+                );
 
-
-            if (!string.IsNullOrEmpty(dto.PlateNumber) && dto.PlateNumber != vehicle.PlateNumber)
+            // kiểm tra biển số trùng
+            if (!string.IsNullOrEmpty(dto.PlateNumber) &&
+                dto.PlateNumber != vehicle.PlateNumber)
             {
                 var existingVehicle = await _vehicleRepo.FindAsync(
-                    v => v.PlateNumber == dto.PlateNumber && v.DeleteAt == null && v.Id != id,
-                    1, 1
+                    v => v.PlateNumber == dto.PlateNumber &&
+                         v.DeleteAt == null &&
+                         v.Id != id,
+                    1,
+                    1
                 );
+
                 if (existingVehicle.Any())
-                    throw new AppException(400, "Plate number already exists");
+                {
+                    throw new AppException(
+                        400,
+                        "Plate number already exists"
+                    );
+                }
             }
 
             _mapper.Map(dto, vehicle);
 
+            // Upload vehicle image
             if (dto.UrlImage != null && dto.UrlImage.Length > 0)
             {
-                var uploadResult = await _photoService.AddPhotoAsync(dto.UrlImage);
+                var uploadResult = await _photoService.UploadPhotoAsync(
+                    dto.UrlImage,
+                    "vehicle-market-imgs"
+                );
+
+                if (uploadResult == null)
+                {
+                    throw new AppException(
+                        400,
+                        "Vehicle image upload failed"
+                    );
+                }
+
                 if (uploadResult.Error != null)
-                    throw new AppException(400, "Cloudinary upload failed: " + uploadResult.Error.Message);
-                vehicle.UrlImage = uploadResult.SecureUrl.AbsoluteUri;
+                {
+                    throw new AppException(
+                        400,
+                        "Cloudinary upload failed: " +
+                        uploadResult.Error.Message
+                    );
+                }
+
+                vehicle.UrlImage =
+                    uploadResult.SecureUrl.AbsoluteUri;
             }
 
-            if (dto.RegistrationDocumentUrl != null && dto.RegistrationDocumentUrl.Length > 0)
+            // Upload registration document
+            if (dto.RegistrationDocumentUrl != null &&
+                dto.RegistrationDocumentUrl.Length > 0)
             {
-                var uploadResult = await _photoService.AddPhotoAsync(dto.RegistrationDocumentUrl);
+                var uploadResult = await _photoService.UploadPhotoAsync(
+                    dto.RegistrationDocumentUrl,
+                    "vehicle-market-imgs"
+                );
+
+                if (uploadResult == null)
+                {
+                    throw new AppException(
+                        400,
+                        "Registration document upload failed"
+                    );
+                }
+
                 if (uploadResult.Error != null)
-                    throw new AppException(400, "Cloudinary upload failed: " + uploadResult.Error.Message);
-                vehicle.RegistrationDocumentUrl = uploadResult.SecureUrl.AbsoluteUri;
+                {
+                    throw new AppException(
+                        400,
+                        "Cloudinary upload failed: " +
+                        uploadResult.Error.Message
+                    );
+                }
+
+                vehicle.RegistrationDocumentUrl =
+                    uploadResult.SecureUrl.AbsoluteUri;
             }
 
             vehicle.LastUpdateAt = DateTime.UtcNow;
+
             _vehicleRepo.Update(vehicle);
+
             await _vehicleRepo.SaveChangesAsync();
         }
 

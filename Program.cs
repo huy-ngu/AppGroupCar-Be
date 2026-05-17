@@ -44,6 +44,7 @@ using AppGroupCar.Services.Market.OfferServices;
 using AppGroupCar.Services.Market.OfferServices.OfferShipmentServices;
 using AppGroupCar.Services.Market.ShipmentOfferServices;
 using AppGroupCar.Services.Market.ShipmentServices;
+using AppGroupCar.Services.Search;
 
 namespace AppGroupCar
 {
@@ -216,6 +217,7 @@ namespace AppGroupCar
                 builder.Services.AddScoped<IOfferShipmentSerivce, OfferShipmentService>();
                 builder.Services.AddScoped<IShipmentOfferService, ShipmentOfferService>();
                 builder.Services.AddScoped<IShipmentService, ShipmentService>();
+                builder.Services.AddScoped<ITripSearchService, TripSearchService>();
 
                 // Map section trong appsettings vào class CloudinarySettings
                 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));

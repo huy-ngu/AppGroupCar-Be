@@ -45,7 +45,10 @@ namespace AppGroupCar.Services.Auth.AuthServices
 
             if (request.Avatar != null && request.Avatar.Length > 0)
             {
-                var uploadResult = await _photoService.AddPhotoAsync(request.Avatar);
+                var uploadResult = await _photoService.UploadPhotoAsync(
+                    request.Avatar,
+                    "user-avatars"
+                );
 
                 if (uploadResult.Error != null)
                     throw new AppException(400, "Cloudinary upload failed: " + uploadResult.Error.Message);

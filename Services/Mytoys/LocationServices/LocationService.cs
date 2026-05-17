@@ -1,6 +1,6 @@
-﻿using AppGroupCar.DTO.RequestDTO;
 using AppGroupCar.DTO;
 using AppGroupCar.DTO.Filters;
+using AppGroupCar.DTO.RequestDTO;
 using AppGroupCar.DTO.ResponseDTO;
 using AppGroupCar.Entities;
 using AppGroupCar.Repositories.BaseRepo;
@@ -11,18 +11,14 @@ namespace AppGroupCar.Services.Mytoys.LocationServices
 {
     public class LocationService
     {
-        // Khai báo IBaseRepository với kiểu T là Vehicle
+        private const string AccentInsensitiveCollation = "Latin1_General_100_CI_AI";
         private readonly IBaseRepository<Location> _repo;
 
-        // Tiêm (Inject) qua Constructor
-        public LocationService(IBaseRepository<Location> Repo)
+        public LocationService(IBaseRepository<Location> repo)
         {
-            _repo = Repo ?? throw new ArgumentNullException(nameof(Repo));
+            _repo = repo ?? throw new ArgumentNullException(nameof(repo));
         }
 
-        /// <summary>
-        /// Thêm một xe mới
-        /// </summary>
         public async Task<Location> CreateLocationAsync(CreateLocationRequestDTO request)
         {
             var newLocation = new Location
@@ -34,31 +30,24 @@ namespace AppGroupCar.Services.Mytoys.LocationServices
             };
 
             await _repo.AddAsync(newLocation);
-
             await _repo.SaveChangesAsync();
 
             return newLocation;
         }
 
-        /// <summary>
-        /// Lấy xe theo ID
-        /// </summary>
         public async Task<Location?> GetLocationByIdAsync(Guid id)
         {
             return await _repo.GetByIdAsync(id);
         }
-        /// <summary>
-        /// Lấy All
-        /// </summary>
+
         public async Task<IEnumerable<Location?>> GetAllAsync()
         {
             return await _repo.GetAllAsync();
-
         }
 
         public async Task<PagedResult<LocationSearchResultDTO>> SearchLocationsAsync(LocationSearchParameters parameters)
         {
-            var keyword = parameters.Keyword?.Trim();
+            var keyword = parameters.Query?.Trim();
             var pageNumber = parameters.PageNumber;
             var pageSize = parameters.PageSize;
 
@@ -73,34 +62,29 @@ namespace AppGroupCar.Services.Mytoys.LocationServices
                 };
             }
 
+            var containsPattern = BuildLikePattern(keyword, searchAnywhere: true);
+            var startsWithPattern = BuildLikePattern(keyword, searchAnywhere: false);
+
             var query = _repo.GetQueryable()
                 .AsNoTracking()
                 .Where(x => x.DeleteAt == null)
+                .Where(x => x.IsActive == parameters.IsActive)
                 .Where(x =>
-                    x.Name.Contains(keyword) ||
-                    (x.Code != null && x.Code.Contains(keyword)) ||
-                    (x.Address != null && x.Address.Contains(keyword)));
-
-            if (parameters.Type.HasValue)
-            {
-                query = query.Where(x => x.LocationType == parameters.Type.Value);
-            }
-
-            if (parameters.ParentLocationId.HasValue)
-            {
-                query = query.Where(x => x.ParentLocationId == parameters.ParentLocationId.Value);
-            }
-
-            if (parameters.IsActive.HasValue)
-            {
-                query = query.Where(x => x.IsActive == parameters.IsActive.Value);
-            }
+                    EF.Functions.Like(EF.Functions.Collate(x.Name, AccentInsensitiveCollation), containsPattern) ||
+                    (x.Code != null &&
+                     EF.Functions.Like(EF.Functions.Collate(x.Code, AccentInsensitiveCollation), containsPattern)));
 
             var totalCount = await query.CountAsync();
 
             var locations = await query
-                .OrderBy(x => x.Name == keyword ? 0 : x.Name.StartsWith(keyword) ? 1 : 2)
-                .ThenBy(x => x.LocationType)
+                .OrderBy(x =>
+                    EF.Functions.Collate(x.Name, AccentInsensitiveCollation) == keyword
+                        ? 0
+                        : x.Code != null && EF.Functions.Collate(x.Code, AccentInsensitiveCollation) == keyword
+                            ? 1
+                            : EF.Functions.Like(EF.Functions.Collate(x.Name, AccentInsensitiveCollation), startsWithPattern)
+                                ? 2
+                                : 3)
                 .ThenBy(x => x.Name)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -123,17 +107,15 @@ namespace AppGroupCar.Services.Mytoys.LocationServices
         public async Task DeleteLocationAsync(Guid id)
         {
             var location = await _repo.GetByIdAsync(id);
-            if (location == null) return;
+            if (location == null)
+            {
+                return;
+            }
 
             _repo.Delete(location);
-
             await _repo.SaveChangesAsync();
         }
 
-        /// <summary>
-        /// Tìm kiếm xe với nhiều điều kiện (keyword, type, parentLocationId, isActive) và phân trang
-        /// </summary>
-        //Tuy nhiên có thể phát triển thêm phần tìm kiếm nâng cao như: tìm theo tọa độ (gần đây nhất), tìm theo GooglePlaceId, v.v... tùy nhu cầu
         public async Task<IEnumerable<Location>> FindLocationsAsync(
             string? keyword,
             LocationType? type,
@@ -191,24 +173,26 @@ namespace AppGroupCar.Services.Mytoys.LocationServices
         }
 
         private static LocationSearchResultDTO BuildSearchResult(
-            Location location,
-            IReadOnlyDictionary<Guid, Location> locationLookup)
+    Location location,
+    IReadOnlyDictionary<Guid, Location> locationLookup)
         {
-            var parents = GetParentChain(location, locationLookup)
-                .Select(ToBrief)
-                .ToList();
-            var locationDto = ToBrief(location);
-            var hierarchy = parents
-                .Concat(new[] { locationDto })
-                .ToList();
+            var parents = GetParentChain(location, locationLookup);
+
+            var displayParts = new List<string> { location.Name };
+            displayParts.AddRange(parents
+                .AsEnumerable()
+                .Reverse()
+                .Select(x => x.Name));
 
             return new LocationSearchResultDTO
             {
-                Location = locationDto,
-                ParentLocations = parents,
-                Hierarchy = hierarchy,
-                DisplayName = BuildDisplayName(locationDto, parents),
-                Path = string.Join(" > ", hierarchy.Select(x => x.Name))
+                Id = location.Id,
+                Code = location.Code,
+                Name = location.Name,
+                LocationType = location.LocationType,
+                LocationTypeName = location.LocationType.ToString(),
+                LocationTypeLabel = GetLocationTypeLabel(location.LocationType),
+                DisplayName = string.Join(", ", displayParts)
             };
         }
 
@@ -228,34 +212,37 @@ namespace AppGroupCar.Services.Mytoys.LocationServices
                 current = parent;
             }
 
-            parents.Reverse();
             return parents;
         }
 
-        private static LocationBriefResponseDTO ToBrief(Location location)
+        private static string FormatLocationSegment(Location location)
         {
-            return new LocationBriefResponseDTO
+            return $"{GetLocationTypeLabel(location.LocationType)} {location.Name}";
+        }
+
+        private static string GetLocationTypeLabel(LocationType type)
+        {
+            return type switch
             {
-                Id = location.Id,
-                Name = location.Name,
-                Code = location.Code,
-                LocationType = location.LocationType,
-                LocationTypeName = location.LocationType.ToString(),
-                ParentLocationId = location.ParentLocationId,
-                Address = location.Address,
-                IsActive = location.IsActive,
-                Latitude = location.Coordinate?.Y,
-                Longitude = location.Coordinate?.X
+                LocationType.Province => "tỉnh",
+                LocationType.District => "huyện",
+                LocationType.Ward => "xã",
+                LocationType.Landmark => "điểm",
+                LocationType.Depot => "kho",
+                _ => "khu vực"
             };
         }
 
-        private static string BuildDisplayName(
-            LocationBriefResponseDTO location,
-            IReadOnlyList<LocationBriefResponseDTO> parents)
+        private static string BuildLikePattern(string keyword, bool searchAnywhere)
         {
-            var parts = new List<string> { location.Name };
-            parts.AddRange(parents.AsEnumerable().Reverse().Select(x => x.Name));
-            return string.Join(", ", parts);
+            var escapedKeyword = keyword
+                .Replace("[", "[[]")
+                .Replace("%", "[%]")
+                .Replace("_", "[_]");
+
+            return searchAnywhere
+                ? $"%{escapedKeyword}%"
+                : $"{escapedKeyword}%";
         }
     }
 }

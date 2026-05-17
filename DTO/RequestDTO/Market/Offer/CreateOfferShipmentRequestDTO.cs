@@ -15,7 +15,7 @@ namespace AppGroupCar.DTO.RequestDTO.Market.Offer
         public decimal BasePrice { get; set; } = 10000000;
 
         [Required]
-        public List<CreateOfferRoutePointDTO> OfferRoutePoints { get; set; }
+        public List<CreateOfferRoutePointDTO> OfferRoutePoints { get; set; } = new();
 
         [Required]
         public CreateCargoRequestDTO Cargo { get; set; }

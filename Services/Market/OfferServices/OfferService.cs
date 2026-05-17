@@ -175,7 +175,9 @@ namespace AppGroupCar.Services.Market.OfferServices
                      Id = Guid.NewGuid(),
                      OfferId = offer.Id,
                      Sequence = index + 1,
-                     LocationId = item.LocationId
+                     LocationId = item.LocationId,
+                     PickupAllowed = item.PickupAllowed ?? true,
+                     DropoffAllowed = item.DropoffAllowed ?? true
                  })
                  .ToList();
             await _repoOfferRoutePoint.AddRangeAsync(newRoutePoints);
