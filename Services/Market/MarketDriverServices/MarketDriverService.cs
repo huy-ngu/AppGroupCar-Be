@@ -156,9 +156,28 @@ namespace AppGroupCar.Services.Market.MarketDriverServices
             }
             _mapper.Map(request, driver);
             driver.LicenseDocumentUrl = imgUrl;
+            driver.VerificationStatus = DriverVerificationStatus.Pending;
             _repo.Update(driver);
             await _repo.SaveChangesAsync();
             return driver;
+        }
+
+        public async Task RefuseDriverAsync(Guid id)
+        {
+            var strategy = _dbContext.Database.CreateExecutionStrategy();
+
+            await strategy.ExecuteAsync(async () =>
+            {
+                using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+
+                var driver = await _repo.GetByIdAsync(id) ?? throw new AppException(404, "Tài xế không tồn tại");
+
+                driver.VerificationStatus = DriverVerificationStatus.Rejected;
+                _repo.Update(driver);
+                await _repo.SaveChangesAsync();
+
+                scope.Complete();
+            });
         }
     }
 }

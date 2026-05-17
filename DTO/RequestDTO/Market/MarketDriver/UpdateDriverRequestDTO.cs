@@ -21,9 +21,6 @@ namespace AppGroupCar.DTO.RequestDTO.Market.MarketDriver
         [MaxLength(10)]
         public string LicenseClass { get; set; } = null!;
 
-        [Required]
-        public DriverVerificationStatus VerificationStatus { get; set; }
-
         public IFormFile? LicenseDocumenImg { get; set; }
     }
 }

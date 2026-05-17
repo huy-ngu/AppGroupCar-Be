@@ -14,5 +14,6 @@ namespace AppGroupCar.Services.Market.MarketDriverServices
         Task<Driver> GetByIdAsync(Guid id);
         Task DeleteAsync(Guid id);
         Task ApprovalDriverAsync(Guid id);
+        Task RefuseDriverAsync(Guid id);
     }
 }
