@@ -65,7 +65,9 @@ namespace AppGroupCar.Services.Market.OfferServices.OfferShipmentServices
                      Id = Guid.NewGuid(),
                      OfferId = offer.Id,
                      Sequence = index + 1,
-                     LocationId = item.LocationId
+                     LocationId = item.LocationId,
+                     PickupAllowed = item.PickupAllowed ?? true,
+                     DropoffAllowed = item.DropoffAllowed ?? true
                  })
                  .ToList();
 

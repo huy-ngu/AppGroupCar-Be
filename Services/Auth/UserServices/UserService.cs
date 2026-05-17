@@ -132,31 +132,49 @@ namespace AppGroupCar.Services.Auth.UserServices
 
         public async Task<UserDto> CreateAsync(CreateUserDTO dto)
         {
-            //var existing = await _userManager.FindByEmailAsync(dto.Email);
-            //if (existing != null) throw new AppException(400, "Email already exists");
             var existing = await _userManager.FindByEmailAsync(dto.Email);
+
             if (existing != null)
                 throw new AppException(400, "Email already exists");
 
             string? avatarUrl = null;
+
             var user = _mapper.Map<ApplicationUser>(dto);
 
             if (dto.AvatarUrl != null && dto.AvatarUrl.Length > 0)
             {
-                var uploadResult = await _photoService.AddPhotoAsync(dto.AvatarUrl);
+                var uploadResult = await _photoService.UploadPhotoAsync(
+                    dto.AvatarUrl,
+                    "user-avatars"
+                );
+
+                if (uploadResult == null)
+                    throw new AppException(400, "Avatar upload failed");
 
                 if (uploadResult.Error != null)
-                    throw new AppException(400, "Cloudinary upload failed: " + uploadResult.Error.Message);
+                    throw new AppException(
+                        400,
+                        "Cloudinary upload failed: " + uploadResult.Error.Message
+                    );
 
                 avatarUrl = uploadResult.SecureUrl.AbsoluteUri;
+
                 user.AvatarUrl = avatarUrl;
             }
 
             var result = await _userManager.CreateAsync(user, dto.Password);
 
             if (!result.Succeeded)
-                throw new AppException(400, "Create user failed",
-                    new { errors = result.Errors.Select(e => e.Description) });
+            {
+                throw new AppException(
+                    400,
+                    "Create user failed",
+                    new
+                    {
+                        errors = result.Errors.Select(e => e.Description)
+                    }
+                );
+            }
 
             // thêm role nếu chưa có
             if (dto.Roles != null && dto.Roles.Any())
@@ -167,11 +185,25 @@ namespace AppGroupCar.Services.Auth.UserServices
                         throw new AppException(404, "Role not found: " + role);
                 }
 
-                await _userManager.AddToRolesAsync(user, dto.Roles);
+                var addRoleResult = await _userManager.AddToRolesAsync(user, dto.Roles);
+
+                if (!addRoleResult.Succeeded)
+                {
+                    throw new AppException(
+                        400,
+                        "Add role failed",
+                        new
+                        {
+                            errors = addRoleResult.Errors.Select(e => e.Description)
+                        }
+                    );
+                }
             }
 
             var roles = await _userManager.GetRolesAsync(user);
+
             var userResponse = _mapper.Map<UserDto>(user);
+
             userResponse.Roles = roles;
 
             return userResponse;
@@ -180,27 +212,48 @@ namespace AppGroupCar.Services.Auth.UserServices
         public async Task UpdateAsync(string id, UpdateUserDTO dto)
         {
             var user = await _userManager.FindByIdAsync(id);
-            if (user == null) throw new AppException(404, "User not found");
 
-            string? avatarUrl = null;
+            if (user == null)
+                throw new AppException(404, "User not found");
 
             user.FullName = dto.FullName ?? user.FullName;
+
             user.PhoneNumber = dto.PhoneNumber ?? user.PhoneNumber;
 
             if (dto.ImgFile != null && dto.ImgFile.Length > 0)
             {
-                var uploadResult = await _photoService.AddPhotoAsync(dto.ImgFile);
+                var uploadResult = await _photoService.UploadPhotoAsync(
+                    dto.ImgFile,
+                    "user-avatars"
+                );
+
+                if (uploadResult == null)
+                    throw new AppException(400, "Avatar upload failed");
 
                 if (uploadResult.Error != null)
-                    throw new AppException(400, "Cloudinary upload failed: " + uploadResult.Error.Message);
+                {
+                    throw new AppException(
+                        400,
+                        "Cloudinary upload failed: " + uploadResult.Error.Message
+                    );
+                }
 
-                avatarUrl = uploadResult.SecureUrl.AbsoluteUri;
-                user.AvatarUrl = avatarUrl;
+                user.AvatarUrl = uploadResult.SecureUrl.AbsoluteUri;
             }
 
             var result = await _userManager.UpdateAsync(user);
-            if (!result.Succeeded) throw new AppException(400, "Update failed", new { errors = result.Errors.Select(e => e.Description) });
 
+            if (!result.Succeeded)
+            {
+                throw new AppException(
+                    400,
+                    "Update failed",
+                    new
+                    {
+                        errors = result.Errors.Select(e => e.Description)
+                    }
+                );
+            }
         }
 
         public async Task DeleteAsync(string id)

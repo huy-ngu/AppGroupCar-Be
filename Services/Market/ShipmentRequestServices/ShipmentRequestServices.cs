@@ -21,28 +21,49 @@ namespace AppGroupCar.Services.Market.ShipmentRequestServices
             _mapper = mapper;
             _photoService = photoService;
         }
-        public async Task<ShipmentRequest> CreateAsync(Guid userId, CreateShipmentRequestDTO request)
+        public async Task<ShipmentRequest> CreateAsync(
+    Guid userId,
+    CreateShipmentRequestDTO request)
         {
             string? imgUrl = null;
 
-            if (request.ImageUrl != null)
+            if (request.ImageUrl != null && request.ImageUrl.Length > 0)
             {
-                var uploadResult = await _photoService.AddPhotoAsync(request.ImageUrl);
+                var uploadResult = await _photoService.UploadPhotoAsync(
+                    request.ImageUrl,
+                    "shipment-request-img"
+                );
+
+                if (uploadResult == null)
+                    throw new AppException(400, "Image upload failed");
+
                 if (uploadResult.Error != null)
-                    throw new AppException(400, "Cloudinary upload failed: " + uploadResult.Error.Message);
+                {
+                    throw new AppException(
+                        400,
+                        "Cloudinary upload failed: " + uploadResult.Error.Message
+                    );
+                }
 
                 imgUrl = uploadResult.SecureUrl.AbsoluteUri;
             }
 
             var shipmentRequest = _mapper.Map<ShipmentRequest>(request);
+
             shipmentRequest.CustomerId = userId;
+
             shipmentRequest.Status = ShipmentRequestStatus.Open;
+
             shipmentRequest.ImageUrl = imgUrl;
+
             shipmentRequest.DropoffLocationId = request.DropoffLocationId;
+
             shipmentRequest.PickupLocationId = request.PickupLocationId;
 
             await _repo.AddAsync(shipmentRequest);
+
             await _repo.SaveChangesAsync();
+
             return shipmentRequest;
         }
 
@@ -91,37 +112,53 @@ namespace AppGroupCar.Services.Market.ShipmentRequestServices
         public async Task UpdateAsync(UpdateShipmentRequestDTO request)
         {
             var exitShipmentRequest = await _repo.GetByIdAsync(request.Id);
-            if (exitShipmentRequest == null || exitShipmentRequest?.DeleteAt != null)
+
+            if (exitShipmentRequest == null || exitShipmentRequest.DeleteAt != null)
             {
                 throw new AppException(404, "Không tìm thấy bản ghi");
             }
 
-            string? imgUrl = null;
-
-            if (request.imgFile != null)
-            {
-                var uploadResult = await _photoService.AddPhotoAsync(request.imgFile);
-                if (uploadResult.Error != null)
-                    throw new AppException(400, "Cloudinary upload failed: " + uploadResult.Error.Message);
-
-                imgUrl = uploadResult.SecureUrl.AbsoluteUri;
-            }
-
             _mapper.Map(request, exitShipmentRequest);
+
+            if (request.imgFile != null && request.imgFile.Length > 0)
+            {
+                var uploadResult = await _photoService.UploadPhotoAsync(
+                    request.imgFile,
+                    "shipment-request-img"
+                );
+
+                if (uploadResult == null)
+                {
+                    throw new AppException(400, "Image upload failed");
+                }
+
+                if (uploadResult.Error != null)
+                {
+                    throw new AppException(
+                        400,
+                        "Cloudinary upload failed: " + uploadResult.Error.Message
+                    );
+                }
+
+                exitShipmentRequest.ImageUrl =
+                    uploadResult.SecureUrl.AbsoluteUri;
+            }
 
             if (request.DropoffLocationId != null)
             {
-                exitShipmentRequest.DropoffLocationId = (Guid)request.DropoffLocationId;
-            }
-            if (request.PickupLocationId != null && request.PickupLocationId is Guid)
-            {
-                exitShipmentRequest.PickupLocationId = (Guid)request.PickupLocationId;
+                exitShipmentRequest.DropoffLocationId =
+                    request.DropoffLocationId.Value;
             }
 
-            exitShipmentRequest.ImageUrl = imgUrl;
+            if (request.PickupLocationId != null)
+            {
+                exitShipmentRequest.PickupLocationId =
+                    request.PickupLocationId.Value;
+            }
+
             _repo.Update(exitShipmentRequest);
+
             await _repo.SaveChangesAsync();
-            return;
         }
     }
 }

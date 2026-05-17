@@ -1,4 +1,3 @@
-using AppGroupCar.Entities;
 using System.ComponentModel;
 
 namespace AppGroupCar.DTO.Filters
@@ -9,10 +8,15 @@ namespace AppGroupCar.DTO.Filters
         private int _pageNumber = 1;
         private int _pageSize = 10;
 
-        public string? Keyword { get; set; }
-        public LocationType? Type { get; set; }
-        public Guid? ParentLocationId { get; set; }
-        public bool? IsActive { get; set; } = true;
+        public string? Query { get; set; }
+
+        public string? Keyword
+        {
+            get => Query;
+            set => Query = value;
+        }
+
+        public bool IsActive { get; set; } = true;
 
         [DefaultValue(1)]
         public int PageNumber
