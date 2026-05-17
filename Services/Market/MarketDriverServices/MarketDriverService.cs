@@ -139,27 +139,50 @@ namespace AppGroupCar.Services.Market.MarketDriverServices
 
         public async Task<Driver> UpdateAsync(Guid id, UpdateDriverRequestDTO request)
         {
-            var driver = await _repo.GetByIdAsync(id);
-            if (driver == null || driver?.DeleteAt != null)
-            {
-                throw new AppException(404, "Không tìm thấy bản ghi");
-            }
-            string? imgUrl = null;
+            var strategy = _dbContext.Database.CreateExecutionStrategy();
 
-            if (request.LicenseDocumenImg != null)
+            return await strategy.ExecuteAsync(async () =>
             {
-                var uploadResult = await _photoService.AddPhotoAsync(request.LicenseDocumenImg);
-                if (uploadResult.Error != null)
-                    throw new AppException(400, "Cloudinary upload failed: " + uploadResult.Error.Message);
+                using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
 
-                imgUrl = uploadResult.SecureUrl.AbsoluteUri;
-            }
-            _mapper.Map(request, driver);
-            driver.LicenseDocumentUrl = imgUrl;
-            driver.VerificationStatus = DriverVerificationStatus.Pending;
-            _repo.Update(driver);
-            await _repo.SaveChangesAsync();
-            return driver;
+                var driver = await _repo.GetByIdAsync(id);
+                if (driver == null || driver?.DeleteAt != null)
+                {
+                    throw new AppException(404, "Không tìm thấy bản ghi");
+                }
+
+                string userId = id.ToString();
+                var user = await _user.FindByIdAsync(userId);
+                if (user == null)
+                {
+                    throw new AppException(404, "Người dùng không tồn tại");
+                }
+
+                var rs = await _user.RemoveFromRoleAsync(user, "Driver");
+                if (!rs.Succeeded)
+                {
+                    throw new AppException(500, "Xóa vai trò thất bại");
+                }
+
+                string? imgUrl = null;
+
+                if (request.LicenseDocumenImg != null)
+                {
+                    var uploadResult = await _photoService.AddPhotoAsync(request.LicenseDocumenImg);
+                    if (uploadResult.Error != null)
+                        throw new AppException(400, "Cloudinary upload failed: " + uploadResult.Error.Message);
+                    imgUrl = uploadResult.SecureUrl.AbsoluteUri;
+                }
+                _mapper.Map(request, driver);
+                driver.LicenseDocumentUrl = imgUrl;
+                driver.VerificationStatus = DriverVerificationStatus.Pending;
+
+                _repo.Update(driver);
+                await _repo.SaveChangesAsync();
+
+                scope.Complete();
+                return driver;
+            });
         }
 
         public async Task RefuseDriverAsync(Guid id)
