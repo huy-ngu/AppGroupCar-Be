@@ -20,6 +20,9 @@ namespace AppGroupCar.Entities.Bus
         [Required]
         public Guid RouteId { get; set; }
 
+        [Required]
+        public Guid CompanyDriverId { get; set; }
+
         // Thời gian
         [Required]
         [Column(TypeName = "date")]
@@ -54,6 +57,9 @@ namespace AppGroupCar.Entities.Bus
 
         [ForeignKey(nameof(RouteId))]
         public BusRoute Route { get; set; } = null!;
+
+        [ForeignKey(nameof(CompanyDriverId))]
+        public CompanyDriver CompanyDriver { get; set; } = null!;
 
         public ICollection<ShowtimeLog> Logs { get; set; } = new List<ShowtimeLog>();
 

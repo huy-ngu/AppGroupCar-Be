@@ -25,6 +25,7 @@ namespace AppGroupCar.Data
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<Location> Locations { get; set; }
         public DbSet<VehicleSeatLayout> VehicleSeatLayouts { get; set; }
+        public DbSet<Review> Reviews { get; set; }
 
         // Bus domain
         public DbSet<BusBooking> BusBookings { get; set; }
@@ -33,7 +34,7 @@ namespace AppGroupCar.Data
         public DbSet<BusRoutePoint> BusRoutePoints { get; set; }
         public DbSet<BusShowtime> BusShowtimes { get; set; }
         public DbSet<Company> Companies { get; set; }
-        public DbSet<Old_CompanyDriver> CompanyDrivers { get; set; }
+        public DbSet<CompanyDriver> CompanyDrivers { get; set; }
         public DbSet<CompanyUser> CompanyUsers { get; set; }
         public DbSet<CompanyVehicle> CompanyVehicles { get; set; }
         public DbSet<ShowtimeLog> ShowtimeLogs { get; set; }
@@ -76,6 +77,7 @@ namespace AppGroupCar.Data
             builder.Entity<ApplicationUserLogin>(b => b.ToTable("UserLogins"));
             builder.Entity<ApplicationRoleClaim>(b => b.ToTable("RoleClaims"));
             builder.Entity<ApplicationUserToken>(b => b.ToTable("UserTokens"));
+            builder.Entity<Review>(b => b.ToTable("Reviews"));
 
             // Đổi tên bảng domain
             builder.Entity<RefreshToken>(b => b.ToTable("RefreshTokens"));
@@ -88,7 +90,7 @@ namespace AppGroupCar.Data
             builder.Entity<BusRoutePoint>(b => b.ToTable("BusRoutePoints"));
             builder.Entity<BusShowtime>(b => b.ToTable("BusShowtimes"));
             builder.Entity<Company>(b => b.ToTable("Companies"));
-            builder.Entity<Old_CompanyDriver>(b => b.ToTable("Old_CompanyDrivers"));
+            builder.Entity<CompanyDriver>(b => b.ToTable("CompanyDrivers"));
             builder.Entity<CompanyUser>(b => b.ToTable("CompanyUsers"));
             builder.Entity<CompanyVehicle>(b => b.ToTable("CompanyVehicles"));
             builder.Entity<ShowtimeLog>(b => b.ToTable("ShowtimeLogs"));
@@ -142,6 +144,42 @@ namespace AppGroupCar.Data
                 b.HasMany(x => x.Transactions)
                     .WithOne(x => x.Wallet)
                     .HasForeignKey(x => x.WalletId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+            // review
+            builder.Entity<Review>(b =>
+            {
+                b.HasKey(x => x.Id);
+                // Cấu hình Enum thành Int dưới Database
+                b.Property(x => x.ServiceType)
+                    .HasConversion<int>();
+
+                // Giới hạn độ dài bình luận, cho phép null
+                b.Property(x => x.Comment)
+                    .HasMaxLength(1000)
+                    .IsRequired(false);
+
+                // Ràng buộc Check: Rating chỉ được từ 1 đến 5
+                b.HasCheckConstraint("CK_Review_Rating_Range", "[Rating] >= 1 AND [Rating] <= 5");
+
+                // Index hỗ trợ truy vấn nhanh danh sách đánh giá của 1 chuyến đi
+                b.HasIndex(x => new { x.ReferenceId, x.ServiceType });
+
+                // Unique Index: Ràng buộc cốt lõi, 1 user chỉ được đánh giá 1 chuyến đi 1 lần
+                b.HasIndex(x => new { x.ReferenceId, x.ServiceType, x.ReviewerId })
+                    .IsUnique()
+                    .HasDatabaseName("IX_Review_OnePerUserPerTrip");
+
+                // Khóa ngoại: Người đánh giá (Bắt buộc Restrict để tránh lỗi Multiple Cascade Paths)
+                b.HasOne(x => x.Reviewer)
+                    .WithMany()
+                    .HasForeignKey(x => x.ReviewerId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Khóa ngoại: Người bị đánh giá (Bắt buộc Restrict)
+                b.HasOne(x => x.Reviewee)
+                    .WithMany()
+                    .HasForeignKey(x => x.RevieweeId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
@@ -318,19 +356,19 @@ namespace AppGroupCar.Data
 
             });
 
-            // CompanyDriver
-            //builder.Entity<CompanyDriver>(b =>
-            //{
-            //    b.HasOne(x => x.Company)
-            //        .WithMany()
-            //        .HasForeignKey(x => x.CompanyId)
-            //        .OnDelete(DeleteBehavior.Cascade);
+            //CompanyDriver
+            builder.Entity<CompanyDriver>(b =>
+            {
+                b.HasOne(x => x.Company)
+                    .WithMany()
+                    .HasForeignKey(x => x.CompanyId)
+                    .OnDelete(DeleteBehavior.Cascade);
 
-            //    b.HasOne(x => x.User)
-            //        .WithMany()
-            //        .HasForeignKey(x => x.UserId)
-            //        .OnDelete(DeleteBehavior.Restrict);
-            //});
+                b.HasOne(x => x.User)
+                    .WithMany()
+                    .HasForeignKey(x => x.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
 
             // CompanyVehicle
             builder.Entity<CompanyVehicle>(b =>

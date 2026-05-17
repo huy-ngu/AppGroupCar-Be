@@ -2,6 +2,7 @@ using AppGroupCar.DTO;
 using AppGroupCar.DTO.RequestDTO.Bus.SeatLayoutRequest;
 using AppGroupCar.DTO.ResponseDTO;
 using AppGroupCar.DTO.ResponseDTO.Bus.SeatLayoutResponse;
+using AppGroupCar.Exceptions;
 using AppGroupCar.Services.Bus.SeatLayoutServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +25,7 @@ namespace AppGroupCar.Controllers.Bus
         public async Task<IActionResult> Create([FromBody] CreateVehicleSeatLayoutRequest dto)
         {
             var result = await _service.CreateAsync(dto);
-            return Ok(result);
+            return Ok(new ApiResponse<object> { Code = 201, Message = "Create success", Data = result });
         }
 
         [HttpGet]

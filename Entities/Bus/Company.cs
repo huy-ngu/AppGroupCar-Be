@@ -62,20 +62,23 @@ namespace AppGroupCar.Entities.Bus
         [Required]
         public CompanyStatus Status { get; set; }
 
+        public decimal RatingCompanyAverage { get; set; }
+
+        public int RatingCompanyCount { get; set; }
+
         //tạm bỏ
-       // [Required]
+        // [Required]
         //public Guid CreatedBy { get; set; }
 
-        public DateTime? ApprovedAt { get; set; }// Thời điểm duyệt công ty
-//        public Guid? ApprovedBy { get; set; }// Người duyệt công ty
+        public DateTime? ApprovedAt { get; set; }
+        // Thời điểm duyệt công ty
+        //        public Guid? ApprovedBy { get; set; }// Người duyệt công ty
 
         // Navigation
         public ICollection<CompanyUser> CompanyUsers { get; set; } = new List<CompanyUser>();
 
         public ICollection<BusRoute> BusRoute { get; set; } = new List<BusRoute>();
     }
-
-    
 }
 
 public enum CompanyType

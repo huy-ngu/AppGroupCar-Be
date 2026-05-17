@@ -37,6 +37,7 @@ namespace AppGroupCar.Services.Bus.ShowtimeServices
             CreateBusShowtimeRequest dto)
         {
             await ValidateRouteAsync(companyId, dto.RouteId);
+            await ValidateCompanyDriverAsync(companyId, dto.CompanyDriverId);
 
             var duplicate = await _context.BusShowtimes.AnyAsync(x =>
                 x.CompanyVehicleId == dto.CompanyVehicleId &&
@@ -88,6 +89,8 @@ namespace AppGroupCar.Services.Bus.ShowtimeServices
             var entities = await _context.BusShowtimes
                 .Where(x => x.CompanyId == companyId && x.DeleteAt == null)
                 .Include(x => x.CompanyVehicle)
+                .Include(x => x.CompanyDriver)
+                    .ThenInclude(x => x.User)
                 .Include(x => x.Seats)
                 .OrderBy(x => x.DepartureDate)
                 .ThenBy(x => x.DepartureTime)
@@ -194,11 +197,15 @@ namespace AppGroupCar.Services.Bus.ShowtimeServices
 
             var companyVehicleId = dto.CompanyVehicleId ?? entity.CompanyVehicleId;
             var routeId = dto.RouteId ?? entity.RouteId;
+            var companyDriverId = dto.CompanyDriverId ?? entity.CompanyDriverId;
             var departureDate = dto.DepartureDate ?? entity.DepartureDate;
             var departureTime = dto.DepartureTime ?? entity.DepartureTime;
 
             if (dto.RouteId.HasValue)
                 await ValidateRouteAsync(companyId, routeId);
+
+            if (dto.CompanyDriverId.HasValue)
+                await ValidateCompanyDriverAsync(companyId, companyDriverId);
 
             if (dto.CompanyVehicleId.HasValue)
                 await GetLayoutJsonAsync(companyId, companyVehicleId);
@@ -218,6 +225,9 @@ namespace AppGroupCar.Services.Bus.ShowtimeServices
 
             if (dto.RouteId.HasValue)
                 entity.RouteId = routeId;
+
+            if (dto.CompanyDriverId.HasValue)
+                entity.CompanyDriverId = companyDriverId;
 
             if (dto.DepartureDate.HasValue)
                 entity.DepartureDate = departureDate;
@@ -291,6 +301,8 @@ namespace AppGroupCar.Services.Bus.ShowtimeServices
                     x.CompanyId == companyId &&
                     x.DeleteAt == null)
                 .Include(x => x.CompanyVehicle)
+                .Include(x => x.CompanyDriver)
+                    .ThenInclude(x => x.User)
                 .Include(x => x.Seats)
                 .FirstOrDefaultAsync();
 
@@ -306,6 +318,19 @@ namespace AppGroupCar.Services.Bus.ShowtimeServices
             var routeExists = await _busRouteService.ExistsForCompanyAsync(routeId, companyId);
             if (!routeExists)
                 throw new AppException(404, "Route not found for this company");
+        }
+
+        private async Task ValidateCompanyDriverAsync(
+            Guid companyId,
+            Guid companyDriverId)
+        {
+            var driverExists = await _context.CompanyDrivers.AnyAsync(x =>
+                x.Id == companyDriverId &&
+                x.CompanyId == companyId &&
+                x.DeleteAt == null);
+
+            if (!driverExists)
+                throw new AppException(404, "Company driver not found for this company");
         }
 
         private async Task<string> GetLayoutJsonAsync(
@@ -341,6 +366,7 @@ namespace AppGroupCar.Services.Bus.ShowtimeServices
                 CompanyId = companyId,
                 CompanyVehicleId = dto.CompanyVehicleId,
                 RouteId = dto.RouteId,
+                CompanyDriverId = dto.CompanyDriverId,
                 DepartureDate = dto.DepartureDate,
                 DepartureTime = dto.DepartureTime,
                 Price = dto.Price,
@@ -385,6 +411,8 @@ namespace AppGroupCar.Services.Bus.ShowtimeServices
             var entity = await _context.BusShowtimes
                 .Where(x => x.Id == id && x.DeleteAt == null)
                 .Include(x => x.CompanyVehicle)
+                .Include(x => x.CompanyDriver)
+                    .ThenInclude(x => x.User)
                 .Include(x => x.Seats)
                 .FirstOrDefaultAsync();
 

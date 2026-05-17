@@ -4,6 +4,7 @@ using AppGroupCar.DTO.RequestDTO.Bus.RouteRequest;
 using AppGroupCar.DTO.ResponseDTO;
 using AppGroupCar.DTO.ResponseDTO.Bus.CompanyResponse;
 using AppGroupCar.DTO.ResponseDTO.Bus.RouteResponse;
+using AppGroupCar.Exceptions;
 using AppGroupCar.Helpers;
 using AppGroupCar.Services.Bus.BusRoute;
 using Hangfire.MemoryStorage.Database;
@@ -30,7 +31,7 @@ namespace AppGroupCar.Controllers.Bus
             var companyId = User.GetCompanyId();
 
             if (companyId == null)
-                throw new Exception("Company not found in token");
+                throw new AppException(401, "Company not found in token");
 
             return companyId.Value;
         }
@@ -74,7 +75,7 @@ namespace AppGroupCar.Controllers.Bus
                     .GetByIdAsync(id, companyId);
 
             if (result == null)
-                return NotFound();
+                throw new AppException(404, "Bus route not found");
 
             return Ok(new ApiResponse<BusRouteResponse> { Data = result });
         }

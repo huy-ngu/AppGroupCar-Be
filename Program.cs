@@ -19,6 +19,7 @@ using AppGroupCar.Services.Market.BookingItemServices;
 using AppGroupCar.Services.Market.BookingServices;
 using AppGroupCar.Services.Bus.CompanyServices;
 using AppGroupCar.Services.Bus.CompanyVehicleServices;
+using AppGroupCar.Services.Bus.CompanyDriverServices;
 using AppGroupCar.Services.Bus.SeatLayoutServices;
 using AppGroupCar.Services.Bus.SeatStatusHistoryServices;
 using AppGroupCar.Services.Bus.ShowtimeSeatServices;
@@ -45,6 +46,7 @@ using AppGroupCar.Services.Market.OfferServices.OfferShipmentServices;
 using AppGroupCar.Services.Market.ShipmentOfferServices;
 using AppGroupCar.Services.Market.ShipmentServices;
 using AppGroupCar.Services.Search;
+using AppGroupCar.Services.Reviews;
 
 namespace AppGroupCar
 {
@@ -110,11 +112,11 @@ namespace AppGroupCar
                 });
                 });
 
-                //var connectionString =
-                //    builder.Configuration.GetConnectionString("AzureConnection")
-                //    ?? throw new InvalidOperationException("AzureConnection is missing");
                 var connectionString =
-                    builder.Configuration.GetConnectionString("DefaultConnection");
+                    builder.Configuration.GetConnectionString("AzureConnection")
+                    ?? throw new InvalidOperationException("AzureConnection is missing");
+                //var connectionString =
+                //    builder.Configuration.GetConnectionString("DefaultConnection");
 
                 builder.Services.AddDbContext<ApplicationDbContext>(options =>
                     options.UseSqlServer(
@@ -201,6 +203,7 @@ namespace AppGroupCar
                 builder.Services.AddScoped<IBusRouteService, BusRouteService>();
                 builder.Services.AddScoped<IUCService, UCService>();
                 builder.Services.AddScoped<ICompanyVehicleService, CompanyVehicleService>();
+                builder.Services.AddScoped<ICompanyDriverService, CompanyDriverService>();
                 builder.Services.AddScoped<ISeatLayoutService, SeatLayoutService>();
                 builder.Services.AddScoped<IBusShowtimeService, BusShowtimeService>();
                 builder.Services.AddScoped<IShowtimeSeatService, ShowtimeSeatService>();
@@ -218,6 +221,7 @@ namespace AppGroupCar
                 builder.Services.AddScoped<IShipmentOfferService, ShipmentOfferService>();
                 builder.Services.AddScoped<IShipmentService, ShipmentService>();
                 builder.Services.AddScoped<ITripSearchService, TripSearchService>();
+                builder.Services.AddScoped<IReviewService, ReviewService>();
 
                 // Map section trong appsettings vào class CloudinarySettings
                 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));

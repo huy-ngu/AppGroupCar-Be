@@ -3,6 +3,7 @@ using AppGroupCar.DTO.Filters.Bus;
 using AppGroupCar.DTO.RequestDTO.Bus.CompanyRequest;
 using AppGroupCar.DTO.ResponseDTO;
 using AppGroupCar.DTO.ResponseDTO.Bus.CompanyResponse;
+using AppGroupCar.Exceptions;
 using AppGroupCar.Services.Bus.CompanyServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +25,7 @@ namespace AppGroupCar.Controllers.Bus
         public async Task<IActionResult> CreateCompany([FromForm] CreateCompanyRequestDto dto)
         {
             var result = await _companyService.CreateCompanyAsync(dto);
-            return Ok(result);
+            return Ok(new ApiResponse<object> { Code = 201, Message = "Create success", Data = result });
         }
 
         [HttpGet("{id}")]
@@ -33,8 +34,9 @@ namespace AppGroupCar.Controllers.Bus
             var result = await _companyService.GetByIdAsync(id);
 
             if (result == null)
-                return NotFound(new { message = "Company not found" });
-            return Ok(result);
+                throw new AppException(404, "Company not found");
+                
+            return Ok(new ApiResponse<object> { Data = result });
         }
 
         [HttpGet]
@@ -51,7 +53,7 @@ namespace AppGroupCar.Controllers.Bus
             [FromForm] UpdateCompanyRequestDto dto)
         {
             var result = await _companyService.UpdateCompanyAsync(id, dto);
-            return Ok(result);
+            return Ok(new ApiResponse<object> { Data = result });
         }
 
         [HttpDelete("{id}")]
@@ -59,9 +61,9 @@ namespace AppGroupCar.Controllers.Bus
         {
             await _companyService.DeleteCompanyAsync(id);
 
-            return Ok(new
+            return Ok(new ApiResponse<object>
             {
-                message = "Company deleted successfully"
+                Message = "Company deleted successfully"
             });
         }
 
@@ -83,7 +85,7 @@ namespace AppGroupCar.Controllers.Bus
         {
             var result = await _companyService.ApproveCompanyAsync(id, dto);
 
-            return Ok(result);
+            return Ok(new ApiResponse<object> { Data = result });
         }
 
     }

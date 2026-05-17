@@ -8,6 +8,8 @@ namespace AppGroupCar.DTO.RequestDTO.Bus.ShowtimeRequest
 
         public Guid? RouteId { get; set; }
 
+        public Guid? CompanyDriverId { get; set; }
+
         public DateOnly? DepartureDate { get; set; }
 
         public TimeOnly? DepartureTime { get; set; }
