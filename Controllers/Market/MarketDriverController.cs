@@ -68,5 +68,13 @@ namespace AppGroupCar.Controllers.Market
             await _marketDriverService.ApprovalDriverAsync(userId);
             return Ok(new ApiResponse<Driver> { });
         }
+
+        [HttpPatch("refuse")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> RefuseDriver(Guid userId)
+        {
+            await _marketDriverService.RefuseDriverAsync(userId);
+            return Ok(new ApiResponse<Driver> { });
+        }
     }
 }

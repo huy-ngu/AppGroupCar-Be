@@ -43,7 +43,7 @@ namespace AppGroupCar.Entities.Market
     {
         Pending = 1,
         Accepted = 2,
-        Rejected = 3
+        Cancelled = 3
     }
 
 }

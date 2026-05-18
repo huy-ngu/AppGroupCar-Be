@@ -20,6 +20,7 @@ namespace AppGroupCar.Services.Market.OfferServices
         private readonly IBaseRepository<Vehicle> _vehicleRepo;
         private readonly IBaseRepository<SharedRideOfferDetail> _repoOfferDetail;
         private readonly IBaseRepository<OfferRoutePoint> _repoOfferRoutePoint;
+        private readonly IBaseRepository<Booking> _bookingRepo;
         private readonly IMapper _mapper;
 
         public OfferService(
@@ -27,6 +28,7 @@ namespace AppGroupCar.Services.Market.OfferServices
             IBaseRepository<Vehicle> vehicleRepo,
             IBaseRepository<SharedRideOfferDetail> repoOfferDetail,
             IBaseRepository<OfferRoutePoint> repoOfferRoutePoint,
+            IBaseRepository<Booking> bookingRepo,
             IMapper mapper)
         {
             _repo = repo;
@@ -34,6 +36,7 @@ namespace AppGroupCar.Services.Market.OfferServices
             _mapper = mapper;
             _repoOfferDetail = repoOfferDetail;
             _repoOfferRoutePoint = repoOfferRoutePoint;
+            _bookingRepo = bookingRepo;
         }
 
         public async Task DeleteAsync(Guid driverId, Guid id)
@@ -251,6 +254,39 @@ namespace AppGroupCar.Services.Market.OfferServices
                 PageNumber = request.PageNumber,
                 PageSize = request.PageSize
             };
+        }
+
+        public async Task<GetOfferDTO> CancelOfferAsync(Guid driverId, Guid offerId)
+        {
+            var offer = await GetOfferWithRelationsQuery()
+                                .FirstOrDefaultAsync(x => x.Id == offerId);
+
+            if (offer == null || offer.DeleteAt != null || offer.DriverId != driverId)
+            {
+                throw new AppException(404, "Không tìm thấy bản ghi hoặc bạn không có quyền hủy");
+            }
+
+            if (offer.Status != OfferStatus.Active)
+            {
+                throw new AppException(400, "Chỉ có thể hủy Offer ở trạng thái Active");
+            }
+
+            offer.Status = OfferStatus.Closed;
+
+            var relatedBookings = await _bookingRepo.GetQueryable()
+                                            .Where(b => b.OfferId == offerId && b.DeleteAt == null)
+                                            .ToListAsync();
+
+            foreach (var booking in relatedBookings)
+            {
+                booking.Status = BookingStatus.Cancelled;
+                _bookingRepo.Update(booking);
+            }
+
+            _repo.Update(offer);
+            await _repo.SaveChangesAsync();
+
+            return _mapper.Map<GetOfferDTO>(offer);
         }
     }
 }

@@ -157,11 +157,13 @@ namespace AppGroupCar.Services.Market.MarketDriverServices
                 {
                     throw new AppException(404, "Người dùng không tồn tại");
                 }
-
-                var rs = await _user.RemoveFromRoleAsync(user, "Driver");
-                if (!rs.Succeeded)
+                if (driver.VerificationStatus == DriverVerificationStatus.Active)
                 {
-                    throw new AppException(500, "Xóa vai trò thất bại");
+                    var rs = await _user.RemoveFromRoleAsync(user, "Driver");
+                    if (!rs.Succeeded)
+                    {
+                        throw new AppException(500, "Xóa vai trò thất bại");
+                    }
                 }
 
                 string? imgUrl = null;

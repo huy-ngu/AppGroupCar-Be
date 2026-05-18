@@ -20,5 +20,6 @@ namespace AppGroupCar.Services.Market.OfferServices
         Task<IEnumerable<GetOfferDTO>> GetMyOffersAsync(Guid driverId);
         Task DeleteAsync(Guid driverId, Guid id);
         Task<PagedResult<GetOfferDTO>> GetOfferSharedRideAsync(GetOfferForUserRequestDTO request);
+        Task<GetOfferDTO> CancelOfferAsync(Guid driverId, Guid offerId);
     }
 }

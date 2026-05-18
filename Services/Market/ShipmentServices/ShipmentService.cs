@@ -175,5 +175,55 @@ namespace AppGroupCar.Services.Market.ShipmentServices
             _shipmentRepo.Update(shipment);
             await _shipmentRepo.SaveChangesAsync();
         }
+
+        public async Task CancelAsync(Guid userId, Guid shipmentId)
+        {
+            if (userId == Guid.Empty || shipmentId == Guid.Empty)
+            {
+                throw new AppException(400, "ID không h?p l?");
+            }
+
+            var shipment = await _shipmentRepo.GetQueryable()
+                .Include(s => s.ShipmentOffer)
+                .ThenInclude(so => so.Request)
+                .FirstOrDefaultAsync(s => s.Id == shipmentId)
+                ?? throw new AppException(404, "Không tìm th?y b?n ghi");
+
+            if (shipment.DeleteAt != null)
+            {
+                throw new AppException(404, "Không tìm th?y b?n ghi");
+            }
+
+            if (shipment.ShipmentOffer == null)
+            {
+                throw new AppException(404, "Không tìm th?y thông tin ??n v?n chuy?n");
+            }
+
+            var isOwner = shipment.ShipmentOffer.DriverId == userId ||
+                          (shipment.ShipmentOffer.Request != null && shipment.ShipmentOffer.Request.CustomerId == userId);
+            if (!isOwner)
+            {
+                throw new AppException(403, "B?n không ???c phép h?y b?n ghi này");
+            }
+
+            if (shipment.ShipmentStatus == ShipmentStatus.Delivered)
+            {
+                throw new AppException(400, "Không th? h?y ??n hàng ?ã giao");
+            }
+
+            if (shipment.ShipmentStatus == ShipmentStatus.Cancelled)
+            {
+                throw new AppException(400, "??n hàng ?ã b? h?y");
+            }
+
+            if (shipment.ShipmentStatus == ShipmentStatus.Return)
+            {
+                throw new AppException(400, "Không th? h?y ??n hàng ?ang hoàn tr?");
+            }
+
+            shipment.ShipmentStatus = ShipmentStatus.Cancelled;
+            _shipmentRepo.Update(shipment);
+            await _shipmentRepo.SaveChangesAsync();
+        }
     }
 }

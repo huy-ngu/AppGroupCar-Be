@@ -54,6 +54,4 @@ namespace AppGroupCar.Entities.Market
         Paid = 2,
         Refunded = 3
     }
-
-
 }

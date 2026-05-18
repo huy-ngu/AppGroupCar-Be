@@ -69,5 +69,19 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
             await shipmentService.ReturnDelivery(id);
             return Ok(new ApiResponse<GetShipmentDTO> { Code = 200 });
         }
+
+        [HttpPost("{id}/cancel")]
+        [Authorize]
+        public async Task<IActionResult> Cancel(Guid id)
+        {
+            var userIdNullable = User.GetUserId();
+            if (userIdNullable is not Guid userId)
+            {
+                return Unauthorized(new ApiResponse<string> { Message = "Token không h?p l?" });
+            }
+
+            await shipmentService.CancelAsync(userId, id);
+            return Ok(new ApiResponse<string> { Code = 200, Message = "H?y ??n hàng thành công" });
+        }
     }
 }

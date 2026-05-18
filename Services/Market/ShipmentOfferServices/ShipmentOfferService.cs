@@ -40,11 +40,11 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
             await _shipmentOfferRepo.SaveChangesAsync();
         }
 
-        public async Task DriverAcceptAsync(Guid driverId, Guid shipmentOfferId)
+        public async Task DriverAcceptAsync(Guid driverId, Guid shipmentOfferId, Guid offerId)
         {
-            var offer = await _offerRepo.GetByIdAsync(driverId) ?? throw new AppException(404, "Không tìm thấy bản ghi");
+            var offer = await _offerRepo.GetByIdAsync(offerId) ?? throw new AppException(404, "Không tìm thấy offer");
             if (driverId != offer.DriverId) { throw new AppException(403, "Bạn không được phép sửa bản ghi này"); }
-            var shipmentOffer = await _shipmentOfferRepo.GetByIdAsync(shipmentOfferId) ?? throw new AppException(404, "Không tìm thấy bản ghi");
+            var shipmentOffer = await _shipmentOfferRepo.GetByIdAsync(shipmentOfferId) ?? throw new AppException(404, "Không tìm thấy shipment offer");
 
             shipmentOffer.Status = ShipmentOfferStatus.Accepted;
             _shipmentOfferRepo.Update(shipmentOffer);
@@ -92,9 +92,9 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
 
         public async Task<GetShipmentOfferDTO> CreateFromOfferAsync(Guid offerId, Guid requestId, decimal ProposedPrice)
         {
-            var offer = await _offerRepo.GetByIdAsync(offerId) ?? throw new AppException(404, "Không tìm thấy bản ghi");
+            var offer = await _offerRepo.GetByIdAsync(offerId) ?? throw new AppException(404, "Không tìm thấy shipment offer");
 
-            var shipmentRequest = await _shipmentRequestRepo.GetByIdAsync(offerId) ?? throw new AppException(404, "Không tìm thấy Shipment Request");
+            var shipmentRequest = await _shipmentRequestRepo.GetByIdAsync(requestId) ?? throw new AppException(404, "Không tìm thấy Shipment Request");
 
             var newShipmentOffer = new ShipmentOffer
             {
@@ -122,8 +122,6 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
 
             return response;
         }
-
-
 
         public async Task<IEnumerable<ShipmentOffer>> GetAll()
         {
@@ -156,6 +154,36 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
             return shipmentOffers;
         }
 
+        public async Task CancelAsync(Guid driverId, Guid shipmentOfferId)
+        {
+            var shipmentOffer = await _shipmentOfferRepo.GetByIdAsync(shipmentOfferId) 
+                ?? throw new AppException(404, "Không tìm thấy bản ghi");
+
+            if (shipmentOffer.DeleteAt != null || shipmentOffer.DriverId != driverId)
+            {
+                throw new AppException(404, "Không tìm thấy bản ghi hoặc bạn không có quyền hủy");
+            }
+
+            if (shipmentOffer.Status != ShipmentOfferStatus.Pending)
+            {
+                throw new AppException(400, "Chỉ có thể hủy ShipmentOffer ở trạng thái Pending");
+            }
+
+            shipmentOffer.Status = ShipmentOfferStatus.Cancelled;
+            _shipmentOfferRepo.Update(shipmentOffer);
+
+            var shipments = await _shipmentRepo.GetQueryable()
+                .Where(s => s.ShipmentOfferId == shipmentOfferId && s.DeleteAt == null)
+                .ToListAsync();
+
+            foreach (var shipment in shipments)
+            {
+                shipment.ShipmentStatus = ShipmentStatus.Cancelled;
+                _shipmentRepo.Update(shipment);
+            }
+
+            await _shipmentOfferRepo.SaveChangesAsync();
+        }
 
     }
 }

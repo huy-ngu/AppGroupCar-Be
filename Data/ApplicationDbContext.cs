@@ -429,7 +429,11 @@ namespace AppGroupCar.Data
                     .WithMany(r => r.Showtimes)
                     .HasForeignKey(x => x.RouteId)
                     .OnDelete(DeleteBehavior.Cascade);
+                b.HasOne(x => x.CompanyDriver)
+                .WithMany()
+                .HasForeignKey(x => x.CompanyDriverId)
 
+                .OnDelete(DeleteBehavior.NoAction); // Đổi từ Restrict sang NoAction cho chuẩn ý SQL Server
                 b.HasQueryFilter(b => b.DeleteAt == null);
 
             });
