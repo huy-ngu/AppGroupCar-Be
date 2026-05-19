@@ -15,5 +15,6 @@ namespace AppGroupCar.Services.Market.BookingServices
         Task<BookingResponseDTO> CreateWithBookingIteamsAsync(CreateWithBookingIteamsRequestDTO request);
         Task<IEnumerable<BookingResponseDTO>> BookingParameters();
         Task UpdateAsync(UpdateBookingRequestDTO request);
+        Task CancelAsync(Guid customerId, Guid bookingId);
     }
 }

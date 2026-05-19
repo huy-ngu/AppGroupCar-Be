@@ -59,7 +59,20 @@ namespace AppGroupCar.Controllers.Market
         {
             await _bookingService.UpdateAsync(request);
             return Ok(new ApiResponse<object> { });
+        }
 
+        [HttpPost("{id}/cancel")]
+        [Authorize]
+        public async Task<IActionResult> Cancel(Guid id)
+        {
+            var userIdNullable = User.GetUserId();
+            if (userIdNullable is not Guid userId)
+            {
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
+            }
+
+            await _bookingService.CancelAsync(userId, id);
+            return Ok(new ApiResponse<string> { Code = 200, Message = "Hủy booking thành công" });
         }
     }
 }

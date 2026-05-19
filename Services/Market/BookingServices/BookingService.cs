@@ -15,11 +15,18 @@ namespace AppGroupCar.Services.Market.BookingServices
         private readonly IBaseRepository<Booking> _bookingRepository;
         private readonly IBaseRepository<BookingItem> _bookingItemRepository;
         private readonly IBaseRepository<Offer> _offerRepository;
-        public BookingService(IBaseRepository<Booking> bookingRepository, IBaseRepository<BookingItem> bookingItemRepository, IBaseRepository<Offer> offerRepository)
+        private readonly IBaseRepository<SharedRideOfferDetail> _sharedRideOfferDetailRepository;
+
+        public BookingService(
+            IBaseRepository<Booking> bookingRepository,
+            IBaseRepository<BookingItem> bookingItemRepository,
+            IBaseRepository<Offer> offerRepository,
+            IBaseRepository<SharedRideOfferDetail> sharedRideOfferDetailRepository)
         {
             _bookingRepository = bookingRepository;
             _bookingItemRepository = bookingItemRepository;
             _offerRepository = offerRepository;
+            _sharedRideOfferDetailRepository = sharedRideOfferDetailRepository;
         }
 
         public async Task<IEnumerable<BookingResponseDTO>> GetAllAsync()
@@ -273,6 +280,54 @@ namespace AppGroupCar.Services.Market.BookingServices
             }
 
             _bookingRepository.Update(booking);
+            await _bookingRepository.SaveChangesAsync();
+        }
+
+        public async Task CancelAsync(Guid customerId, Guid bookingId)
+        {
+            if (customerId == Guid.Empty || bookingId == Guid.Empty)
+            {
+                throw new AppException(400, "ID không hợp lệ");
+            }
+
+            var booking = await _bookingRepository.GetQueryable()
+                .Include(b => b.Offer)
+                .ThenInclude(o => o.SharedRideDetail)
+                .FirstOrDefaultAsync(b => b.Id == bookingId && b.DeleteAt == null)
+                ?? throw new AppException(404, "Không tìm thấy booking");
+
+            if (booking.CustomerId != customerId)
+            {
+                throw new AppException(403, "Bạn không được phép hủy booking này");
+            }
+
+            if (booking.Status == BookingStatus.Cancelled)
+            {
+                throw new AppException(400, "Booking đã bị hủy");
+            }
+
+            //if (booking.Status == BookingStatus.Confirmed)
+            //{
+            //    throw new AppException(400, "Không thể hủy booking đã được xác nhận");
+            //}
+
+            if (booking.Offer == null)
+            {
+                throw new AppException(404, "Không tìm thấy thông tin offer");
+            }
+
+            if (booking.Offer.SharedRideDetail == null)
+            {
+                throw new AppException(404, "Không tìm thấy thông tin chi tiết chuyến xe");
+            }
+
+            booking.Status = BookingStatus.Cancelled;
+            _bookingRepository.Update(booking);
+
+            var sharedRideDetail = booking.Offer.SharedRideDetail;
+            sharedRideDetail.AvailableSeats += booking.Quantity;
+            _sharedRideOfferDetailRepository.Update(sharedRideDetail);
+
             await _bookingRepository.SaveChangesAsync();
         }
     }
