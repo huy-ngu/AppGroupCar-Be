@@ -10,11 +10,12 @@ using AppGroupCar.Exceptions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using AppGroupCar.Entities.Identity;
-using CloudinaryDotNet.Actions;
 using AppGroupCar.Data;
 using AppGroupCar.DTO.Filters.Bus;
 using AppGroupCar.Services.Bus.UserCompanyServices;
 using AppGroupCar.DTO.RequestDTO.Bus.UCRequest;
+using System.Globalization;
+using System.Text;
 
 namespace AppGroupCar.Services.Bus.CompanyServices
 {
@@ -63,7 +64,7 @@ namespace AppGroupCar.Services.Bus.CompanyServices
                     (
                         string.IsNullOrEmpty(param.Search) ||
                         c.CompanyName.Contains(param.Search) ||
-                        c.Email.Contains(param.Search)
+                        ((c.Email ?? string.Empty).Contains(param.Search))
                     )
                     &&
                     (
@@ -114,8 +115,8 @@ namespace AppGroupCar.Services.Bus.CompanyServices
                 {
                     company = _mapper.Map<Company>(dto);
                     company.Id = Guid.NewGuid();
-                    company.Status = 0;
-                    company.CreatedAt = DateTime.Now;
+                    company.Status = CompanyStatus.Pending;
+                    company.CreatedAt = DateTime.UtcNow;
                     await _companyRepository.AddAsync(company);
                     await _companyRepository.SaveChangesAsync();
 
@@ -158,7 +159,21 @@ namespace AppGroupCar.Services.Bus.CompanyServices
             if (company == null)
                 throw new AppException(404, "Company not found");
 
-            var previousStatus = company.Status;
+            if (company.Status == CompanyStatus.Approved)
+            {
+                await ApproveCompanyAsync(id, new ApproveCompanyRequestDto
+                {
+                    Status = CompanyStatus.Pending
+                });
+
+                company = await _companyRepository.GetByIdAsync(id);
+
+                if (company == null)
+                    throw new AppException(404, "Company not found");
+            }
+
+            if (company.Status != CompanyStatus.Pending && company.Status != CompanyStatus.Rejected)
+                throw new AppException(400, "Chỉ công ty ở trạng thái Pending hoặc Rejected mới được cập nhật");
 
             _mapper.Map(dto, company);
 
@@ -180,9 +195,11 @@ namespace AppGroupCar.Services.Bus.CompanyServices
                 company.LogoUrl = uploadResult.SecureUrl.AbsoluteUri;
             }
 
-            if ((CompanyStatus)previousStatus == CompanyStatus.Rejected)
+            // Sau khi công ty bị từ chối (Rejected = 2) chỉnh sửa hồ sơ,
+            // hệ thống tự đưa về Pending để chờ duyệt lại.
+            if (company.Status == CompanyStatus.Rejected)
             {
-                company.Status = (int)CompanyStatus.Pending;
+                company.Status = CompanyStatus.Pending;
                 company.ApprovedAt = null;
             }
 
@@ -190,6 +207,45 @@ namespace AppGroupCar.Services.Bus.CompanyServices
             await _companyRepository.SaveChangesAsync();
 
             return _mapper.Map<CompanyResponseDto>(company);
+        }
+
+        public async Task<CompanyLoginResultDto> LoginCompanyAsync(CompanyLoginRequestDto dto)
+        {
+            var company = await _companyRepository
+                .GetQueryable()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c =>
+                    c.DeleteAt == null
+                    && c.Email != null
+                    && c.Email == dto.Email
+                    && c.BusinessLicenseNo == dto.BusinessLicenseNo);
+
+            if (company == null)
+                throw new AppException(401, "Email hoặc BusinessLicenseNo không đúng");
+
+            var result = new CompanyLoginResultDto
+            {
+                CompanyId = company.Id,
+                Status = company.Status,
+                Description = company.Description
+            };
+
+            if (company.Status == CompanyStatus.Pending || company.Status == CompanyStatus.Rejected)
+            {
+                result.PendingUpdateData = new PendingCompanyUpdateDataDto
+                {
+                    CompanyId = company.Id,
+                    CompanyName = company.CompanyName,
+                    LogoUrl = company.LogoUrl,
+                    Phone = company.Phone,
+                    Address = company.Address,
+                    ProvinceCode = company.ProvinceCode,
+                    DistrictCode = company.DistrictCode,
+                    BusinessLicenseNo = company.BusinessLicenseNo
+                };
+            }
+
+            return result;
         }
 
         public async Task DeleteCompanyAsync(Guid id)
@@ -268,7 +324,7 @@ namespace AppGroupCar.Services.Bus.CompanyServices
             // xử lý user theo status
             if (dto.Status == CompanyStatus.Approved) // Approved
             {
-                var user = await _userManager.FindByEmailAsync(company.Email);
+                var user = await FindCompanyUserByEmailAsync(company.Email);
 
                 if (user != null)
                 {
@@ -283,8 +339,8 @@ namespace AppGroupCar.Services.Bus.CompanyServices
                 {
                     var newUser = new ApplicationUser
                     {
-                        UserName = $"{company.CompanyName}_Admin_{Guid.NewGuid()}",
-                        FullName = $"{company.CompanyName}_Business",
+                        UserName = BuildCompanyAdminUserName(company.CompanyName),
+                        FullName = $"{company.CompanyName} Business",
                         Email = company.Email,
                         PhoneNumber = company.Phone,
                         AvatarUrl = company.LogoUrl
@@ -317,7 +373,7 @@ namespace AppGroupCar.Services.Bus.CompanyServices
             }
             else if (dto.Status == CompanyStatus.Suspended) // Suspended
             {
-                var user = await _userManager.FindByEmailAsync(company.Email);
+                var user = await FindCompanyUserByEmailAsync(company.Email);
 
                 if (user != null && user.DeleteAt == null)
                 {
@@ -335,7 +391,7 @@ namespace AppGroupCar.Services.Bus.CompanyServices
             }
             else if (dto.Status == CompanyStatus.Pending || dto.Status == CompanyStatus.Rejected)
             {
-                var user = await _userManager.FindByEmailAsync(company.Email);
+                var user = await FindCompanyUserByEmailAsync(company.Email);
 
                 if (user != null)
                 {
@@ -356,6 +412,46 @@ namespace AppGroupCar.Services.Bus.CompanyServices
             await _companyRepository.SaveChangesAsync();
 
             return _mapper.Map<CompanyResponseDto>(company);
+        }
+
+        private async Task<ApplicationUser?> FindCompanyUserByEmailAsync(string? email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return null;
+
+            return await _userManager.FindByEmailAsync(email);
+        }
+
+        private static string BuildCompanyAdminUserName(string companyName)
+        {
+            var cleanedName = RemoveDiacritics(companyName);
+            var safeChars = cleanedName
+                .Where(c => char.IsLetterOrDigit(c) || c == '-' || c == '_' || c == '.' || c == '@' || c == '+')
+                .ToArray();
+
+            var safeName = new string(safeChars);
+            if (string.IsNullOrWhiteSpace(safeName))
+                safeName = "company";
+
+            return $"{safeName}_Admin_{Guid.NewGuid():N}";
+        }
+
+        private static string RemoveDiacritics(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return string.Empty;
+
+            var normalized = input.Normalize(NormalizationForm.FormD);
+            var builder = new StringBuilder();
+
+            foreach (var c in normalized)
+            {
+                var category = CharUnicodeInfo.GetUnicodeCategory(c);
+                if (category != UnicodeCategory.NonSpacingMark)
+                    builder.Append(c);
+            }
+
+            return builder.ToString().Normalize(NormalizationForm.FormC);
         }
     }
 }

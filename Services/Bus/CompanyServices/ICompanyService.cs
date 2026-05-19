@@ -22,5 +22,7 @@ namespace AppGroupCar.Services.Bus.CompanyServices
         public Task<PagedResult<CompanyResponseDto>> GetPendingCompaniesAsync(CompanyParameters param);
 
         Task<CompanyResponseDto> ApproveCompanyAsync(Guid id, ApproveCompanyRequestDto dto);
+
+        Task<CompanyLoginResultDto> LoginCompanyAsync(CompanyLoginRequestDto dto);
     }
 }
