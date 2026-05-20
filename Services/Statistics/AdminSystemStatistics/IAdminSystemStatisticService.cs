@@ -1,5 +1,8 @@
 ﻿using AppGroupCar.DTO.RequestDTO.Statistic;
 
+using AppGroupCar.DTO.RequestDTO.Statistic;
+using AppGroupCar.DTO.ResponseDTO.Statistic;
+
 namespace AppGroupCar.Services.Statistics.AdminSystemStatistics
 {
     public interface IAdminSystemStatisticService
@@ -56,5 +59,12 @@ namespace AppGroupCar.Services.Statistics.AdminSystemStatistics
         /// </summary>
         /// <returns>Số lượng người dùng chưa bị xóa (DeleteAt == null)</returns>
         Task<int> CountActiveUsersAsync();
+
+        /// <summary>
+        /// Thống kê doanh thu của 12 tháng gần nhất
+        /// </summary>
+        /// <param name="request">Chứa ngày hiện tại</param>
+        /// <returns>Danh sách doanh thu theo tháng và tổng doanh thu</returns>
+        Task<Last12MonthsRevenueDTO> GetLast12MonthsRevenueAsync(LastMonthsRevenueRequestDTO request);
     }
 }

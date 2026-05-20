@@ -1,5 +1,6 @@
 ﻿using AppGroupCar.DTO.RequestDTO.Statistic;
 using AppGroupCar.DTO.ResponseDTO;
+using AppGroupCar.DTO.ResponseDTO.Statistic;
 using AppGroupCar.Services.Statistics.AdminSystemStatistics;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -143,6 +144,20 @@ namespace AppGroupCar.Controllers.Statistic
             });
         }
 
-       
+        /// <summary>
+        /// Thống kê doanh thu của 12 tháng gần nhất
+        /// </summary>
+        /// <param name="request">Chứa ngày hiện tại</param>
+        /// <returns>Danh sách doanh thu theo tháng và tổng doanh thu</returns>
+        [HttpPost("last-12-months-revenue")]
+        public async Task<IActionResult> GetLast12MonthsRevenue([FromBody] LastMonthsRevenueRequestDTO request)
+        {
+            var result = await _adminSystemStatisticService.GetLast12MonthsRevenueAsync(request);
+            return Ok(new ApiResponse<Last12MonthsRevenueDTO>
+            {
+                Data = result,
+                Message = "Thống kê doanh thu 12 tháng gần nhất"
+            });
+        }
     }
 }
