@@ -67,6 +67,21 @@ namespace AppGroupCar.Controllers.Statistic
         }
 
         /// <summary>
+        /// Đếm số người dùng đang hoạt động
+        /// </summary>
+        /// <returns>Số lượng người dùng chưa bị xóa</returns>
+        [HttpGet("active-users")]
+        public async Task<IActionResult> CountActiveUsers()
+        {
+            var count = await _adminSystemStatisticService.CountActiveUsersAsync();
+            return Ok(new ApiResponse<int>
+            {
+                Data = count,
+                Message = "Đếm số người dùng đang hoạt động"
+            });
+        }
+
+        /// <summary>
         /// Đếm số tài xế đang hoạt động
         /// </summary>
         /// <returns>Số lượng tài xế có trạng thái Active</returns>
@@ -128,19 +143,6 @@ namespace AppGroupCar.Controllers.Statistic
             });
         }
 
-        /// <summary>
-        /// Đếm số người dùng đang hoạt động
-        /// </summary>
-        /// <returns>Số lượng người dùng chưa bị xóa</returns>
-        [HttpGet("active-users")]
-        public async Task<IActionResult> CountActiveUsers()
-        {
-            var count = await _adminSystemStatisticService.CountActiveUsersAsync();
-            return Ok(new ApiResponse<int>
-            {
-                Data = count,
-                Message = "Đếm số người dùng đang hoạt động"
-            });
-        }
+       
     }
 }
