@@ -32,9 +32,9 @@ namespace AppGroupCar.Entities.Market
 
         public string? LicenseDocumentUrl { get; set; }
 
-        public decimal DriverRatingAverage { get; set; }
+        public decimal DriverRatingAverage { get; set; } = 5.00m;
 
-        public int DriverRatingCount { get; set; }
+        public int DriverRatingCount { get; set; } = 0;
 
         // Navigation
         [ForeignKey(nameof(Id))]

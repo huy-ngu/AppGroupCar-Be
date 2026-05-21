@@ -7,7 +7,8 @@ namespace AppGroupCar.DTO.RequestDTO.Market.Shipment
     {
         [Required]
         public Guid RequestId { get; set; }
-
+        [Required]
+        public Guid OfferId { get; set; }
         [Required]
         public Guid VehicleId { get; set; }
 

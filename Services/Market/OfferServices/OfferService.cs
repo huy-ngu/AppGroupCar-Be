@@ -139,7 +139,11 @@ namespace AppGroupCar.Services.Market.OfferServices
             var vehicle = await _vehicleRepo.GetByIdAsync(request.VehicleId);
             if (vehicle == null || vehicle.DriverId != driverId)
             {
-                throw new AppException(400, "Vehicle không tồn tại hoặc không thuộc về bạn");
+                throw new AppException(404, "Vehicle không tồn tại hoặc không thuộc về bạn");
+            }
+            if(vehicle.Status != VehicleStatus.Active)
+            {
+                throw new AppException(400, "Phương tiện không đủ điều kiện, Vui lòng chọn phương tiện đang hoạt động");
             }
             if (request.DepartureTime < DateTime.Now)
             {

@@ -72,7 +72,7 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
                 RequestId = request.RequestId,
                 VehicleId = request.VehicleId,
                 ProposedPrice = request.ProposedPrice,
-                OfferId = null
+                OfferId = request.OfferId
             };
             await _shipmentOfferRepo.AddAsync(newShipmentOffer);
 
@@ -84,6 +84,7 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
                 RequestId = request.RequestId,
                 DriverId = driverId,
                 VehicleId = request.VehicleId,
+                OfferId = request.OfferId,
                 ProposedPrice = request.ProposedPrice
             };
 
@@ -156,7 +157,7 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
 
         public async Task CancelAsync(Guid driverId, Guid shipmentOfferId)
         {
-            var shipmentOffer = await _shipmentOfferRepo.GetByIdAsync(shipmentOfferId) 
+            var shipmentOffer = await _shipmentOfferRepo.GetByIdAsync(shipmentOfferId)
                 ?? throw new AppException(404, "Không tìm thấy bản ghi");
 
             if (shipmentOffer.DeleteAt != null || shipmentOffer.DriverId != driverId)

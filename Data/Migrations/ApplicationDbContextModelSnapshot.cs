@@ -42,12 +42,6 @@ namespace AppGroupCar.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<decimal>("CustomerRatingAvg")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("CustomerRatingCount")
-                        .HasColumnType("int");
-
                     b.Property<DateTime?>("DeleteAt")
                         .HasColumnType("datetime2");
 
@@ -1295,7 +1289,7 @@ namespace AppGroupCar.Migrations
                     b.Property<DateTime?>("LastUpdateAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid?>("OfferId")
+                    b.Property<Guid>("OfferId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("ProposedPrice")
