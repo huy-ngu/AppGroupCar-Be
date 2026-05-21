@@ -43,7 +43,6 @@
 	  <Folder Include="Repositories\Bus\" />
 		<Folder Include="Repositories\Market\" />
 		<Folder Include="Repositories\Bus\" />
-		<Folder Include="Services\Statistics\AdminCompanyStatistics\" />
 	</ItemGroup>
 
 </Project>

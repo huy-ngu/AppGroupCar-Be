@@ -72,7 +72,8 @@ namespace AppGroupCar.Entities.Bus
         Active = 2,
         Delayed = 3,
         Cancelled = 4,
-        Hidden = 5
+        Hidden = 5,
+        complete = 6
     }
 
 }
