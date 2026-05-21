@@ -453,5 +453,33 @@ namespace AppGroupCar.Services.Bus.CompanyServices
 
             return builder.ToString().Normalize(NormalizationForm.FormC);
         }
+
+        public async Task LockCompanyAsync(Guid id)
+        {
+            var company = await _companyRepository.GetByIdAsync(id);
+
+            if (company == null)
+                throw new AppException(404, "Company not found");
+
+            company.Status = CompanyStatus.Suspended;
+            _companyRepository.Update(company);
+
+            await _companyRepository.SaveChangesAsync();
+        }
+
+        public async Task UnlockCompanyAsync(Guid id)
+        {
+            var company = await _companyRepository.GetByIdAsync(id);
+
+            if (company == null)
+                throw new AppException(404, "Company not found");
+            company.Status = CompanyStatus.Suspended;
+
+            _companyRepository.Update(company);
+
+            await _companyRepository.SaveChangesAsync();
+        }
     }
 }
+
+

@@ -76,5 +76,21 @@ namespace AppGroupCar.Controllers.Market
             await _marketDriverService.RefuseDriverAsync(userId);
             return Ok(new ApiResponse<Driver> { });
         }
+
+        [HttpPut("{id}/lock")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> LockDriver(Guid id)
+        {
+            await _marketDriverService.LockDriverAsync(id);
+            return Ok(new ApiResponse<object> { Data = null, Message = "Khóa thành công" });
+        }
+
+        [HttpPut("{id}/unlock")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UnlockDriver(Guid id)
+        {
+            await _marketDriverService.UnlockDriverAsync(id);
+            return Ok(new ApiResponse<object> { Data = null, Message = "Mở khóa thành công" });
+        }
     }
 }

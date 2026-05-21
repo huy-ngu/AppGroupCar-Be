@@ -37,7 +37,7 @@ namespace AppGroupCar.Controllers.Bus
 
             if (result == null)
                 throw new AppException(404, "Company not found");
-                
+
             return Ok(new ApiResponse<object> { Data = result });
         }
 
@@ -135,5 +135,23 @@ namespace AppGroupCar.Controllers.Bus
             return Ok(new ApiResponse<object> { Data = result });
         }
 
+        [HttpPut("{id}/lock")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> LockCompany(Guid id)
+        {
+            await _companyService.LockCompanyAsync(id);
+            return Ok(new ApiResponse<object> { Data = null, Message = "Khóa thành công" });
+        }
+
+        [HttpPut("{id}/unlock")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UnlockCompany(Guid id)
+        {
+            await _companyService.UnlockCompanyAsync(id);
+            return Ok(new ApiResponse<object> { Data = null, Message = "Mở khóa thành công" });
+        }
+
     }
 }
+
+

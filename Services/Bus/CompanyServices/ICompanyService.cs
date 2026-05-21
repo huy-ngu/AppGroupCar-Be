@@ -24,5 +24,9 @@ namespace AppGroupCar.Services.Bus.CompanyServices
         Task<CompanyResponseDto> ApproveCompanyAsync(Guid id, ApproveCompanyRequestDto dto);
 
         Task<CompanyLoginResultDto> LoginCompanyAsync(CompanyLoginRequestDto dto);
+
+        Task LockCompanyAsync(Guid id);
+
+        Task UnlockCompanyAsync(Guid id);
     }
 }

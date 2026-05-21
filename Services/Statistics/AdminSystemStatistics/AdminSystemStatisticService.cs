@@ -244,6 +244,90 @@ namespace AppGroupCar.Services.Statistics.AdminSystemStatistics
 
             return result;
         }
+
+        /// <summary>
+        /// Thống kê doanh thu 4 tuần của một tháng
+        /// </summary>
+        /// <param name="request">Chứa tháng và năm</param>
+        /// <returns>Danh sách doanh thu theo tuần và tổng doanh thu của tháng</returns>
+        public async Task<MonthlyWeeksRevenueDTO> GetMonthlyWeeksRevenueAsync(MonthlyWeeksRevenueRequestDTO request)
+        {
+            var month = request.Month;
+            var year = request.Year;
+            var monthStart = new DateTime(year, month, 1);
+            var monthEnd = monthStart.AddMonths(1);
+            var weeklyRevenues = new List<WeeklyRevenueDTO>();
+
+            // Tính doanh thu cho 4 tuần trong tháng
+            // Tuần 1: Từ ngày 1 đến ngày 7
+            // Tuần 2: Từ ngày 8 đến ngày 14
+            // Tuần 3: Từ ngày 15 đến ngày 21
+            // Tuần 4: Từ ngày 22 đến cuối tháng
+            for (int week = 1; week <= 4; week++)
+            {
+                DateTime weekStart;
+                DateTime weekEnd;
+
+                if (week == 1)
+                {
+                    weekStart = monthStart;
+                    weekEnd = monthStart.AddDays(7);
+                }
+                else if (week == 2)
+                {
+                    weekStart = monthStart.AddDays(7);
+                    weekEnd = monthStart.AddDays(14);
+                }
+                else if (week == 3)
+                {
+                    weekStart = monthStart.AddDays(14);
+                    weekEnd = monthStart.AddDays(21);
+                }
+                else
+                {
+                    weekStart = monthStart.AddDays(21);
+                    weekEnd = monthEnd;
+                }
+
+                // Tính tổng doanh thu từ booking items (chỉ các booking đã hoàn thành)
+                var bookingItemsRevenue = await _bookingItemRepo.GetQueryable()
+                    .Where(bi => bi.Booking.Status == BookingStatus.Compelete
+                        && bi.Booking.CreatedAt >= weekStart
+                        && bi.Booking.CreatedAt < weekEnd
+                        && bi.Booking.DeleteAt == null
+                        && bi.DeleteAt == null)
+                    .SumAsync(bi => bi.Price);
+
+                // Tính tổng doanh thu từ shipment (chỉ các shipment đã giao)
+                var shipmentRevenue = await _shipmentRepo.GetQueryable()
+                    .Where(s => s.ShipmentStatus == ShipmentStatus.Delivered
+                        && s.CreatedAt >= weekStart
+                        && s.CreatedAt < weekEnd
+                        && s.DeleteAt == null)
+                    .SumAsync(s => s.Price);
+
+                var weeklyRevenue = bookingItemsRevenue + shipmentRevenue;
+
+                weeklyRevenues.Add(new WeeklyRevenueDTO
+                {
+                    WeekNumber = week,
+                    StartDate = weekStart,
+                    EndDate = weekEnd.AddDays(-1), // Trừ 1 ngày để hiển thị ngày cuối cùng của tuần
+                    Revenue = weeklyRevenue,
+                    WeekRange = $"{weekStart:dd/MM/yyyy} - {weekEnd.AddDays(-1):dd/MM/yyyy}"
+                });
+            }
+
+            var result = new MonthlyWeeksRevenueDTO
+            {
+                Month = month,
+                Year = year,
+                WeeklyRevenues = weeklyRevenues,
+                TotalRevenue = weeklyRevenues.Sum(w => w.Revenue)
+            };
+
+            return result;
+        }
     }
 }
 

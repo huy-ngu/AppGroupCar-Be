@@ -104,5 +104,23 @@ namespace AppGroupCar.Controllers
             await _vehicleService.AppovalAsync(id);
             return Ok(new ApiResponse<object> { Data = null, Message = "Phê duyệt thành công" });
         }
+
+        [HttpPut("{id}/lock")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> LockVehicle(Guid id)
+        {
+            await _vehicleService.LockVehicleAsync(id);
+            return Ok(new ApiResponse<object> { Data = null, Message = "Khóa thành công" });
+        }
+
+        [HttpPut("{id}/unlock")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UnlockVehicle(Guid id)
+        {
+            await _vehicleService.UnlockVehicleAsync(id);
+            return Ok(new ApiResponse<object> { Data = null, Message = "Mở khóa thành công" });
+        }
     }
 }
+
+

@@ -14,5 +14,7 @@ namespace AppGroupCar.Services.Auth.UserServices
         Task DeleteAsync(string id);
         Task RestoreAsync(string id);
         Task ChangePassword(Guid id, string oldPassword, string newPassword);
+        Task LockUserAsync(string id);
+        Task UnlockUserAsync(string id);
     }
 }

@@ -66,5 +66,12 @@ namespace AppGroupCar.Services.Statistics.AdminSystemStatistics
         /// <param name="request">Chứa ngày hiện tại</param>
         /// <returns>Danh sách doanh thu theo tháng và tổng doanh thu</returns>
         Task<Last12MonthsRevenueDTO> GetLast12MonthsRevenueAsync(LastMonthsRevenueRequestDTO request);
+
+        /// <summary>
+        /// Thống kê doanh thu 4 tuần của một tháng
+        /// </summary>
+        /// <param name="request">Chứa tháng và năm</param>
+        /// <returns>Danh sách doanh thu theo tuần và tổng doanh thu của tháng</returns>
+        Task<MonthlyWeeksRevenueDTO> GetMonthlyWeeksRevenueAsync(MonthlyWeeksRevenueRequestDTO request);
     }
 }

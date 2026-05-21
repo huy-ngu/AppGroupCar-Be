@@ -93,5 +93,23 @@ namespace AppGroupCar.Controllers
             await _userService.ChangePassword(userId, dto.OldPassword, dto.NewPassword);
             return Ok(new ApiResponse<object> { Data = null, Message = "Password changed successfully" });
         }
+
+        [HttpPut("{id}/lock")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> LockUser(string id)
+        {
+            await _userService.LockUserAsync(id);
+            return Ok(new ApiResponse<object> { Data = null, Message = "Khóa thành công" });
+        }
+
+        [HttpPut("{id}/unlock")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UnlockUser(string id)
+        {
+            await _userService.UnlockUserAsync(id);
+            return Ok(new ApiResponse<object> { Data = null, Message = "Mở khóa thành công" });
+        }
     }
 }
+
+

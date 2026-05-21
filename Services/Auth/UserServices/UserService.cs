@@ -287,6 +287,36 @@ namespace AppGroupCar.Services.Auth.UserServices
                     new { errors = result.Errors.Select(e => e.Description) });
         }
 
+        public async Task LockUserAsync(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+                throw new AppException(404, "User not found");
+            if (user.DeleteAt != null)
+                throw new AppException(404, "User đang bị khóa");
+
+            user.DeleteAt = DateTime.UtcNow;
+            var result = await _userManager.UpdateAsync(user);
+
+            if (!result.Succeeded)
+                throw new AppException(400, "Lock user failed",
+                    new { errors = result.Errors.Select(e => e.Description) });
+        }
+
+        public async Task UnlockUserAsync(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+                throw new AppException(404, "User not found");
+            if (user.DeleteAt == null)
+                throw new AppException(404, "Lỗi User vẫn đang hoạt động");
+            user.DeleteAt = null;
+            var result = await _userManager.UpdateAsync(user);
+
+            if (!result.Succeeded)
+                throw new AppException(400, "Unlock user failed",
+                    new { errors = result.Errors.Select(e => e.Description) });
+        }
 
     }
 }

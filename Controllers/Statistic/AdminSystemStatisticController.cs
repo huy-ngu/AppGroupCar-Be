@@ -159,5 +159,21 @@ namespace AppGroupCar.Controllers.Statistic
                 Message = "Thống kê doanh thu 12 tháng gần nhất"
             });
         }
+
+        /// <summary>
+        /// Thống kê doanh thu 4 tuần của một tháng
+        /// </summary>
+        /// <param name="request">Chứa tháng và năm</param>
+        /// <returns>Danh sách doanh thu theo tuần và tổng doanh thu của tháng</returns>
+        [HttpPost("monthly-weeks-revenue")]
+        public async Task<IActionResult> GetMonthlyWeeksRevenue([FromBody] MonthlyWeeksRevenueRequestDTO request)
+        {
+            var result = await _adminSystemStatisticService.GetMonthlyWeeksRevenueAsync(request);
+            return Ok(new ApiResponse<MonthlyWeeksRevenueDTO>
+            {
+                Data = result,
+                Message = "Thống kê doanh thu 4 tuần của tháng"
+            });
+        }
     }
 }

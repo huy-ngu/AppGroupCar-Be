@@ -204,5 +204,23 @@ namespace AppGroupCar.Services.Market.MarketDriverServices
                 scope.Complete();
             });
         }
+
+        public async Task LockDriverAsync(Guid id)
+        {
+            var driver = await _repo.GetByIdAsync(id);
+            if (driver == null) throw new AppException(404, "Người dùng không tồn tại");
+            driver.VerificationStatus = DriverVerificationStatus.Inactive;
+            _repo.Update(driver);
+            await _repo.SaveChangesAsync();
+        }
+
+        public async Task UnlockDriverAsync(Guid id)
+        {
+            var driver = await _repo.GetByIdAsync(id);
+            if (driver == null) throw new AppException(404, "Người dùng không tồn tại");
+            driver.VerificationStatus = DriverVerificationStatus.Active;
+            _repo.Update(driver);
+            await _repo.SaveChangesAsync();
+        }
     }
 }

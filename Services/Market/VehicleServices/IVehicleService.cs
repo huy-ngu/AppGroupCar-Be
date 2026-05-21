@@ -14,5 +14,7 @@ namespace AppGroupCar.Services.Market.VehicleServices
         Task DeleteAsync(Guid id, Guid driverId);
         Task<PagedResult<VehicleDTO>> SearchAndFilterAsync(VehicleParameters parameters);
         Task AppovalAsync(Guid id);
+        Task LockVehicleAsync(Guid id);
+        Task UnlockVehicleAsync(Guid id);
     }
 }
