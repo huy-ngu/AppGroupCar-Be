@@ -63,7 +63,7 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
 
         [HttpPost("{id}/driver-accept")]
         [Authorize(Roles = "Driver")]
-        public async Task<IActionResult> DriverAcceptShipmentOffer(Guid id)
+        public async Task<IActionResult> DriverAcceptShipmentOffer(Guid id, Guid offerId)
         {
             var userIdNullable = User.GetUserId();
 
@@ -72,7 +72,7 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
                 return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
             }
 
-            await _shipmentOfferService.DriverAcceptAsync(userId, id);
+            await _shipmentOfferService.DriverAcceptAsync(userId, id, offerId);
             return Ok(new ApiResponse<string> { Code = 200 });
 
         }
@@ -92,6 +92,20 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
             return Ok(new ApiResponse<IEnumerable<GetDetailShipmentOfferDTO>> { Code = 200, Data = data });
         }
 
+        [HttpPost("{id}/cancel")]
+        [Authorize(Roles = "Driver")]
+        public async Task<IActionResult> CancelShipmentOffer(Guid id)
+        {
+            var userIdNullable = User.GetUserId();
+
+            if (userIdNullable is not Guid userId)
+            {
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
+            }
+
+            await _shipmentOfferService.CancelAsync(userId, id);
+            return Ok(new ApiResponse<string> { Code = 200 });
+        }
 
     }
 }

@@ -10,5 +10,6 @@ namespace AppGroupCar.Services.Market.ShipmentServices
         Task<GetShipmentDetailDTO> GetDetailByIdAsync(Guid userId, Guid shipmentId);
         Task Compelete(Guid shipmentId);
         Task ReturnDelivery(Guid shipmentId);
+        Task CancelAsync(Guid userId, Guid shipmentId);
     }
 }

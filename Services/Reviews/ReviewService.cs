@@ -298,7 +298,7 @@ namespace AppGroupCar.Services.Reviews
                 throw new AppException(404, "Booking không tồn tại");
 
             // Check if booking is completed
-            if (booking.Status != BookingStatus.Confirmed)
+            if (booking.Status != BookingStatus.Compelete)
                 throw new AppException(400, "Chỉ có thể đánh giá khi chuyến đã hoàn thành");
 
             // Get driver ID from offer

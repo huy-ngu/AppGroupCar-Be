@@ -48,6 +48,8 @@ using AppGroupCar.Services.Market.ShipmentServices;
 using AppGroupCar.Services.Search;
 using AppGroupCar.Services.Reviews;
 using AppGroupCar.Services.RouteRules;
+using AppGroupCar.Services.Statistics.AdminSystemStatistics;
+using AppGroupCar.Services.Statistics.AdminCompanyStatistics;
 
 namespace AppGroupCar
 {
@@ -226,6 +228,8 @@ namespace AppGroupCar
                 builder.Services.AddScoped<IRouteRulePolicy, RouteRulePolicy>();
                 builder.Services.AddScoped<IRouteValidationService, RouteValidationService>();
                 builder.Services.Configure<RouteRuleSettings>(builder.Configuration.GetSection("RouteRules"));
+                builder.Services.AddScoped<IAdminSystemStatisticService, AdminSystemStatisticService>();
+                builder.Services.AddScoped<IAdminCompanyStatisticService, AdminCompanyStatisticService>();
 
                 // Map section trong appsettings vào class CloudinarySettings
                 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));

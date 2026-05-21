@@ -16,6 +16,7 @@ namespace AppGroupCar.Services.Market.OfferServices
         private readonly IBaseRepository<Vehicle> _vehicleRepo;
         private readonly IBaseRepository<SharedRideOfferDetail> _repoOfferDetail;
         private readonly IBaseRepository<OfferRoutePoint> _repoOfferRoutePoint;
+        private readonly IBaseRepository<Booking> _bookingRepo;
         private readonly IMapper _mapper;
         private readonly IRouteValidationService _routeValidationService;
         private readonly IRouteRulePolicy _routeRulePolicy;
@@ -25,6 +26,7 @@ namespace AppGroupCar.Services.Market.OfferServices
             IBaseRepository<Vehicle> vehicleRepo,
             IBaseRepository<SharedRideOfferDetail> repoOfferDetail,
             IBaseRepository<OfferRoutePoint> repoOfferRoutePoint,
+            IBaseRepository<Booking> bookingRepo,
             IMapper mapper,
             IRouteValidationService routeValidationService,
             IRouteRulePolicy routeRulePolicy)
@@ -33,6 +35,7 @@ namespace AppGroupCar.Services.Market.OfferServices
             _vehicleRepo = vehicleRepo;
             _repoOfferDetail = repoOfferDetail;
             _repoOfferRoutePoint = repoOfferRoutePoint;
+            _bookingRepo = bookingRepo;
             _mapper = mapper;
             _routeValidationService = routeValidationService;
             _routeRulePolicy = routeRulePolicy;
@@ -118,7 +121,11 @@ namespace AppGroupCar.Services.Market.OfferServices
             var vehicle = await _vehicleRepo.GetByIdAsync(request.VehicleId);
             if (vehicle == null || vehicle.DeleteAt != null || vehicle.DriverId != driverId)
             {
-                throw new AppException(400, "Vehicle không tồn tại hoặc không thuộc về bạn");
+                throw new AppException(404, "Vehicle không tồn tại hoặc không thuộc về bạn");
+            }
+            if(vehicle.Status != VehicleStatus.Active)
+            {
+                throw new AppException(400, "Phương tiện không đủ điều kiện, Vui lòng chọn phương tiện đang hoạt động");
             }
 
             if (request.DepartureTime < DateTime.UtcNow)
@@ -251,6 +258,39 @@ namespace AppGroupCar.Services.Market.OfferServices
                 PageNumber = request.PageNumber,
                 PageSize = request.PageSize
             };
+        }
+
+        public async Task<GetOfferDTO> CancelOfferAsync(Guid driverId, Guid offerId)
+        {
+            var offer = await GetOfferWithRelationsQuery()
+                                .FirstOrDefaultAsync(x => x.Id == offerId);
+
+            if (offer == null || offer.DeleteAt != null || offer.DriverId != driverId)
+            {
+                throw new AppException(404, "Không tìm thấy bản ghi hoặc bạn không có quyền hủy");
+            }
+
+            if (offer.Status != OfferStatus.Active)
+            {
+                throw new AppException(400, "Chỉ có thể hủy Offer ở trạng thái Active");
+            }
+
+            offer.Status = OfferStatus.Closed;
+
+            var relatedBookings = await _bookingRepo.GetQueryable()
+                                            .Where(b => b.OfferId == offerId && b.DeleteAt == null)
+                                            .ToListAsync();
+
+            foreach (var booking in relatedBookings)
+            {
+                booking.Status = BookingStatus.Cancelled;
+                _bookingRepo.Update(booking);
+            }
+
+            _repo.Update(offer);
+            await _repo.SaveChangesAsync();
+
+            return _mapper.Map<GetOfferDTO>(offer);
         }
 
         private IQueryable<Offer> GetOfferWithRelationsQuery()

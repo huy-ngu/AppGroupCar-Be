@@ -8,19 +8,15 @@ namespace AppGroupCar.Entities
     {
         public string FullName { get; set; } = null!;
 
-        //Đánh giá chung cho mọi user
-        public decimal CustomerRatingAvg { get; set; } = 5.00m;
-
         public string? AvatarUrl { get; set; }
-        public int CustomerRatingCount { get; set; } = 0;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? LastUpdateAt { get; set; }
         public DateTime? DeleteAt { get; set; }
 
-        public decimal RatingAverage { get; set; }
+        public decimal RatingAverage { get; set; } = 5.00m;
 
-        public int RatingCount { get; set; }
+        public int RatingCount { get; set; } = 0;
 
     }
 }

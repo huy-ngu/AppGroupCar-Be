@@ -157,11 +157,13 @@ namespace AppGroupCar.Services.Market.MarketDriverServices
                 {
                     throw new AppException(404, "Người dùng không tồn tại");
                 }
-
-                var rs = await _user.RemoveFromRoleAsync(user, "Driver");
-                if (!rs.Succeeded)
+                if (driver.VerificationStatus == DriverVerificationStatus.Active)
                 {
-                    throw new AppException(500, "Xóa vai trò thất bại");
+                    var rs = await _user.RemoveFromRoleAsync(user, "Driver");
+                    if (!rs.Succeeded)
+                    {
+                        throw new AppException(500, "Xóa vai trò thất bại");
+                    }
                 }
 
                 string? imgUrl = null;
@@ -201,6 +203,24 @@ namespace AppGroupCar.Services.Market.MarketDriverServices
 
                 scope.Complete();
             });
+        }
+
+        public async Task LockDriverAsync(Guid id)
+        {
+            var driver = await _repo.GetByIdAsync(id);
+            if (driver == null) throw new AppException(404, "Người dùng không tồn tại");
+            driver.VerificationStatus = DriverVerificationStatus.Inactive;
+            _repo.Update(driver);
+            await _repo.SaveChangesAsync();
+        }
+
+        public async Task UnlockDriverAsync(Guid id)
+        {
+            var driver = await _repo.GetByIdAsync(id);
+            if (driver == null) throw new AppException(404, "Người dùng không tồn tại");
+            driver.VerificationStatus = DriverVerificationStatus.Active;
+            _repo.Update(driver);
+            await _repo.SaveChangesAsync();
         }
     }
 }

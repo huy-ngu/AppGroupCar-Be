@@ -62,9 +62,9 @@ namespace AppGroupCar.Entities.Bus
         [Required]
         public CompanyStatus Status { get; set; }
 
-        public decimal RatingCompanyAverage { get; set; }
+        public decimal RatingCompanyAverage { get; set; } = 5.00m;
 
-        public int RatingCompanyCount { get; set; }
+        public int RatingCompanyCount { get; set; } = 0;
 
         //tạm bỏ
         // [Required]

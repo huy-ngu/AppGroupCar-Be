@@ -94,6 +94,20 @@ namespace AppGroupCar.Controllers.Market
             return Ok(new ApiResponse<GetOfferDTO> { Data = offer });
         }
 
+        [HttpPost("{offerId}/cancel")]
+        [Authorize(Roles = "Driver")]
+        public async Task<IActionResult> CancelOffer(Guid offerId)
+        {
+            var userIdNullable = User.GetUserId();
+            if (userIdNullable is not Guid userId)
+            {
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
+            }
+
+            var offer = await _offerService.CancelOfferAsync(userId, offerId);
+            return Ok(new ApiResponse<GetOfferDTO> { Data = offer });
+        }
+
         [HttpDelete("{id}")]
         [Authorize]
         public async Task<IActionResult> Delete(Guid id)

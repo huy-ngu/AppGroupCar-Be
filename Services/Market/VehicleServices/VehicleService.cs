@@ -34,8 +34,12 @@ namespace AppGroupCar.Services.Market.VehicleServices
             var driver = await _driverRepo.GetByIdAsync(driverId);
 
             if (driver == null)
-                throw new AppException(404, "Driver not found");
+                throw new AppException(404, "Không tìm thấy tài xế");
+            if (driver.VerificationStatus != DriverVerificationStatus.Active)
+            {
+                throw new AppException(404, "Bạn chưa được phép thêm phương tiện");
 
+            }
             var existingVehicle = await _vehicleRepo.FindAsync(
                 v => v.PlateNumber == dto.PlateNumber && v.DeleteAt == null,
                 1,
@@ -304,5 +308,33 @@ namespace AppGroupCar.Services.Market.VehicleServices
             await _vehicleRepo.SaveChangesAsync();
             return;
         }
+
+        public async Task LockVehicleAsync(Guid id)
+        {
+            var vehicle = await _vehicleRepo.GetByIdAsync(id);
+
+            if (vehicle == null)
+                throw new AppException(404, "Vehicle not found");
+
+            vehicle.Status = VehicleStatus.Inactive;
+            _vehicleRepo.Update(vehicle);
+
+            await _vehicleRepo.SaveChangesAsync();
+        }
+
+        public async Task UnlockVehicleAsync(Guid id)
+        {
+            var vehicle = await _vehicleRepo.GetByIdAsync(id);
+
+            if (vehicle == null)
+                throw new AppException(404, "Vehicle not found");
+
+            vehicle.Status = VehicleStatus.Active;
+            _vehicleRepo.Update(vehicle);
+
+            await _vehicleRepo.SaveChangesAsync();
+        }
     }
 }
+
+
