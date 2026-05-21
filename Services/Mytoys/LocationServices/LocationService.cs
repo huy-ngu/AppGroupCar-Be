@@ -4,6 +4,7 @@ using AppGroupCar.DTO.RequestDTO;
 using AppGroupCar.DTO.ResponseDTO;
 using AppGroupCar.Entities;
 using AppGroupCar.Repositories.BaseRepo;
+using AppGroupCar.Services.RouteRules;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -13,10 +14,14 @@ namespace AppGroupCar.Services.Mytoys.LocationServices
     {
         private const string AccentInsensitiveCollation = "Latin1_General_100_CI_AI";
         private readonly IBaseRepository<Location> _repo;
+        private readonly IRouteRulePolicy _routeRulePolicy;
 
-        public LocationService(IBaseRepository<Location> repo)
+        public LocationService(
+            IBaseRepository<Location> repo,
+            IRouteRulePolicy routeRulePolicy)
         {
             _repo = repo ?? throw new ArgumentNullException(nameof(repo));
+            _routeRulePolicy = routeRulePolicy;
         }
 
         public async Task<Location> CreateLocationAsync(CreateLocationRequestDTO request)
@@ -26,7 +31,7 @@ namespace AppGroupCar.Services.Mytoys.LocationServices
                 Name = request.Name,
                 Address = request.Address,
                 ParentLocationId = request.ParentLocationId,
-                LocationType = request.LocationType,
+                LocationType = request.LocationType
             };
 
             await _repo.AddAsync(newLocation);
@@ -45,63 +50,18 @@ namespace AppGroupCar.Services.Mytoys.LocationServices
             return await _repo.GetAllAsync();
         }
 
-        public async Task<PagedResult<LocationSearchResultDTO>> SearchLocationsAsync(LocationSearchParameters parameters)
+        public Task<PagedResult<LocationSearchResultDTO>> SearchLocationsAsync(LocationSearchParameters parameters)
         {
-            var keyword = parameters.Query?.Trim();
-            var pageNumber = parameters.PageNumber;
-            var pageSize = parameters.PageSize;
+            return SearchLocationsInternalAsync(parameters, allowedTypeCodes: null);
+        }
 
-            if (string.IsNullOrWhiteSpace(keyword))
-            {
-                return new PagedResult<LocationSearchResultDTO>
-                {
-                    Items = new List<LocationSearchResultDTO>(),
-                    TotalCount = 0,
-                    PageNumber = pageNumber,
-                    PageSize = pageSize
-                };
-            }
-
-            var containsPattern = BuildLikePattern(keyword, searchAnywhere: true);
-            var startsWithPattern = BuildLikePattern(keyword, searchAnywhere: false);
-
-            var query = _repo.GetQueryable()
-                .AsNoTracking()
-                .Where(x => x.DeleteAt == null)
-                .Where(x => x.IsActive == parameters.IsActive)
-                .Where(x =>
-                    EF.Functions.Like(EF.Functions.Collate(x.Name, AccentInsensitiveCollation), containsPattern) ||
-                    (x.Code != null &&
-                     EF.Functions.Like(EF.Functions.Collate(x.Code, AccentInsensitiveCollation), containsPattern)));
-
-            var totalCount = await query.CountAsync();
-
-            var locations = await query
-                .OrderBy(x =>
-                    EF.Functions.Collate(x.Name, AccentInsensitiveCollation) == keyword
-                        ? 0
-                        : x.Code != null && EF.Functions.Collate(x.Code, AccentInsensitiveCollation) == keyword
-                            ? 1
-                            : EF.Functions.Like(EF.Functions.Collate(x.Name, AccentInsensitiveCollation), startsWithPattern)
-                                ? 2
-                                : 3)
-                .ThenBy(x => x.Name)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            var locationLookup = await LoadLocationsWithAncestorsAsync(locations);
-            var items = locations
-                .Select(location => BuildSearchResult(location, locationLookup))
+        public Task<PagedResult<LocationSearchResultDTO>> SearchLocationsAvailableForRouteAsync(LocationSearchParameters parameters)
+        {
+            var allowedTypeCodes = _routeRulePolicy.RouteCreationLocationTypes
+                .Select(x => (int)x)
                 .ToList();
 
-            return new PagedResult<LocationSearchResultDTO>
-            {
-                Items = items,
-                TotalCount = totalCount,
-                PageNumber = pageNumber,
-                PageSize = pageSize
-            };
+            return SearchLocationsInternalAsync(parameters, allowedTypeCodes);
         }
 
         public async Task DeleteLocationAsync(Guid id)
@@ -132,6 +92,72 @@ namespace AppGroupCar.Services.Mytoys.LocationServices
                 (!isActive.HasValue || x.IsActive == isActive.Value);
 
             return await _repo.FindAsync(predicate, pageNumber, pageSize);
+        }
+
+        private async Task<PagedResult<LocationSearchResultDTO>> SearchLocationsInternalAsync(
+            LocationSearchParameters parameters,
+            IReadOnlyCollection<int>? allowedTypeCodes)
+        {
+            var keyword = parameters.Query?.Trim();
+            var pageNumber = parameters.PageNumber;
+            var pageSize = parameters.PageSize;
+
+            if (string.IsNullOrWhiteSpace(keyword))
+            {
+                return new PagedResult<LocationSearchResultDTO>
+                {
+                    Items = new List<LocationSearchResultDTO>(),
+                    TotalCount = 0,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize
+                };
+            }
+
+            var containsPattern = BuildLikePattern(keyword, searchAnywhere: true);
+            var startsWithPattern = BuildLikePattern(keyword, searchAnywhere: false);
+
+            var query = _repo.GetQueryable()
+                .AsNoTracking()
+                .Where(x => x.DeleteAt == null)
+                .Where(x => x.IsActive == parameters.IsActive)
+                .Where(x =>
+                    EF.Functions.Like(EF.Functions.Collate(x.Name, AccentInsensitiveCollation), containsPattern) ||
+                    (x.Code != null &&
+                     EF.Functions.Like(EF.Functions.Collate(x.Code, AccentInsensitiveCollation), containsPattern)));
+
+            if (allowedTypeCodes != null && allowedTypeCodes.Count > 0)
+            {
+                query = query.Where(x => allowedTypeCodes.Contains((int)x.LocationType));
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var locations = await query
+                .OrderBy(x =>
+                    EF.Functions.Collate(x.Name, AccentInsensitiveCollation) == keyword
+                        ? 0
+                        : x.Code != null && EF.Functions.Collate(x.Code, AccentInsensitiveCollation) == keyword
+                            ? 1
+                            : EF.Functions.Like(EF.Functions.Collate(x.Name, AccentInsensitiveCollation), startsWithPattern)
+                                ? 2
+                                : 3)
+                .ThenBy(x => x.Name)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var locationLookup = await LoadLocationsWithAncestorsAsync(locations);
+            var items = locations
+                .Select(location => BuildSearchResult(location, locationLookup))
+                .ToList();
+
+            return new PagedResult<LocationSearchResultDTO>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
         }
 
         private async Task<Dictionary<Guid, Location>> LoadLocationsWithAncestorsAsync(IEnumerable<Location> locations)
@@ -173,8 +199,8 @@ namespace AppGroupCar.Services.Mytoys.LocationServices
         }
 
         private static LocationSearchResultDTO BuildSearchResult(
-    Location location,
-    IReadOnlyDictionary<Guid, Location> locationLookup)
+            Location location,
+            IReadOnlyDictionary<Guid, Location> locationLookup)
         {
             var parents = GetParentChain(location, locationLookup);
 
@@ -215,20 +241,16 @@ namespace AppGroupCar.Services.Mytoys.LocationServices
             return parents;
         }
 
-        private static string FormatLocationSegment(Location location)
-        {
-            return $"{GetLocationTypeLabel(location.LocationType)} {location.Name}";
-        }
-
         private static string GetLocationTypeLabel(LocationType type)
         {
             return type switch
             {
                 LocationType.Province => "tỉnh",
                 LocationType.District => "huyện",
-                LocationType.Ward => "xã",
-                LocationType.Landmark => "điểm",
-                LocationType.Depot => "kho",
+                LocationType.Ward => "phường/xã",
+                LocationType.BusStation => "bến xe",
+                LocationType.Landmark => "điểm mốc",
+                LocationType.Depot => "depot",
                 _ => "khu vực"
             };
         }

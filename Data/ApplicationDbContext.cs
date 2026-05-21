@@ -397,13 +397,16 @@ namespace AppGroupCar.Data
             // BusRoutePoint
             builder.Entity<BusRoutePoint>(b =>
             {
+                b.Property(x => x.StopType)
+                    .HasConversion<int>();
+
                 b.HasOne(x => x.Route)
                     .WithMany(r => r.RoutePoints)
                     .HasForeignKey(x => x.RouteId)
                     .OnDelete(DeleteBehavior.Cascade);
 
                 b.HasOne(x => x.Location)
-                    .WithMany()
+                    .WithMany(x => x.BusRoutePoints)
                     .HasForeignKey(x => x.LocationId)
                     .OnDelete(DeleteBehavior.Restrict);
 
@@ -429,6 +432,11 @@ namespace AppGroupCar.Data
                     .WithMany(r => r.Showtimes)
                     .HasForeignKey(x => x.RouteId)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                b.HasOne(x => x.CompanyDriver)
+                    .WithMany()
+                    .HasForeignKey(x => x.CompanyDriverId)
+                    .OnDelete(DeleteBehavior.Restrict);
 
                 b.HasQueryFilter(b => b.DeleteAt == null);
 
@@ -513,6 +521,9 @@ namespace AppGroupCar.Data
             builder.Entity<OfferRoutePoint>(b =>
             {
                 b.HasKey(x => new { x.OfferId, x.Sequence });
+
+                b.Property(x => x.StopType)
+                    .HasConversion<int>();
 
                 b.HasOne(x => x.Offer)
                     .WithMany(o => o.RoutePoints)

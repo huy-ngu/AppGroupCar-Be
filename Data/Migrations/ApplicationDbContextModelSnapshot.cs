@@ -249,9 +249,6 @@ namespace AppGroupCar.Migrations
                     b.Property<DateTime?>("DeleteAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("DropoffAllowed")
-                        .HasColumnType("bit");
-
                     b.Property<DateTime?>("LastUpdateAt")
                         .HasColumnType("datetime2");
 
@@ -261,13 +258,13 @@ namespace AppGroupCar.Migrations
                     b.Property<Guid?>("LocationId1")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<bool>("PickupAllowed")
-                        .HasColumnType("bit");
-
                     b.Property<Guid>("RouteId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Sequence")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StopType")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -286,6 +283,9 @@ namespace AppGroupCar.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CompanyDriverId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("CompanyId")
@@ -322,6 +322,8 @@ namespace AppGroupCar.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CompanyDriverId");
 
                     b.HasIndex("CompanyId");
 
@@ -407,6 +409,12 @@ namespace AppGroupCar.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<decimal>("RatingCompanyAverage")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("RatingCompanyCount")
+                        .HasColumnType("int");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
@@ -417,6 +425,60 @@ namespace AppGroupCar.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Companies", (string)null);
+                });
+
+            modelBuilder.Entity("AppGroupCar.Entities.Bus.CompanyDriver", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DriverVerificationStatus")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LicenseClass")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("LicenseDocumentUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("LicenseNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("VerifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("VerifiedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CompanyDrivers", (string)null);
                 });
 
             modelBuilder.Entity("AppGroupCar.Entities.Bus.CompanyUser", b =>
@@ -511,50 +573,6 @@ namespace AppGroupCar.Migrations
                     b.HasIndex("SeatLayoutId");
 
                     b.ToTable("CompanyVehicles", (string)null);
-                });
-
-            modelBuilder.Entity("AppGroupCar.Entities.Bus.Old_CompanyDriver", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DeleteAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("DriverVerificationStatus")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("LastUpdateAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LicenseClass")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("LicenseDocumentUrl")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("LicenseNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<DateTime?>("VerifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("VerifiedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Old_CompanyDrivers", (string)null);
                 });
 
             modelBuilder.Entity("AppGroupCar.Entities.Bus.Seat", b =>
@@ -1124,9 +1142,6 @@ namespace AppGroupCar.Migrations
                     b.Property<DateTime?>("DeleteAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("DropoffAllowed")
-                        .HasColumnType("bit");
-
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
@@ -1137,8 +1152,8 @@ namespace AppGroupCar.Migrations
                     b.Property<Guid>("LocationId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<bool>("PickupAllowed")
-                        .HasColumnType("bit");
+                    b.Property<int>("StopType")
+                        .HasColumnType("int");
 
                     b.HasKey("OfferId", "Sequence");
 
@@ -1832,6 +1847,12 @@ namespace AppGroupCar.Migrations
 
             modelBuilder.Entity("AppGroupCar.Entities.Bus.BusShowtime", b =>
                 {
+                    b.HasOne("AppGroupCar.Entities.Bus.CompanyDriver", "CompanyDriver")
+                        .WithMany()
+                        .HasForeignKey("CompanyDriverId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("AppGroupCar.Entities.Bus.Company", "Company")
                         .WithMany()
                         .HasForeignKey("CompanyId")
@@ -1852,9 +1873,30 @@ namespace AppGroupCar.Migrations
 
                     b.Navigation("Company");
 
+                    b.Navigation("CompanyDriver");
+
                     b.Navigation("CompanyVehicle");
 
                     b.Navigation("Route");
+                });
+
+            modelBuilder.Entity("AppGroupCar.Entities.Bus.CompanyDriver", b =>
+                {
+                    b.HasOne("AppGroupCar.Entities.Bus.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AppGroupCar.Entities.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("AppGroupCar.Entities.Bus.CompanyUser", b =>

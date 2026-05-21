@@ -1,10 +1,14 @@
-﻿namespace AppGroupCar.DTO.RequestDTO.Bus.RouteRequest
+using System.ComponentModel.DataAnnotations;
+
+namespace AppGroupCar.DTO.RequestDTO.Bus.RouteRequest
 {
     public class CreateBusRouteRequest
     {
+        [MaxLength(200)]
         public string? Name { get; set; }
 
-        public List<CreateBusRoutePointRequest> RoutePoints { get; set; }
-            = new();
+        [Required]
+        [MinLength(2)]
+        public List<CreateBusRoutePointRequest> RoutePoints { get; set; } = new();
     }
 }

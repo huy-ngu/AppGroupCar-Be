@@ -47,6 +47,7 @@ using AppGroupCar.Services.Market.ShipmentOfferServices;
 using AppGroupCar.Services.Market.ShipmentServices;
 using AppGroupCar.Services.Search;
 using AppGroupCar.Services.Reviews;
+using AppGroupCar.Services.RouteRules;
 
 namespace AppGroupCar
 {
@@ -112,11 +113,11 @@ namespace AppGroupCar
                 });
                 });
 
-                var connectionString =
-                    builder.Configuration.GetConnectionString("AzureConnection")
-                    ?? throw new InvalidOperationException("AzureConnection is missing");
                 //var connectionString =
-                //    builder.Configuration.GetConnectionString("DefaultConnection");
+                //    builder.Configuration.GetConnectionString("AzureConnection")
+                //    ?? throw new InvalidOperationException("AzureConnection is missing");
+                var connectionString =
+                    builder.Configuration.GetConnectionString("DefaultConnection");
 
                 builder.Services.AddDbContext<ApplicationDbContext>(options =>
                     options.UseSqlServer(
@@ -222,6 +223,9 @@ namespace AppGroupCar
                 builder.Services.AddScoped<IShipmentService, ShipmentService>();
                 builder.Services.AddScoped<ITripSearchService, TripSearchService>();
                 builder.Services.AddScoped<IReviewService, ReviewService>();
+                builder.Services.AddScoped<IRouteRulePolicy, RouteRulePolicy>();
+                builder.Services.AddScoped<IRouteValidationService, RouteValidationService>();
+                builder.Services.Configure<RouteRuleSettings>(builder.Configuration.GetSection("RouteRules"));
 
                 // Map section trong appsettings vào class CloudinarySettings
                 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));

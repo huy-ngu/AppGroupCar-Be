@@ -1,4 +1,5 @@
 using AppGroupCar.DTO;
+using AppGroupCar.Entities;
 
 namespace AppGroupCar.DTO.ResponseDTO.Search
 {
@@ -61,7 +62,8 @@ namespace AppGroupCar.DTO.ResponseDTO.Search
         public Guid LocationId { get; set; }
         public string LocationName { get; set; } = string.Empty;
         public int Sequence { get; set; }
-        public bool PickupAllowed { get; set; }
-        public bool DropoffAllowed { get; set; }
+        public RouteStopType StopType { get; set; }
+        public bool PickupAllowed => StopType is RouteStopType.Start or RouteStopType.Pickup;
+        public bool DropoffAllowed => StopType is RouteStopType.Dropoff or RouteStopType.End;
     }
 }

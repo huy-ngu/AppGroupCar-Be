@@ -340,7 +340,8 @@ namespace AppGroupCar.Services.Bus.CompanyServices
                     var newUser = new ApplicationUser
                     {
                         UserName = BuildCompanyAdminUserName(company.CompanyName),
-                        FullName = $"{company.CompanyName} Business",
+                        FullName = $"{company.CompanyName} BUSINESS" +
+                        $"",
                         Email = company.Email,
                         PhoneNumber = company.Phone,
                         AvatarUrl = company.LogoUrl

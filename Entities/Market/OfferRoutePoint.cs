@@ -17,10 +17,7 @@ namespace AppGroupCar.Entities.Market
         public Guid LocationId { get; set; }
 
         [Required]
-        public bool PickupAllowed { get; set; }
-
-        [Required]
-        public bool DropoffAllowed { get; set; }
+        public RouteStopType StopType { get; set; }
 
         [ForeignKey(nameof(OfferId))]
         public Offer Offer { get; set; } = null!;
