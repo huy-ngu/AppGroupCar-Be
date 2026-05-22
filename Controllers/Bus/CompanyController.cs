@@ -83,7 +83,7 @@ namespace AppGroupCar.Controllers.Bus
                 return Ok(new ApiResponse<object>
                 {
                     Message = message,
-                    Data = result.PendingUpdateData
+                    Data = result
                 });
             }
 

@@ -19,10 +19,7 @@ namespace AppGroupCar.Entities.Bus
         public int Sequence { get; set; }
 
         [Required]
-        public bool PickupAllowed { get; set; }
-
-        [Required]
-        public bool DropoffAllowed { get; set; }
+        public RouteStopType StopType { get; set; }
 
         // Navigation
         [ForeignKey(nameof(RouteId))]

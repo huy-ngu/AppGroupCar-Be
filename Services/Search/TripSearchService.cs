@@ -2,8 +2,10 @@ using AppGroupCar.Data;
 using AppGroupCar.DTO;
 using AppGroupCar.DTO.Filters;
 using AppGroupCar.DTO.ResponseDTO.Search;
+using AppGroupCar.Entities;
 using AppGroupCar.Entities.Bus;
 using AppGroupCar.Entities.Market;
+using AppGroupCar.Services.RouteRules;
 using Microsoft.EntityFrameworkCore;
 
 namespace AppGroupCar.Services.Search
@@ -11,25 +13,36 @@ namespace AppGroupCar.Services.Search
     public class TripSearchService : ITripSearchService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IRouteRulePolicy _routeRulePolicy;
 
         private sealed class LocationSearchSet
         {
-            public LocationSearchSet(Guid targetId, Guid? parentId, List<Guid> siblingIds)
+            public LocationSearchSet(
+                Guid requestedLocationId,
+                LocationType requestedLocationType,
+                Guid? parentId,
+                List<Guid> exactRouteLocationIds,
+                List<Guid> siblingRouteLocationIds,
+                List<Guid> nearbyRouteLocationIds)
             {
-                TargetId = targetId;
+                RequestedLocationId = requestedLocationId;
+                RequestedLocationType = requestedLocationType;
                 ParentId = parentId;
-                SiblingIds = siblingIds;
-
-                NearbyIds = siblingIds
-                    .Concat(parentId.HasValue ? new[] { parentId.Value } : Array.Empty<Guid>())
-                    .Distinct()
-                    .ToList();
+                ExactRouteLocationIds = exactRouteLocationIds;
+                SiblingRouteLocationIds = siblingRouteLocationIds;
+                NearbyRouteLocationIds = nearbyRouteLocationIds;
+                ExactRouteLocationIdSet = exactRouteLocationIds.ToHashSet();
+                SiblingRouteLocationIdSet = siblingRouteLocationIds.ToHashSet();
             }
 
-            public Guid TargetId { get; }
+            public Guid RequestedLocationId { get; }
+            public LocationType RequestedLocationType { get; }
             public Guid? ParentId { get; }
-            public List<Guid> SiblingIds { get; }
-            public List<Guid> NearbyIds { get; }
+            public List<Guid> ExactRouteLocationIds { get; }
+            public List<Guid> SiblingRouteLocationIds { get; }
+            public List<Guid> NearbyRouteLocationIds { get; }
+            public HashSet<Guid> ExactRouteLocationIdSet { get; }
+            public HashSet<Guid> SiblingRouteLocationIdSet { get; }
         }
 
         private sealed record RouteFilterCandidateSet(
@@ -46,9 +59,12 @@ namespace AppGroupCar.Services.Search
 
         private sealed record TripSearchResult(TripSearchItemDTO Item, int Score);
 
-        public TripSearchService(ApplicationDbContext context)
+        public TripSearchService(
+            ApplicationDbContext context,
+            IRouteRulePolicy routeRulePolicy)
         {
             _context = context;
+            _routeRulePolicy = routeRulePolicy;
         }
 
         public async Task<PagedResult<TripSearchItemDTO>> SearchTripsAsync(TripSearchParameters parameters)
@@ -59,11 +75,21 @@ namespace AppGroupCar.Services.Search
                 return CreateEmptyResult(parameters);
             }
 
-            var pickupSet = await ResolveLocationSearchSetAsync(parameters.PickupLocationId);
-            var dropoffSet = await ResolveLocationSearchSetAsync(parameters.DropoffLocationId);
+            var locationSets = await ResolveLocationSearchSetsAsync(
+                parameters.PickupLocationId,
+                parameters.DropoffLocationId);
+
+            locationSets.TryGetValue(parameters.PickupLocationId ?? Guid.Empty, out var pickupSet);
+            locationSets.TryGetValue(parameters.DropoffLocationId ?? Guid.Empty, out var dropoffSet);
 
             if ((parameters.PickupLocationId.HasValue && pickupSet == null) ||
                 (parameters.DropoffLocationId.HasValue && dropoffSet == null))
+            {
+                return CreateEmptyResult(parameters);
+            }
+
+            if ((pickupSet != null && pickupSet.ExactRouteLocationIds.Count == 0) ||
+                (dropoffSet != null && dropoffSet.ExactRouteLocationIds.Count == 0))
             {
                 return CreateEmptyResult(parameters);
             }
@@ -156,6 +182,9 @@ namespace AppGroupCar.Services.Search
             LocationSearchSet? dropoffSet,
             RouteFilterCandidateSet candidates)
         {
+            var pickupStopTypes = _routeRulePolicy.PickupStopTypes.ToList();
+            var dropoffStopTypes = _routeRulePolicy.DropoffStopTypes.ToList();
+
             var query = _context.BusShowtimes
                 .AsNoTracking()
                 .Include(x => x.Company)
@@ -166,7 +195,7 @@ namespace AppGroupCar.Services.Search
                 .Where(x => x.Status == BusShowtimeStatus.Active || x.Status == BusShowtimeStatus.Scheduled);
 
             query = ApplyBusTimeFilter(query, departureDate, departureTime);
-            query = ApplyBusRouteFilter(query, candidates.PickupIds, candidates.DropoffIds);
+            query = ApplyBusRouteFilter(query, candidates.PickupIds, candidates.DropoffIds, pickupStopTypes, dropoffStopTypes);
 
             var showtimes = await query.ToListAsync();
 
@@ -180,8 +209,7 @@ namespace AppGroupCar.Services.Search
                         LocationId = rp.LocationId,
                         LocationName = rp.Location?.Name ?? string.Empty,
                         Sequence = rp.Sequence,
-                        PickupAllowed = rp.PickupAllowed,
-                        DropoffAllowed = rp.DropoffAllowed
+                        StopType = rp.StopType
                     })
                     .ToList();
 
@@ -199,8 +227,7 @@ namespace AppGroupCar.Services.Search
                     Reference = BuildReference(showtime.Id, TripType.Bus)
                 };
 
-                var score = GetScoreFromMatch(match);
-                return new TripSearchResult(item, score);
+                return new TripSearchResult(item, GetScoreFromMatch(match));
             }).ToList();
         }
 
@@ -213,6 +240,9 @@ namespace AppGroupCar.Services.Search
             LocationSearchSet? dropoffSet,
             RouteFilterCandidateSet candidates)
         {
+            var pickupStopTypes = _routeRulePolicy.PickupStopTypes.ToList();
+            var dropoffStopTypes = _routeRulePolicy.DropoffStopTypes.ToList();
+
             var query = _context.Offers
                 .AsNoTracking()
                 .Include(o => o.Driver)
@@ -223,7 +253,7 @@ namespace AppGroupCar.Services.Search
                     o.ServiceType == serviceType);
 
             query = ApplyOfferTimeFilter(query, departureDate, departureTime);
-            query = ApplyOfferRouteFilter(query, candidates.PickupIds, candidates.DropoffIds);
+            query = ApplyOfferRouteFilter(query, candidates.PickupIds, candidates.DropoffIds, pickupStopTypes, dropoffStopTypes);
 
             var offers = await query.ToListAsync();
 
@@ -253,8 +283,7 @@ namespace AppGroupCar.Services.Search
                             ? name
                             : string.Empty,
                         Sequence = rp.Sequence,
-                        PickupAllowed = rp.PickupAllowed,
-                        DropoffAllowed = rp.DropoffAllowed
+                        StopType = rp.StopType
                     })
                     .ToList();
 
@@ -272,26 +301,37 @@ namespace AppGroupCar.Services.Search
                     Reference = BuildReference(offer.Id, tripType)
                 };
 
-                var score = GetScoreFromMatch(match);
-                return new TripSearchResult(item, score);
+                return new TripSearchResult(item, GetScoreFromMatch(match));
             }).ToList();
         }
 
         private static IQueryable<BusShowtime> ApplyBusRouteFilter(
             IQueryable<BusShowtime> query,
             List<Guid>? pickupIds,
-            List<Guid>? dropoffIds)
+            List<Guid>? dropoffIds,
+            List<RouteStopType> pickupStopTypes,
+            List<RouteStopType> dropoffStopTypes)
         {
+            if (pickupIds != null && pickupIds.Count == 0)
+            {
+                return query.Where(_ => false);
+            }
+
+            if (dropoffIds != null && dropoffIds.Count == 0)
+            {
+                return query.Where(_ => false);
+            }
+
             if (pickupIds != null && pickupIds.Count > 0 && dropoffIds != null && dropoffIds.Count > 0)
             {
                 query = query.Where(showtime =>
                     showtime.Route.RoutePoints.Any(pickup =>
                         pickup.DeleteAt == null &&
-                        pickup.PickupAllowed &&
+                        pickupStopTypes.Contains(pickup.StopType) &&
                         pickupIds.Contains(pickup.LocationId) &&
                         showtime.Route.RoutePoints.Any(dropoff =>
                             dropoff.DeleteAt == null &&
-                            dropoff.DropoffAllowed &&
+                            dropoffStopTypes.Contains(dropoff.StopType) &&
                             dropoffIds.Contains(dropoff.LocationId) &&
                             pickup.Sequence < dropoff.Sequence)));
             }
@@ -300,7 +340,7 @@ namespace AppGroupCar.Services.Search
                 query = query.Where(showtime =>
                     showtime.Route.RoutePoints.Any(rp =>
                         rp.DeleteAt == null &&
-                        rp.PickupAllowed &&
+                        pickupStopTypes.Contains(rp.StopType) &&
                         pickupIds.Contains(rp.LocationId)));
             }
             else if (dropoffIds != null && dropoffIds.Count > 0)
@@ -308,7 +348,7 @@ namespace AppGroupCar.Services.Search
                 query = query.Where(showtime =>
                     showtime.Route.RoutePoints.Any(rp =>
                         rp.DeleteAt == null &&
-                        rp.DropoffAllowed &&
+                        dropoffStopTypes.Contains(rp.StopType) &&
                         dropoffIds.Contains(rp.LocationId)));
             }
 
@@ -318,18 +358,30 @@ namespace AppGroupCar.Services.Search
         private static IQueryable<Offer> ApplyOfferRouteFilter(
             IQueryable<Offer> query,
             List<Guid>? pickupIds,
-            List<Guid>? dropoffIds)
+            List<Guid>? dropoffIds,
+            List<RouteStopType> pickupStopTypes,
+            List<RouteStopType> dropoffStopTypes)
         {
+            if (pickupIds != null && pickupIds.Count == 0)
+            {
+                return query.Where(_ => false);
+            }
+
+            if (dropoffIds != null && dropoffIds.Count == 0)
+            {
+                return query.Where(_ => false);
+            }
+
             if (pickupIds != null && pickupIds.Count > 0 && dropoffIds != null && dropoffIds.Count > 0)
             {
                 query = query.Where(offer =>
                     offer.RoutePoints.Any(pickup =>
                         pickup.DeleteAt == null &&
-                        pickup.PickupAllowed &&
+                        pickupStopTypes.Contains(pickup.StopType) &&
                         pickupIds.Contains(pickup.LocationId) &&
                         offer.RoutePoints.Any(dropoff =>
                             dropoff.DeleteAt == null &&
-                            dropoff.DropoffAllowed &&
+                            dropoffStopTypes.Contains(dropoff.StopType) &&
                             dropoffIds.Contains(dropoff.LocationId) &&
                             pickup.Sequence < dropoff.Sequence)));
             }
@@ -338,7 +390,7 @@ namespace AppGroupCar.Services.Search
                 query = query.Where(offer =>
                     offer.RoutePoints.Any(rp =>
                         rp.DeleteAt == null &&
-                        rp.PickupAllowed &&
+                        pickupStopTypes.Contains(rp.StopType) &&
                         pickupIds.Contains(rp.LocationId)));
             }
             else if (dropoffIds != null && dropoffIds.Count > 0)
@@ -346,7 +398,7 @@ namespace AppGroupCar.Services.Search
                 query = query.Where(offer =>
                     offer.RoutePoints.Any(rp =>
                         rp.DeleteAt == null &&
-                        rp.DropoffAllowed &&
+                        dropoffStopTypes.Contains(rp.StopType) &&
                         dropoffIds.Contains(rp.LocationId)));
             }
 
@@ -432,11 +484,11 @@ namespace AppGroupCar.Services.Search
             }
 
             return allowNearby
-                ? searchSet.NearbyIds
-                : new List<Guid> { searchSet.TargetId };
+                ? searchSet.NearbyRouteLocationIds
+                : searchSet.ExactRouteLocationIds;
         }
 
-        private static TripSearchMatchDTO BuildMatch(
+        private TripSearchMatchDTO BuildMatch(
             IReadOnlyList<TripRoutePointDTO> routePoints,
             LocationSearchSet? pickupSet,
             LocationSearchSet? dropoffSet,
@@ -447,8 +499,8 @@ namespace AppGroupCar.Services.Search
 
             return new TripSearchMatchDTO
             {
-                ExactPickupLocationId = pickupSet?.TargetId,
-                ExactDropoffLocationId = dropoffSet?.TargetId,
+                ExactPickupLocationId = pickupSet?.RequestedLocationId,
+                ExactDropoffLocationId = dropoffSet?.RequestedLocationId,
                 MatchedPickupLocationId = pickup.MatchedLocationId,
                 MatchedDropoffLocationId = dropoff.MatchedLocationId,
                 PickupMatchType = pickup.MatchType,
@@ -458,7 +510,7 @@ namespace AppGroupCar.Services.Search
             };
         }
 
-        private static LocationMatchResult BuildLocationMatch(
+        private LocationMatchResult BuildLocationMatch(
             IReadOnlyList<TripRoutePointDTO> routePoints,
             LocationSearchSet? searchSet,
             bool forPickup,
@@ -470,8 +522,8 @@ namespace AppGroupCar.Services.Search
             }
 
             var exactPoint = routePoints.FirstOrDefault(x =>
-                x.LocationId == searchSet.TargetId &&
-                (forPickup ? x.PickupAllowed : x.DropoffAllowed));
+                searchSet.ExactRouteLocationIdSet.Contains(x.LocationId) &&
+                IsStopUsable(x.StopType, forPickup));
             if (exactPoint != null)
             {
                 return new LocationMatchResult(TripLocationMatchType.Exact, exactPoint.LocationId, 3, false);
@@ -483,8 +535,8 @@ namespace AppGroupCar.Services.Search
             }
 
             var siblingPoint = routePoints.FirstOrDefault(x =>
-                searchSet.SiblingIds.Contains(x.LocationId) &&
-                (forPickup ? x.PickupAllowed : x.DropoffAllowed));
+                searchSet.SiblingRouteLocationIdSet.Contains(x.LocationId) &&
+                IsStopUsable(x.StopType, forPickup));
             if (siblingPoint != null)
             {
                 return new LocationMatchResult(TripLocationMatchType.Sibling, siblingPoint.LocationId, 2, true);
@@ -494,7 +546,7 @@ namespace AppGroupCar.Services.Search
             {
                 var parentPoint = routePoints.FirstOrDefault(x =>
                     x.LocationId == searchSet.ParentId.Value &&
-                    (forPickup ? x.PickupAllowed : x.DropoffAllowed));
+                    IsStopUsable(x.StopType, forPickup));
                 if (parentPoint != null)
                 {
                     return new LocationMatchResult(TripLocationMatchType.Parent, parentPoint.LocationId, 1, true);
@@ -502,6 +554,13 @@ namespace AppGroupCar.Services.Search
             }
 
             return new LocationMatchResult(TripLocationMatchType.None, null, 0, false);
+        }
+
+        private bool IsStopUsable(RouteStopType stopType, bool forPickup)
+        {
+            return forPickup
+                ? _routeRulePolicy.IsPickupAllowed(stopType)
+                : _routeRulePolicy.IsDropoffAllowed(stopType);
         }
 
         private static int GetScoreFromMatch(TripSearchMatchDTO match)
@@ -619,29 +678,74 @@ namespace AppGroupCar.Services.Search
             };
         }
 
-        private async Task<LocationSearchSet?> ResolveLocationSearchSetAsync(Guid? locationId)
+        private async Task<Dictionary<Guid, LocationSearchSet>> ResolveLocationSearchSetsAsync(
+            Guid? pickupLocationId,
+            Guid? dropoffLocationId)
         {
-            if (!locationId.HasValue)
+            var targetIds = new[] { pickupLocationId, dropoffLocationId }
+                .Where(x => x.HasValue)
+                .Select(x => x!.Value)
+                .Distinct()
+                .ToList();
+
+            if (targetIds.Count == 0)
             {
-                return null;
+                return new Dictionary<Guid, LocationSearchSet>();
             }
 
-            var location = await _context.Locations
+            var locations = await _context.Locations
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == locationId.Value && x.DeleteAt == null && x.IsActive);
+                .Where(x => targetIds.Contains(x.Id) && x.DeleteAt == null && x.IsActive)
+                .ToListAsync();
 
-            if (location == null)
+            var locationLookup = locations.ToDictionary(x => x.Id);
+            var result = new Dictionary<Guid, LocationSearchSet>();
+
+            foreach (var targetId in targetIds)
             {
-                return null;
+                if (!locationLookup.TryGetValue(targetId, out var location))
+                {
+                    continue;
+                }
+
+                var searchSet = await BuildLocationSearchSetAsync(location);
+                result[targetId] = searchSet;
             }
 
+            return result;
+        }
+
+        private async Task<LocationSearchSet> BuildLocationSearchSetAsync(Location location)
+        {
+            var allowedTypeCodes = _routeRulePolicy.RouteCreationLocationTypes
+                .Select(x => (int)x)
+                .ToList();
+
+            if (location.LocationType is LocationType.Province or LocationType.District)
+            {
+                var descendantRouteLocationIds = await LoadDescendantRouteLocationIdsAsync(location.Id, allowedTypeCodes);
+                return new LocationSearchSet(
+                    requestedLocationId: location.Id,
+                    requestedLocationType: location.LocationType,
+                    parentId: null,
+                    exactRouteLocationIds: descendantRouteLocationIds,
+                    siblingRouteLocationIds: descendantRouteLocationIds,
+                    nearbyRouteLocationIds: descendantRouteLocationIds);
+            }
+
+            var exactIds = new List<Guid> { location.Id };
             List<Guid> siblingIds;
+
             if (location.ParentLocationId.HasValue)
             {
                 var parentId = location.ParentLocationId.Value;
                 siblingIds = await _context.Locations
                     .AsNoTracking()
-                    .Where(x => x.DeleteAt == null && x.IsActive && x.ParentLocationId == parentId)
+                    .Where(x =>
+                        x.DeleteAt == null &&
+                        x.IsActive &&
+                        x.ParentLocationId == parentId &&
+                        allowedTypeCodes.Contains((int)x.LocationType))
                     .Select(x => x.Id)
                     .ToListAsync();
             }
@@ -655,7 +759,77 @@ namespace AppGroupCar.Services.Search
                 siblingIds.Add(location.Id);
             }
 
-            return new LocationSearchSet(location.Id, location.ParentLocationId, siblingIds);
+            var nearbyIds = siblingIds.Distinct().ToList();
+
+            if (location.ParentLocationId.HasValue)
+            {
+                var parentLocation = await _context.Locations
+                    .AsNoTracking()
+                    .Where(x =>
+                        x.Id == location.ParentLocationId.Value &&
+                        x.DeleteAt == null &&
+                        x.IsActive)
+                    .Select(x => new { x.Id, x.LocationType })
+                    .FirstOrDefaultAsync();
+
+                if (parentLocation != null &&
+                    allowedTypeCodes.Contains((int)parentLocation.LocationType) &&
+                    !nearbyIds.Contains(parentLocation.Id))
+                {
+                    nearbyIds.Add(parentLocation.Id);
+                }
+            }
+
+            return new LocationSearchSet(
+                requestedLocationId: location.Id,
+                requestedLocationType: location.LocationType,
+                parentId: location.ParentLocationId,
+                exactRouteLocationIds: exactIds,
+                siblingRouteLocationIds: siblingIds,
+                nearbyRouteLocationIds: nearbyIds);
+        }
+
+        private async Task<List<Guid>> LoadDescendantRouteLocationIdsAsync(
+            Guid rootLocationId,
+            IReadOnlyCollection<int> allowedTypeCodes)
+        {
+            var matchedIds = new HashSet<Guid>();
+            var visitedIds = new HashSet<Guid> { rootLocationId };
+            var frontier = new List<Guid> { rootLocationId };
+
+            while (frontier.Count > 0)
+            {
+                var children = await _context.Locations
+                    .AsNoTracking()
+                    .Where(x =>
+                        x.DeleteAt == null &&
+                        x.IsActive &&
+                        x.ParentLocationId.HasValue &&
+                        frontier.Contains(x.ParentLocationId.Value))
+                    .Select(x => new { x.Id, x.LocationType })
+                    .ToListAsync();
+
+                var nextFrontier = new List<Guid>();
+
+                foreach (var child in children)
+                {
+                    if (!visitedIds.Add(child.Id))
+                    {
+                        continue;
+                    }
+
+                    nextFrontier.Add(child.Id);
+
+                    if (allowedTypeCodes.Contains((int)child.LocationType))
+                    {
+                        matchedIds.Add(child.Id);
+                    }
+                }
+
+                frontier = nextFrontier;
+            }
+
+            return matchedIds.ToList();
         }
     }
 }

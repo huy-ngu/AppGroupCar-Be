@@ -1,9 +1,11 @@
-﻿using AppGroupCar.Data;
+using AppGroupCar.Data;
 using AppGroupCar.DTO;
 using AppGroupCar.DTO.PagingParam;
 using AppGroupCar.DTO.RequestDTO.Bus.RouteRequest;
 using AppGroupCar.DTO.ResponseDTO.Bus.RouteResponse;
 using AppGroupCar.Entities.Bus;
+using AppGroupCar.Exceptions;
+using AppGroupCar.Services.RouteRules;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
@@ -14,20 +16,24 @@ namespace AppGroupCar.Services.Bus.BusRoute
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IRouteValidationService _routeValidationService;
 
         public BusRouteService(
             ApplicationDbContext context,
-            IMapper mapper)
+            IMapper mapper,
+            IRouteValidationService routeValidationService)
         {
             _context = context;
             _mapper = mapper;
+            _routeValidationService = routeValidationService;
         }
 
-        // CREATE ROUTE
         public async Task<BusRouteResponse> CreateAsync(
-        Guid companyId,
-        CreateBusRouteRequest dto)
+            Guid companyId,
+            CreateBusRouteRequest dto)
         {
+            await ValidateRoutePointsAsync(dto.RoutePoints);
+
             var route = new Entities.Bus.BusRoute
             {
                 Id = Guid.NewGuid(),
@@ -35,41 +41,30 @@ namespace AppGroupCar.Services.Bus.BusRoute
                 CompanyId = companyId
             };
 
-            ValidateRoutePoints(dto.RoutePoints);
-
-            foreach (var pointDto in dto.RoutePoints)
+            foreach (var pointDto in dto.RoutePoints.OrderBy(x => x.Sequence))
             {
-                route.RoutePoints.Add(
-                    new BusRoutePoint
-                    {
-                        Id = Guid.NewGuid(),
-                        RouteId = route.Id,
-                        LocationId = pointDto.LocationId,
-                        Sequence = pointDto.Sequence,
-                        PickupAllowed = pointDto.PickupAllowed,
-                        DropoffAllowed = pointDto.DropoffAllowed
-                    });
+                route.RoutePoints.Add(new BusRoutePoint
+                {
+                    Id = Guid.NewGuid(),
+                    RouteId = route.Id,
+                    LocationId = pointDto.LocationId,
+                    Sequence = pointDto.Sequence,
+                    StopType = pointDto.StopType
+                });
             }
 
             _context.BusRoutes.Add(route);
-
             await _context.SaveChangesAsync();
 
             return await GetByIdAsync(route.Id, companyId)
-                ?? throw new Exception("Route not found");
+                ?? throw new AppException(404, "Route not found");
         }
 
-        // GET ALL ROUTES OF COMPANY
-
-        public async Task<List<BusRouteResponse>> GetByCompanyAsync(
-            Guid companyId)
+        public async Task<List<BusRouteResponse>> GetByCompanyAsync(Guid companyId)
         {
             var routes = await _context.BusRoutes
-                .Where(x =>
-                    x.CompanyId == companyId &&
-                    x.DeleteAt == null)
-                .Include(x =>
-                    x.RoutePoints.Where(p => p.DeleteAt == null))
+                .Where(x => x.CompanyId == companyId && x.DeleteAt == null)
+                .Include(x => x.RoutePoints.Where(p => p.DeleteAt == null))
                     .ThenInclude(x => x.Location)
                 .OrderBy(x => x.Name)
                 .ToListAsync();
@@ -77,29 +72,18 @@ namespace AppGroupCar.Services.Bus.BusRoute
             return _mapper.Map<List<BusRouteResponse>>(routes);
         }
 
-        // GET BY ID
-
-        public async Task<BusRouteResponse?> GetByIdAsync(
-            Guid id,
-            Guid companyId)
+        public async Task<BusRouteResponse?> GetByIdAsync(Guid id, Guid companyId)
         {
             var route = await _context.BusRoutes
-                .Where(x =>
-                    x.Id == id &&
-                    x.CompanyId == companyId &&
-                    x.DeleteAt == null)
-                .Include(x =>
-                    x.RoutePoints.Where(p => p.DeleteAt == null))
+                .Where(x => x.Id == id && x.CompanyId == companyId && x.DeleteAt == null)
+                .Include(x => x.RoutePoints.Where(p => p.DeleteAt == null))
                     .ThenInclude(x => x.Location)
                 .FirstOrDefaultAsync();
 
-            if (route == null)
-                return null;
-
-            return _mapper.Map<BusRouteResponse>(route);
+            return route == null
+                ? null
+                : _mapper.Map<BusRouteResponse>(route);
         }
-
-        // UPDATE
 
         public async Task<BusRouteResponse> UpdateAsync(
             Guid id,
@@ -114,16 +98,17 @@ namespace AppGroupCar.Services.Bus.BusRoute
                     x.DeleteAt == null);
 
             if (route == null)
-                throw new Exception("Route not found");
+            {
+                throw new AppException(404, "Route not found");
+            }
 
-            ValidateRoutePoints(dto.RoutePoints);
+            await ValidateRoutePointsAsync(dto.RoutePoints);
 
             route.Name = dto.Name;
             route.LastUpdateAt = DateTime.UtcNow;
 
             var now = DateTime.UtcNow;
-            var requestBySequence = dto.RoutePoints
-                .ToDictionary(p => p.Sequence, p => p);
+            var requestBySequence = dto.RoutePoints.ToDictionary(p => p.Sequence, p => p);
 
             foreach (var existingPoint in route.RoutePoints)
             {
@@ -134,7 +119,7 @@ namespace AppGroupCar.Services.Bus.BusRoute
                 }
             }
 
-            foreach (var pointDto in dto.RoutePoints)
+            foreach (var pointDto in dto.RoutePoints.OrderBy(x => x.Sequence))
             {
                 var existingPoint = route.RoutePoints
                     .FirstOrDefault(p => p.Sequence == pointDto.Sequence);
@@ -147,16 +132,14 @@ namespace AppGroupCar.Services.Bus.BusRoute
                         RouteId = route.Id,
                         LocationId = pointDto.LocationId,
                         Sequence = pointDto.Sequence,
-                        PickupAllowed = pointDto.PickupAllowed,
-                        DropoffAllowed = pointDto.DropoffAllowed
+                        StopType = pointDto.StopType
                     });
 
                     continue;
                 }
 
                 existingPoint.LocationId = pointDto.LocationId;
-                existingPoint.PickupAllowed = pointDto.PickupAllowed;
-                existingPoint.DropoffAllowed = pointDto.DropoffAllowed;
+                existingPoint.StopType = pointDto.StopType;
                 existingPoint.DeleteAt = null;
                 existingPoint.LastUpdateAt = now;
             }
@@ -164,14 +147,10 @@ namespace AppGroupCar.Services.Bus.BusRoute
             await _context.SaveChangesAsync();
 
             return await GetByIdAsync(route.Id, companyId)
-                ?? throw new Exception("Route not found");
+                ?? throw new AppException(404, "Route not found");
         }
 
-        // DELETE
-
-        public async Task DeleteAsync(
-            Guid id,
-            Guid companyId)
+        public async Task DeleteAsync(Guid id, Guid companyId)
         {
             var route = await _context.BusRoutes
                 .Include(x => x.RoutePoints)
@@ -181,7 +160,9 @@ namespace AppGroupCar.Services.Bus.BusRoute
                     x.DeleteAt == null);
 
             if (route == null)
-                throw new Exception("Route not found");
+            {
+                throw new AppException(404, "Route not found");
+            }
 
             var now = DateTime.UtcNow;
             route.DeleteAt = now;
@@ -196,9 +177,7 @@ namespace AppGroupCar.Services.Bus.BusRoute
             await _context.SaveChangesAsync();
         }
 
-        public async Task<bool> ExistsForCompanyAsync(
-            Guid routeId,
-            Guid companyId)
+        public async Task<bool> ExistsForCompanyAsync(Guid routeId, Guid companyId)
         {
             return await _context.BusRoutes
                 .AnyAsync(x =>
@@ -207,61 +186,30 @@ namespace AppGroupCar.Services.Bus.BusRoute
                     x.DeleteAt == null);
         }
 
-        // VALIDATE ROUTE
-
-        private static void ValidateRoutePoints(
-            ICollection<CreateBusRoutePointRequest> points)
-        {
-            if (points.Count < 2)
-                throw new Exception(
-                    "Route must have at least 2 points");
-
-            var sequences =
-                points.Select(x => x.Sequence)
-                      .OrderBy(x => x)
-                      .ToList();
-
-            if (sequences.Distinct().Count() != sequences.Count)
-                throw new Exception("Sequence must be unique");
-
-            for (int i = 0; i < sequences.Count; i++)
-            {
-                if (sequences[i] != i + 1)
-                    throw new Exception(
-                        "Sequence must start at 1 and be continuous");
-            }
-        }
-
         public async Task<PagedResult<BusRouteResponse>> GetAsync(
             Guid companyId,
             BusRouteParameters param)
         {
-            // 1. Khởi tạo query cơ bản: lọc theo công ty và chưa bị xóa
             var query = _context.BusRoutes
                 .Where(x => x.CompanyId == companyId && x.DeleteAt == null)
                 .AsQueryable();
 
-            // 2. Truy vấn động: Xử lý Search theo Route Name
             if (!string.IsNullOrWhiteSpace(param.Search))
             {
                 var searchTerm = param.Search.Trim().ToLower();
                 query = query.Where(x => x.Name != null && x.Name.ToLower().Contains(searchTerm));
             }
 
-            // Sắp xếp mặc định để phân trang hoạt động chính xác
             query = query.OrderBy(x => x.Name);
 
-            // 3. Đếm tổng số lượng bản ghi thoả mãn bộ lọc
             var totalCount = await query.CountAsync();
 
-            // 4. Phân trang VÀ Ánh xạ trực tiếp trên Database
             var items = await query
                 .Skip((param.PageNumber - 1) * param.PageSize)
                 .Take(param.PageSize)
                 .ProjectTo<BusRouteResponse>(_mapper.ConfigurationProvider)
                 .ToListAsync();
 
-            // 5. Trả về kết quả
             return new PagedResult<BusRouteResponse>
             {
                 Items = items,
@@ -269,6 +217,17 @@ namespace AppGroupCar.Services.Bus.BusRoute
                 PageNumber = param.PageNumber,
                 PageSize = param.PageSize
             };
+        }
+
+        private async Task ValidateRoutePointsAsync(
+            ICollection<CreateBusRoutePointRequest> points)
+        {
+            var routeStops = points
+                .Select(x => new RouteStopInput(x.LocationId, x.Sequence, x.StopType))
+                .ToList();
+
+            await _routeValidationService.ValidateRouteForCreationAsync(
+                new RouteValidationRequest(RouteTransportMode.Bus, routeStops));
         }
     }
 }

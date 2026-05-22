@@ -4,7 +4,7 @@ using AppGroupCar.Entities.Base;
 
 namespace AppGroupCar.Entities.Bus
 {
-    [Table("CompanyDrivers_old")]
+    [Table("CompanyDrivers")]
     public class CompanyDriver : BaseEntity
     {
 

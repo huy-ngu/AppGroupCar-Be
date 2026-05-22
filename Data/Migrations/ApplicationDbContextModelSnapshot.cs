@@ -243,20 +243,11 @@ namespace AppGroupCar.Migrations
                     b.Property<DateTime?>("DeleteAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("DropoffAllowed")
-                        .HasColumnType("bit");
-
                     b.Property<DateTime?>("LastUpdateAt")
                         .HasColumnType("datetime2");
 
                     b.Property<Guid>("LocationId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("LocationId1")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("PickupAllowed")
-                        .HasColumnType("bit");
 
                     b.Property<Guid>("RouteId")
                         .HasColumnType("uniqueidentifier");
@@ -264,11 +255,12 @@ namespace AppGroupCar.Migrations
                     b.Property<int>("Sequence")
                         .HasColumnType("int");
 
+                    b.Property<int>("StopType")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("LocationId");
-
-                    b.HasIndex("LocationId1");
 
                     b.HasIndex("RouteId", "Sequence")
                         .IsUnique();
@@ -612,7 +604,7 @@ namespace AppGroupCar.Migrations
                         .IsUnique()
                         .HasFilter("[DeleteAt] IS NULL");
 
-                    b.ToTable("Seats");
+                    b.ToTable("Seats", (string)null);
                 });
 
             modelBuilder.Entity("AppGroupCar.Entities.Bus.SeatStatusHistory", b =>
@@ -660,7 +652,7 @@ namespace AppGroupCar.Migrations
 
                     b.HasIndex("SeatId");
 
-                    b.ToTable("SeatStatusHistories");
+                    b.ToTable("SeatStatusHistories", (string)null);
                 });
 
             modelBuilder.Entity("AppGroupCar.Entities.Bus.ShowtimeLog", b =>
@@ -1139,9 +1131,6 @@ namespace AppGroupCar.Migrations
                     b.Property<DateTime?>("DeleteAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("DropoffAllowed")
-                        .HasColumnType("bit");
-
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
@@ -1152,8 +1141,8 @@ namespace AppGroupCar.Migrations
                     b.Property<Guid>("LocationId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<bool>("PickupAllowed")
-                        .HasColumnType("bit");
+                    b.Property<int>("StopType")
+                        .HasColumnType("int");
 
                     b.HasKey("OfferId", "Sequence");
 
@@ -1825,14 +1814,10 @@ namespace AppGroupCar.Migrations
             modelBuilder.Entity("AppGroupCar.Entities.Bus.BusRoutePoint", b =>
                 {
                     b.HasOne("AppGroupCar.Entities.Location", "Location")
-                        .WithMany()
+                        .WithMany("BusRoutePoints")
                         .HasForeignKey("LocationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("AppGroupCar.Entities.Location", null)
-                        .WithMany("BusRoutePoints")
-                        .HasForeignKey("LocationId1");
 
                     b.HasOne("AppGroupCar.Entities.Bus.BusRoute", "Route")
                         .WithMany("RoutePoints")

@@ -49,9 +49,10 @@ namespace AppGroupCar.Entities
         Province = 1,
         District = 2,
         Ward = 3,
-        Landmark = 4,     // bến xe, ngã tư, cây xăng...
-        Depot = 5,        // kho / bãi xe
-        Other = 6
+        BusStation = 4,
+        Landmark = 5,
+        Depot = 6,
+        Other = 99
     }
 
 }

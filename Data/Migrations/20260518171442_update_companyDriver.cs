@@ -11,8 +11,10 @@ namespace AppGroupCar.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "Old_CompanyDrivers");
+            migrationBuilder.Sql(@"
+IF OBJECT_ID('dbo.CompanyDrivers', 'U') IS NOT NULL
+    DROP TABLE dbo.CompanyDrivers;
+");
 
             migrationBuilder.AddColumn<decimal>(
                 name: "RatingCompanyAverage",

@@ -1,7 +1,8 @@
-﻿using AppGroupCar.DTO.RequestDTO.Market.OfferRoutePoint;
+using AppGroupCar.DTO.RequestDTO.Market.OfferRoutePoint;
 using AppGroupCar.Entities.Market;
 using AppGroupCar.Exceptions;
 using AppGroupCar.Repositories.BaseRepo;
+using AppGroupCar.Services.RouteRules;
 using Microsoft.EntityFrameworkCore;
 
 namespace AppGroupCar.Services.Market.OfferRoutePointServices
@@ -9,10 +10,14 @@ namespace AppGroupCar.Services.Market.OfferRoutePointServices
     public class OfferRoutePointService : IOfferRoutePointService
     {
         private readonly IBaseRepository<OfferRoutePoint> _repo;
+        private readonly IRouteValidationService _routeValidationService;
 
-        public OfferRoutePointService(IBaseRepository<OfferRoutePoint> repo)
+        public OfferRoutePointService(
+            IBaseRepository<OfferRoutePoint> repo,
+            IRouteValidationService routeValidationService)
         {
             _repo = repo;
+            _routeValidationService = routeValidationService;
         }
 
         public async Task<IEnumerable<OfferRoutePoint>> GetAllAsync()
@@ -25,6 +30,7 @@ namespace AppGroupCar.Services.Market.OfferRoutePointServices
         public async Task<OfferRoutePoint> CreateAsync(CreateOfferRoutePointRequestDTO request)
         {
             ValidateCreateRequest(request);
+            await _routeValidationService.EnsureLocationAllowedForRouteAsync(request.LocationId);
 
             var newOfferRoutePoint = new OfferRoutePoint
             {
@@ -32,8 +38,7 @@ namespace AppGroupCar.Services.Market.OfferRoutePointServices
                 OfferId = request.OfferId,
                 Sequence = request.Sequence,
                 LocationId = request.LocationId,
-                PickupAllowed = request.PickupAllowed,
-                DropoffAllowed = request.DropoffAllowed,
+                StopType = request.StopType,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -73,21 +78,15 @@ namespace AppGroupCar.Services.Market.OfferRoutePointServices
                 offerRoutePoint.OfferId = request.OfferId.Value;
             }
 
-           
-
             if (request.LocationId.HasValue)
             {
+                await _routeValidationService.EnsureLocationAllowedForRouteAsync(request.LocationId.Value);
                 offerRoutePoint.LocationId = request.LocationId.Value;
             }
 
-            if (request.PickupAllowed.HasValue)
+            if (request.StopType.HasValue)
             {
-                offerRoutePoint.PickupAllowed = request.PickupAllowed.Value;
-            }
-
-            if (request.DropoffAllowed.HasValue)
-            {
-                offerRoutePoint.DropoffAllowed = request.DropoffAllowed.Value;
+                offerRoutePoint.StopType = request.StopType.Value;
             }
 
             _repo.Update(offerRoutePoint);
