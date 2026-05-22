@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-
-
-using AppGroupCar.DTO.RequestDTO.Statistic;
+﻿using AppGroupCar.DTO.RequestDTO.Statistic;
 using AppGroupCar.Services.Statistics.AdminCompanyStatistics;
 using Microsoft.AspNetCore.Mvc;
 
@@ -39,6 +36,18 @@ namespace AppGroupCar.Controllers.Statistic
         public async Task<IActionResult> GetCompletedShowtimeCount([FromBody] CompanyRevenueInDateRangeRequestDTO request)
         {
             var result = await _statisticService.GetCompletedShowtimeCountAsync(request);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Tính doanh thu của công ty cho 12 tháng gần nhất
+        /// </summary>
+        /// <param name="request">Yêu cầu chứa CompanyId</param>
+        /// <returns>Doanh thu từng tháng và tổng doanh thu</returns>
+        [HttpPost("monthly-revenue")]
+        public async Task<IActionResult> GetMonthlyRevenue([FromBody] CompanyMonthlyRevenueRequestDTO request)
+        {
+            var result = await _statisticService.GetCompanyMonthlyRevenueAsync(request);
             return Ok(result);
         }
     }
