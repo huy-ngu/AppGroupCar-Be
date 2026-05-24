@@ -32,12 +32,21 @@ namespace AppGroupCar.Controllers.Bus
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateCompanyDriverRequestDto dto)
+        public async Task<IActionResult> Create([FromForm] CreateCompanyDriverRequestDto dto)
         {
             var companyId = GetCompanyId();
             var result = await _service.CreateAsync(companyId, dto);
 
             return Ok(new ApiResponse<object> { Code = 201, Message = "Create success", Data = result });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll([FromQuery] CompanyDriverParameters param)
+        {
+            var companyId = GetCompanyId();
+            var result = await _service.GetByCompanyAsync(param, companyId);
+
+            return Ok(new ApiResponse<object> { Data = result });
         }
 
         [HttpGet("{id}")]
@@ -52,17 +61,8 @@ namespace AppGroupCar.Controllers.Bus
             return Ok(new ApiResponse<object> { Data = result });
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] CompanyDriverParameters param)
-        {
-            var companyId = GetCompanyId();
-            var result = await _service.GetByCompanyAsync(param, companyId);
-
-            return Ok(new ApiResponse<object> { Data = result });
-        }
-
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] UpdateCompanyDriverRequestDto dto)
+        public async Task<IActionResult> Update(Guid id, [FromForm] UpdateCompanyDriverRequestDto dto)
         {
             var companyId = GetCompanyId();
             var result = await _service.UpdateAsync(id, companyId, dto);

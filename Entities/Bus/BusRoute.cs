@@ -11,6 +11,9 @@ namespace AppGroupCar.Entities.Bus
         [MaxLength(200)]
         public string? Name { get; set; }
 
+        // Tong thoi gian uoc tinh cua tuyen (phut)
+        public int? EstimatedDurationMinutes { get; set; }
+
         [Required]
         public Guid CompanyId { get; set; }
 

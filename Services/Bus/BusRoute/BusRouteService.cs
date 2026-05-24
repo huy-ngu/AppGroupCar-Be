@@ -38,6 +38,7 @@ namespace AppGroupCar.Services.Bus.BusRoute
             {
                 Id = Guid.NewGuid(),
                 Name = dto.Name,
+                EstimatedDurationMinutes = dto.EstimatedDurationMinutes,
                 CompanyId = companyId
             };
 
@@ -105,6 +106,7 @@ namespace AppGroupCar.Services.Bus.BusRoute
             await ValidateRoutePointsAsync(dto.RoutePoints);
 
             route.Name = dto.Name;
+            route.EstimatedDurationMinutes = dto.EstimatedDurationMinutes ?? route.EstimatedDurationMinutes;
             route.LastUpdateAt = DateTime.UtcNow;
 
             var now = DateTime.UtcNow;

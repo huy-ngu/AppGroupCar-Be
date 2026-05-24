@@ -70,6 +70,14 @@ namespace AppGroupCar.Controllers.Bus
             var result = await _service.GetById(id);
             return Ok(new ApiResponse<BusShowtimeResponse> { Data = result });
         }
+        
+        [AllowAnonymous]
+        [HttpGet("{id}/detail")]
+        public async Task<IActionResult> GetPublicDetail(Guid id)
+        {
+            var result = await _service.GetPublicDetailAsync(id);
+            return Ok(new ApiResponse<BusShowtimeDetailResponseDto> { Data = result });
+        }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateBusShowtimeRequest dto)
