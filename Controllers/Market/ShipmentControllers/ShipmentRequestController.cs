@@ -23,7 +23,7 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
             _shipmentRequestServices = shipmentRequestServices;
         }
         [HttpGet]
-        public async Task<IActionResult> Filter(ShipmentRequestParameters param)
+        public async Task<IActionResult> Filter([FromQuery] ShipmentRequestParameters param)
         {
             var data = await _shipmentRequestServices.FilterAsync(param);
             return Ok(new ApiResponse<PagedResult<ShipmentRequest>> { Data = data });

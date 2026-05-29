@@ -23,8 +23,8 @@ namespace AppGroupCar.Services.Market.ShipmentRequestServices
             _photoService = photoService;
         }
         public async Task<ShipmentRequest> CreateAsync(
-    Guid userId,
-    CreateShipmentRequestDTO request)
+            Guid userId,
+            CreateShipmentRequestDTO request)
         {
             string? imgUrl = null;
 
@@ -83,16 +83,22 @@ namespace AppGroupCar.Services.Market.ShipmentRequestServices
         {
             var data = await _repo.FindAndFilter(
                 predicate: r =>
-                    //  Lọc điểm đi (nếu null/rỗng thì bỏ qua điều kiện này)
+                    // Lọc điểm đi (nếu null/rỗng thì bỏ qua điều kiện này)
                     (string.IsNullOrEmpty(param.pickUpLocation) || r.PickupLocation.Name.Contains(param.pickUpLocation)) &&
 
-                    // Lọc điểm đến (đã sửa lại thành ToLocation)
+                    // Lọc điểm đến
                     (string.IsNullOrEmpty(param.dropOffLocation) || r.DropoffLocation.Name.Contains(param.dropOffLocation)) &&
 
-                r.Status == ShipmentRequestStatus.Open && r.DeleteAt == null,
+                    // Lọc thời gian bắt đầu (chỉ lấy yêu cầu có ngày giao SAU FromDeliveryDate)
+                    (!param.FromDeliveryDate.HasValue || r.DeliveryDate >= param.FromDeliveryDate.Value) &&
 
+                    // Lọc thời gian kết thúc (chỉ lấy yêu cầu có ngày giao TRƯỚC ToDeliveryDate)
+                    (!param.ToDeliveryDate.HasValue || r.DeliveryDate <= param.ToDeliveryDate.Value) &&
 
-                orderBy: q => q.OrderByDescending(r => r.PickupLocation.Name),
+                    // Mặc định chỉ lấy các yêu cầu đang Open
+                    r.Status == ShipmentRequestStatus.Open && r.DeleteAt == null,
+
+                orderBy: q => q.OrderByDescending(r => r.DeliveryDate),
                 pageNumber: param.PageNumber,
                 pageSize: param.PageSize
             );
