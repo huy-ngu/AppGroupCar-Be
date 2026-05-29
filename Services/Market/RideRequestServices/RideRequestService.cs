@@ -1,5 +1,6 @@
 ﻿using AppGroupCar.DTO;
 using AppGroupCar.DTO.RequestDTO.Market.RideRequest;
+using AppGroupCar.DTO.Filters;
 using AppGroupCar.Entities.Market;
 using AppGroupCar.Exceptions;
 using AppGroupCar.Repositories.BaseRepo;
@@ -47,33 +48,28 @@ namespace AppGroupCar.Services.Market.RideRequestServices
             await _repo.SaveChangesAsync();
         }
 
-        public async Task<PagedResult<RideRequest>> FilterByTimeAndLocationAsync(
-            string? fromLocation,
-            string? toLocation,
-            DateTime? fromTime,
-            DateTime? toTime)
+        public async Task<PagedResult<RideRequest>> FilterByTimeAndLocationAsync(RideRequestParameters parameters)
         {
             var data = await _repo.FindAndFilter(
                 predicate: r =>
                     //  Lọc điểm đi (nếu null/rỗng thì bỏ qua điều kiện này)
-                    (string.IsNullOrEmpty(fromLocation) || r.FromLocation.Name.Contains(fromLocation)) &&
+                    (string.IsNullOrEmpty(parameters.FromLocation) || r.FromLocation.Name.Contains(parameters.FromLocation)) &&
 
                     // Lọc điểm đến (đã sửa lại thành ToLocation)
-                    (string.IsNullOrEmpty(toLocation) || r.ToLocation.Name.Contains(toLocation)) &&
+                    (string.IsNullOrEmpty(parameters.ToLocation) || r.ToLocation.Name.Contains(parameters.ToLocation)) &&
 
                     // Lọc thời gian bắt đầu (chỉ lấy cuốc xe đi SAU FromTime)
-                    (!fromTime.HasValue || r.DesiredDepartureTime >= fromTime.Value) &&
+                    (!parameters.FromTime.HasValue || r.DesiredDepartureTime >= parameters.FromTime.Value) &&
 
                     // Lọc thời gian kết thúc (chỉ lấy cuốc xe đi TRƯỚC ToTime)
-                    (!toTime.HasValue || r.DesiredDepartureTime <= toTime.Value) &&
+                    (!parameters.ToTime.HasValue || r.DesiredDepartureTime <= parameters.ToTime.Value) &&
 
                     // Mặc định luôn chỉ lấy cuốc xe đang Open
                     r.Status == RideRequestStatus.Open && r.DeleteAt == null,
 
-
                 orderBy: q => q.OrderByDescending(r => r.DesiredDepartureTime),
-                pageNumber: 1,
-                pageSize: 10
+                pageNumber: parameters.PageNumber,
+                pageSize: parameters.PageSize
             );
 
             return data;

@@ -9,6 +9,7 @@ namespace AppGroupCar.DTO.ResponseDTO.Market.ShipmentDTO
         public Guid RequestId { get; set; }
         public decimal ProposedPrice { get; set; }
         public ShipmentOfferStatus Status { get; set; }
+        public DateTime CreatedAt { get; set; }
         public DriverShipmentOfferDTO Driver { get; set; }
         public VehicleShipmentOfferDTO Vehicle { get; set; }
 

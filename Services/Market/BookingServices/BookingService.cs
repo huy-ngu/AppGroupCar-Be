@@ -236,7 +236,7 @@ namespace AppGroupCar.Services.Market.BookingServices
                     PickupLocationId = item.PickupLocationId,
                 }).ToList()
             };
-            offer.SharedRideDetail.AvailableSeats = availableSeats - bookingItems.Count;
+            //offer.SharedRideDetail.AvailableSeats = availableSeats - bookingItems.Count;
 
             await _bookingRepository.AddAsync(newBooking);
 
@@ -327,6 +327,90 @@ namespace AppGroupCar.Services.Market.BookingServices
             var sharedRideDetail = booking.Offer.SharedRideDetail;
             sharedRideDetail.AvailableSeats += booking.Quantity;
             _sharedRideOfferDetailRepository.Update(sharedRideDetail);
+
+            await _bookingRepository.SaveChangesAsync();
+        }
+
+        public async Task AcceptBookingAsync(Guid driverId, Guid bookingId)
+        {
+            if (driverId == Guid.Empty || bookingId == Guid.Empty)
+            {
+                throw new AppException(400, "ID không hợp lệ");
+            }
+
+            var booking = await _bookingRepository.GetQueryable()
+                .Include(b => b.Offer)
+                .ThenInclude(o => o.SharedRideDetail)
+                .FirstOrDefaultAsync(b => b.Id == bookingId && b.DeleteAt == null)
+                ?? throw new AppException(404, "Không tìm thấy booking");
+
+            // Kiểm tra driver có quyền chấp nhận booking này không
+            if (booking.Offer.DriverId != driverId)
+            {
+                throw new AppException(403, "Bạn không được phép chấp nhận booking này");
+            }
+
+            // Kiểm tra trạng thái booking phải là Pending
+            if (booking.Status != BookingStatus.Pending)
+            {
+                throw new AppException(400, "Chỉ có thể chấp nhận booking ở trạng thái chờ");
+            }
+
+            if (booking.Offer == null)
+            {
+                throw new AppException(404, "Không tìm thấy thông tin offer");
+            }
+
+            if (booking.Offer.SharedRideDetail == null)
+            {
+                throw new AppException(404, "Không tìm thấy thông tin chi tiết chuyến xe");
+            }
+
+            // Kiểm tra còn ghế trống không
+            if (booking.Offer.SharedRideDetail.AvailableSeats < booking.Quantity)
+            {
+                throw new AppException(400, "Không đủ ghế để chấp nhận booking");
+            }
+
+            // Cập nhật trạng thái booking thành Accepted
+            booking.Status = BookingStatus.Accepted;
+            _bookingRepository.Update(booking);
+
+            // Trừ số ghế còn lại
+            var sharedRideDetail = booking.Offer.SharedRideDetail;
+            sharedRideDetail.AvailableSeats -= booking.Quantity;
+            _sharedRideOfferDetailRepository.Update(sharedRideDetail);
+
+            await _bookingRepository.SaveChangesAsync();
+        }
+
+        public async Task RejectBookingAsync(Guid driverId, Guid bookingId)
+        {
+            if (driverId == Guid.Empty || bookingId == Guid.Empty)
+            {
+                throw new AppException(400, "ID không hợp lệ");
+            }
+
+            var booking = await _bookingRepository.GetQueryable()
+                .Include(b => b.Offer)
+                .FirstOrDefaultAsync(b => b.Id == bookingId && b.DeleteAt == null)
+                ?? throw new AppException(404, "Không tìm thấy booking");
+
+            // Kiểm tra driver có quyền từ chối booking này không
+            if (booking.Offer.DriverId != driverId)
+            {
+                throw new AppException(403, "Bạn không được phép từ chối booking này");
+            }
+
+            // Kiểm tra trạng thái booking phải là Pending
+            if (booking.Status != BookingStatus.Pending)
+            {
+                throw new AppException(400, "Chỉ có thể từ chối booking ở trạng thái chờ");
+            }
+
+            // Cập nhật trạng thái booking thành Rejected
+            booking.Status = BookingStatus.Rejected;
+            _bookingRepository.Update(booking);
 
             await _bookingRepository.SaveChangesAsync();
         }

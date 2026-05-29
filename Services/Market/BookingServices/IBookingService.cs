@@ -16,5 +16,7 @@ namespace AppGroupCar.Services.Market.BookingServices
         Task<IEnumerable<BookingResponseDTO>> BookingParameters();
         Task UpdateAsync(UpdateBookingRequestDTO request);
         Task CancelAsync(Guid customerId, Guid bookingId);
+        Task AcceptBookingAsync(Guid driverId, Guid bookingId);
+        Task RejectBookingAsync(Guid driverId, Guid bookingId);
     }
 }

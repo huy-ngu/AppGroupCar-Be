@@ -1,5 +1,4 @@
 ﻿using AppGroupCar.DTO.RequestDTO.Statistic;
-using AppGroupCar.DTO.RequestDTO.Statistic;
 using AppGroupCar.DTO.ResponseDTO.Statistic;
 
 namespace AppGroupCar.Services.Statistics.AdminCompanyStatistics
@@ -19,5 +18,12 @@ namespace AppGroupCar.Services.Statistics.AdminCompanyStatistics
         /// <param name="request">Yêu cầu chứa CompanyId, StartDate, EndDate</param>
         /// <returns>Thông tin số chuyến đi hoàn thành</returns>
         Task<CompletedShowTimeCountResponseDTO> GetCompletedShowtimeCountAsync(CompanyRevenueInDateRangeRequestDTO request);
+
+        /// <summary>
+        /// Tính doanh thu của công ty cho 12 tháng gần nhất
+        /// </summary>
+        /// <param name="request">Yêu cầu chứa CompanyId</param>
+        /// <returns>Thông tin doanh thu từng tháng và tổng doanh thu</returns>
+        Task<CompanyMonthlyRevenueResponseDTO> GetCompanyMonthlyRevenueAsync(CompanyMonthlyRevenueRequestDTO request);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using AppGroupCar.DTO;
 using AppGroupCar.DTO.RequestDTO.Market.RideRequest;
 using AppGroupCar.DTO.ResponseDTO;
+using AppGroupCar.DTO.Filters;
 using AppGroupCar.Entities.Market;
 using AppGroupCar.Services.Market.RideRequestServices;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +21,7 @@ namespace AppGroupCar.Controllers.Market
             _service = service;
         }
 
-        [HttpPost("Create")]
+        [HttpPost]
         public async Task<IActionResult> CreateRideRequest(CreateRideRequestDTO rideRequest)
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -34,35 +35,23 @@ namespace AppGroupCar.Controllers.Market
             return Ok(new ApiResponse<RideRequest> { Data = newRideRequest });
         }
 
-        [HttpGet("GetAll")]
-        public async Task<IActionResult> GetAllRecords()
-        {
-            var data = await _service.GetAllRideRequestAsync();
-            return Ok(new ApiResponse<IEnumerable<RideRequest>> { Data = data });
-        }
-
-        [HttpGet("GetById")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var data = await _service.GetByIdAsync(id);
             return Ok(new ApiResponse<RideRequest> { Data = data });
 
         }
-        [HttpPost("FilterByNameAsync")]
-        public async Task<IActionResult> FilterByName(string name, int pageNumber = 1, int pageSize = 10)
-        {
-            var data = await _service.FindByNameAsync(name, pageNumber, pageSize);
-            return Ok(new ApiResponse<PagedResult<RideRequest>> { Data = data });
-        }
 
-        [HttpPost("FilterByTimeAndLocation")]
-        public async Task<IActionResult> FilterByTimeAndLocation(string? fromlocation, string? toLocation, DateTime? fromTime, DateTime? toTime)
+        [HttpGet]
+        public async Task<IActionResult> FilterByTimeAndLocation([FromQuery] RideRequestParameters parameters)
         {
-            var data = await _service.FilterByTimeAndLocationAsync(fromlocation, toLocation, fromTime, toTime);
+            var data = await _service.FilterByTimeAndLocationAsync(parameters);
             return Ok(new ApiResponse<PagedResult<RideRequest>> { Data = data });
         }
 
         [HttpPatch("id")]
+        
         public async Task<IActionResult> Update(UpdateRideRequestDTO rideRequest)
         {
             await _service.UpdateAsync(rideRequest);
