@@ -25,6 +25,9 @@ namespace AppGroupCar.Entities.Market
         [Required]
         public DateTime DepartureTime { get; set; }
 
+        // Tong thoi gian uoc tinh cua hanh trinh (phut)
+        public int? EstimatedDurationMinutes { get; set; }
+
         [Column(TypeName = "decimal(18,2)")]
         public decimal BasePrice { get; set; }
 

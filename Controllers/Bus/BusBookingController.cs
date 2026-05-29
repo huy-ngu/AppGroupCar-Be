@@ -54,5 +54,13 @@ namespace AppGroupCar.Controllers.Bus
             var result = await _service.GetByIdAsync(id, userId);
             return Ok(new ApiResponse<BusBookingResponseDto> { Data = result });
         }
+
+        [HttpGet("{id:guid}/detail")]
+        public async Task<IActionResult> GetDetail(Guid id)
+        {
+            var userId = GetUserId();
+            var result = await _service.GetDetailAsync(id, userId);
+            return Ok(new ApiResponse<BusBookingDetailResponseDto> { Data = result });
+        }
     }
 }

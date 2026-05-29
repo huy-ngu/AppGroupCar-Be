@@ -52,9 +52,24 @@ namespace AppGroupCar.DTO.ResponseDTO.Search
         public string ProviderName { get; set; } = string.Empty;
         public DateTime DepartureTime { get; set; }
         public decimal Price { get; set; }
-        public List<TripRoutePointDTO> RoutePoints { get; set; } = new();
+        public int? EstimatedDurationMinutes { get; set; }
+        public DateTime? EstimatedArrivalTime { get; set; }
+        public TripRoutePointSummaryDTO? StartPoint { get; set; }
+        public TripRoutePointSummaryDTO? EndPoint { get; set; }
+        public TripRoutePointSummaryDTO? MatchedPickupPoint { get; set; }
+        public TripRoutePointSummaryDTO? MatchedDropoffPoint { get; set; }
         public TripSearchReferenceDTO Reference { get; set; } = new();
         public TripSearchMatchDTO Match { get; set; } = new();
+    }
+
+    public class TripRoutePointSummaryDTO
+    {
+        public Guid LocationId { get; set; }
+        public string LocationName { get; set; } = string.Empty;
+        public int Sequence { get; set; }
+        public RouteStopType StopType { get; set; }
+        public DateTime? EstimatedArrivalTime { get; set; }
+        public int? EstimatedTravelMinutesFromDeparture { get; set; }
     }
 
     public class TripRoutePointDTO
@@ -63,7 +78,5 @@ namespace AppGroupCar.DTO.ResponseDTO.Search
         public string LocationName { get; set; } = string.Empty;
         public int Sequence { get; set; }
         public RouteStopType StopType { get; set; }
-        public bool PickupAllowed => StopType is RouteStopType.Start or RouteStopType.Pickup;
-        public bool DropoffAllowed => StopType is RouteStopType.Dropoff or RouteStopType.End;
     }
 }

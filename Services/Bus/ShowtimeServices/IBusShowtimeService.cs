@@ -9,6 +9,7 @@ namespace AppGroupCar.Services.Bus.ShowtimeServices
     {
         Task<IEnumerable<BusShowtimeResponse>> GetAsync();
         Task<BusShowtimeResponse> GetById(Guid id);
+        Task<BusShowtimeDetailResponseDto> GetPublicDetailAsync(Guid id);
         Task<BusShowtimeResponse> CreateAsync(
             Guid companyId,
             Guid userId,
@@ -16,6 +17,10 @@ namespace AppGroupCar.Services.Bus.ShowtimeServices
 
         Task<List<BusShowtimeResponse>> GetByCompanyAsync(
             Guid companyId);
+
+        Task<List<UpcomingShowtimeItemDto>> GetUpcomingForCompanyAsync(
+            Guid companyId,
+            DateOnly fromDate);
 
         Task<PagedResult<BusShowtimeResponse>> FilterAsync(
             Guid companyId,

@@ -2,6 +2,7 @@ using AppGroupCar.Data;
 using AppGroupCar.DTO;
 using AppGroupCar.DTO.PagingParam;
 using AppGroupCar.DTO.RequestDTO.Bus.ShowtimeRequest;
+using AppGroupCar.DTO.ResponseDTO.Bus.RouteResponse;
 using AppGroupCar.DTO.ResponseDTO.Bus.ShowtimeResponse;
 using AppGroupCar.Entities.Bus;
 using AppGroupCar.Exceptions;
@@ -97,6 +98,36 @@ namespace AppGroupCar.Services.Bus.ShowtimeServices
                 .ToListAsync();
 
             return _mapper.Map<List<BusShowtimeResponse>>(entities);
+        }
+
+        public async Task<List<UpcomingShowtimeItemDto>> GetUpcomingForCompanyAsync(
+            Guid companyId,
+            DateOnly fromDate)
+        {
+            if (companyId == Guid.Empty)
+                throw new AppException(401, "Invalid company");
+
+            return await _context.BusShowtimes
+                .AsNoTracking()
+                .Where(x => x.CompanyId == companyId && x.DeleteAt == null && x.DepartureDate >= fromDate)
+                .OrderBy(x => x.DepartureDate)
+                .ThenBy(x => x.DepartureTime)
+                .Select(x => new UpcomingShowtimeItemDto
+                {
+                    Id = x.Id,
+                    RouteId = x.RouteId,
+                    RouteName = x.Route.Name,
+                    CompanyVehicleId = x.CompanyVehicleId,
+                    PlateNumber = x.CompanyVehicle.PlateNumber,
+                    CompanyDriverId = x.CompanyDriverId,
+                    DriverName = x.CompanyDriver.User.FullName,
+                    DepartureDate = x.DepartureDate,
+                    DepartureTime = x.DepartureTime,
+                    Price = x.Price,
+                    Status = x.Status,
+                    SeatCount = x.Seats.Count(s => s.DeleteAt == null)
+                })
+                .ToListAsync();
         }
 
         //public async Task<PagedResult<BusShowtimeResponse>> FilterAsync(
@@ -419,6 +450,82 @@ namespace AppGroupCar.Services.Bus.ShowtimeServices
             return entity == null
                 ? throw new AppException(404, "Showtime not found")
                 : _mapper.Map<BusShowtimeResponse>(entity);
+        }
+
+        public async Task<BusShowtimeDetailResponseDto> GetPublicDetailAsync(Guid id)
+        {
+            var entity = await _context.BusShowtimes
+                .AsNoTracking()
+                .Where(x => x.Id == id && x.DeleteAt == null)
+                .Include(x => x.Company)
+                .Include(x => x.Route)
+                    .ThenInclude(r => r.RoutePoints)
+                        .ThenInclude(rp => rp.Location)
+                .Include(x => x.CompanyVehicle)
+                    .ThenInclude(v => v.VehicleSeatLayout)
+                .Include(x => x.CompanyDriver)
+                    .ThenInclude(d => d.User)
+                .Include(x => x.Seats)
+                .FirstOrDefaultAsync();
+
+            if (entity == null)
+                throw new AppException(404, "Showtime not found");
+
+            var routePoints = entity.Route.RoutePoints
+                .Where(rp => rp.DeleteAt == null)
+                .OrderBy(rp => rp.Sequence)
+                .Select(rp => new BusRoutePointResponse
+                {
+                    Id = rp.Id,
+                    LocationId = rp.LocationId,
+                    LocationName = rp.Location?.Name ?? string.Empty,
+                    Sequence = rp.Sequence,
+                    StopType = rp.StopType
+                })
+                .ToList();
+
+            var route = new BusRouteResponse
+            {
+                Id = entity.Route.Id,
+                Name = entity.Route.Name,
+                CompanyId = entity.Route.CompanyId,
+                EstimatedDurationMinutes = entity.Route.EstimatedDurationMinutes,
+                RoutePoints = routePoints
+            };
+
+            var vehicleLayout = entity.CompanyVehicle.VehicleSeatLayout;
+
+            return new BusShowtimeDetailResponseDto
+            {
+                Id = entity.Id,
+                CompanyId = entity.CompanyId,
+                CompanyName = entity.Company.CompanyName,
+                DepartureDate = entity.DepartureDate,
+                DepartureTime = entity.DepartureTime,
+                Price = entity.Price,
+                Status = entity.Status,
+                SeatCount = entity.Seats.Count(x => x.DeleteAt == null),
+                Route = route,
+                Vehicle = new BusShowtimeVehicleDto
+                {
+                    CompanyVehicleId = entity.CompanyVehicleId,
+                    SeatLayoutId = entity.CompanyVehicle.SeatLayoutId,
+                    SeatLayoutName = vehicleLayout?.SeatLayoutName,
+                    PlateNumber = entity.CompanyVehicle.PlateNumber,
+                    SeatCapacity = entity.CompanyVehicle.SeatCapacity,
+                    VehicleType = (int)entity.CompanyVehicle.VehicleType,
+                    UrlImage = entity.CompanyVehicle.UrlImage
+                },
+                Driver = new BusShowtimeDriverDto
+                {
+                    CompanyDriverId = entity.CompanyDriverId,
+                    UserId = entity.CompanyDriver.UserId,
+                    FullName = entity.CompanyDriver.User.FullName,
+                    AvatarUrl = entity.CompanyDriver.User.AvatarUrl,
+                    LicenseNumber = entity.CompanyDriver.LicenseNumber,
+                    LicenseClass = entity.CompanyDriver.LicenseClass
+                }
+            };
         }
     }
 }

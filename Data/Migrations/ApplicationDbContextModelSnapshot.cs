@@ -217,6 +217,9 @@ namespace AppGroupCar.Migrations
                     b.Property<DateTime?>("DeleteAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("EstimatedDurationMinutes")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("LastUpdateAt")
                         .HasColumnType("datetime2");
 
@@ -443,7 +446,6 @@ namespace AppGroupCar.Migrations
                         .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("LicenseDocumentUrl")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
@@ -604,7 +606,7 @@ namespace AppGroupCar.Migrations
                         .IsUnique()
                         .HasFilter("[DeleteAt] IS NULL");
 
-                    b.ToTable("Seats", (string)null);
+                    b.ToTable("Seats");
                 });
 
             modelBuilder.Entity("AppGroupCar.Entities.Bus.SeatStatusHistory", b =>
@@ -652,7 +654,7 @@ namespace AppGroupCar.Migrations
 
                     b.HasIndex("SeatId");
 
-                    b.ToTable("SeatStatusHistories", (string)null);
+                    b.ToTable("SeatStatusHistories");
                 });
 
             modelBuilder.Entity("AppGroupCar.Entities.Bus.ShowtimeLog", b =>
@@ -1095,6 +1097,9 @@ namespace AppGroupCar.Migrations
 
                     b.Property<Guid>("DriverId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("EstimatedDurationMinutes")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("LastUpdateAt")
                         .HasColumnType("datetime2");

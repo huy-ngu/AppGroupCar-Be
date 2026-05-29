@@ -11,6 +11,9 @@ namespace AppGroupCar.DTO.RequestDTO.Market.Offer
         [Required]
         public DateTime DepartureTime { get; set; } = DateTime.Now.AddMinutes(30);
 
+        [Range(1, 10080, ErrorMessage = "EstimatedDurationMinutes phai lon hon 0 va nho hon 10080")]
+        public int EstimatedDurationMinutes { get; set; }
+
         [Range(1, 10000000, ErrorMessage = "Giá offer phải lớn hơn 0 và nhỏ hơn 10triệu")]
         public decimal BasePrice { get; set; } = 10000000;
 

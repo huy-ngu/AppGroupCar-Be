@@ -11,6 +11,7 @@ namespace AppGroupCar.DTO.ResponseDTO.Market.Offer
         public string VehicleName { get; set; } = null!;
         public ServiceType ServiceType { get; set; }
         public DateTime DepartureTime { get; set; }
+        public int? EstimatedDurationMinutes { get; set; }
         public decimal BasePrice { get; set; }
         public OfferStatus Status { get; set; }
 

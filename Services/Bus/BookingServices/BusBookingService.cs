@@ -1,6 +1,8 @@
 using AppGroupCar.Data;
 using AppGroupCar.DTO.RequestDTO.Bus.BookingRequest;
 using AppGroupCar.DTO.ResponseDTO.Bus.BookingResponse;
+using AppGroupCar.DTO.ResponseDTO.Bus.RouteResponse;
+using AppGroupCar.DTO.ResponseDTO.Bus.ShowtimeResponse;
 using AppGroupCar.Entities.Bus;
 using AppGroupCar.Exceptions;
 using AutoMapper;
@@ -151,6 +153,104 @@ namespace AppGroupCar.Services.Bus.BookingServices
                 throw new AppException(404, "Booking not found");
 
             return _mapper.Map<BusBookingResponseDto>(booking);
+        }
+
+        public async Task<BusBookingDetailResponseDto> GetDetailAsync(Guid bookingId, Guid userId)
+        {
+            if (bookingId == Guid.Empty)
+                throw new AppException(400, "Invalid booking id");
+
+            var booking = await _context.BusBookings
+                .AsNoTracking()
+                .Where(x => x.Id == bookingId && x.UserId == userId && x.DeleteAt == null)
+                .Include(x => x.Seats)
+                .Include(x => x.Showtime)
+                    .ThenInclude(s => s.Company)
+                .Include(x => x.Showtime)
+                    .ThenInclude(s => s.Route)
+                        .ThenInclude(r => r.RoutePoints)
+                            .ThenInclude(rp => rp.Location)
+                .Include(x => x.Showtime)
+                    .ThenInclude(s => s.CompanyVehicle)
+                        .ThenInclude(v => v.VehicleSeatLayout)
+                .Include(x => x.Showtime)
+                    .ThenInclude(s => s.CompanyDriver)
+                        .ThenInclude(d => d.User)
+                .Include(x => x.Showtime)
+                    .ThenInclude(s => s.Seats)
+                .FirstOrDefaultAsync();
+
+            if (booking == null)
+                throw new AppException(404, "Booking not found");
+
+            var showtime = booking.Showtime;
+            var routePoints = showtime.Route.RoutePoints
+                .Where(rp => rp.DeleteAt == null)
+                .OrderBy(rp => rp.Sequence)
+                .Select(rp => new BusRoutePointResponse
+                {
+                    Id = rp.Id,
+                    LocationId = rp.LocationId,
+                    LocationName = rp.Location?.Name ?? string.Empty,
+                    Sequence = rp.Sequence,
+                    StopType = rp.StopType
+                })
+                .ToList();
+
+            var route = new BusRouteResponse
+            {
+                Id = showtime.Route.Id,
+                Name = showtime.Route.Name,
+                CompanyId = showtime.Route.CompanyId,
+                EstimatedDurationMinutes = showtime.Route.EstimatedDurationMinutes,
+                RoutePoints = routePoints
+            };
+
+            var vehicleLayout = showtime.CompanyVehicle.VehicleSeatLayout;
+
+            var showtimeDetail = new BusShowtimeDetailResponseDto
+            {
+                Id = showtime.Id,
+                CompanyId = showtime.CompanyId,
+                CompanyName = showtime.Company.CompanyName,
+                DepartureDate = showtime.DepartureDate,
+                DepartureTime = showtime.DepartureTime,
+                Price = showtime.Price,
+                Status = showtime.Status,
+                SeatCount = showtime.Seats.Count(x => x.DeleteAt == null),
+                Route = route,
+                Vehicle = new BusShowtimeVehicleDto
+                {
+                    CompanyVehicleId = showtime.CompanyVehicleId,
+                    SeatLayoutId = showtime.CompanyVehicle.SeatLayoutId,
+                    SeatLayoutName = vehicleLayout?.SeatLayoutName,
+                    PlateNumber = showtime.CompanyVehicle.PlateNumber,
+                    SeatCapacity = showtime.CompanyVehicle.SeatCapacity,
+                    VehicleType = (int)showtime.CompanyVehicle.VehicleType,
+                    UrlImage = showtime.CompanyVehicle.UrlImage
+                },
+                Driver = new BusShowtimeDriverDto
+                {
+                    CompanyDriverId = showtime.CompanyDriverId,
+                    UserId = showtime.CompanyDriver.UserId,
+                    FullName = showtime.CompanyDriver.User.FullName,
+                    AvatarUrl = showtime.CompanyDriver.User.AvatarUrl,
+                    LicenseNumber = showtime.CompanyDriver.LicenseNumber,
+                    LicenseClass = showtime.CompanyDriver.LicenseClass
+                }
+            };
+
+            return new BusBookingDetailResponseDto
+            {
+                BookingId = booking.Id,
+                ShowtimeId = booking.ShowtimeId,
+                UserId = booking.UserId,
+                TotalPrice = booking.TotalPrice,
+                Status = booking.Status,
+                ExpireAt = booking.ExpireAt,
+                Seats = _mapper.Map<List<BusBookingSeatResponseDto>>(booking.Seats),
+                Showtime = showtimeDetail
+            };
         }
 
         private static List<string> NormalizeSeatNumbers(IEnumerable<string>? seatNumbers)

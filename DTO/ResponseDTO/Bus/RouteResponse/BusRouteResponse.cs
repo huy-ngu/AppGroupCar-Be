@@ -8,6 +8,8 @@
 
         public Guid CompanyId { get; set; }
 
+        public int? EstimatedDurationMinutes { get; set; }
+
         public List<BusRoutePointResponse> RoutePoints { get; set; }
             = new();
     }
