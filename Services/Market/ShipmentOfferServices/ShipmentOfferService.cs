@@ -186,5 +186,35 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
             await _shipmentOfferRepo.SaveChangesAsync();
         }
 
+        public async Task<IEnumerable<GetDetailShipmentOfferDTO>> GetMyShipmentOffersAsync(Guid driverId)
+        {
+            if (driverId == Guid.Empty)
+            {
+                throw new AppException(400, "ID không hợp lệ");
+            }
+
+            var shipmentOffers = await _shipmentOfferRepo.GetQueryable()
+                                .AsNoTracking()
+                                .Where(s => s.DriverId == driverId && s.DeleteAt == null)
+                                .Select(n => new GetDetailShipmentOfferDTO
+                                {
+                                    Id = n.Id,
+                                    RequestId = n.RequestId,
+                                    ProposedPrice = n.ProposedPrice,
+                                    Status = n.Status,
+                                    CreatedAt = n.CreatedAt,
+                                    Driver = new DriverShipmentOfferDTO
+                                    {
+                                        DriverId = n.DriverId,
+                                        DriverName = n.Driver.Name
+                                    },
+                                    Vehicle = new VehicleShipmentOfferDTO
+                                    {
+                                        VehicleId = n.VehicleId,
+                                        VehicleBrand = n.Vehicle.Brand,
+                                    },
+                                }).ToListAsync();
+            return shipmentOffers;
+        }
     }
 }

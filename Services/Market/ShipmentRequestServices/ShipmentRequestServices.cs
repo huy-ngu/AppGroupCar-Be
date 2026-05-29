@@ -6,6 +6,7 @@ using AppGroupCar.Exceptions;
 using AppGroupCar.Repositories.BaseRepo;
 using AppGroupCar.Services.Mytoys.Photo;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace AppGroupCar.Services.Market.ShipmentRequestServices
@@ -159,6 +160,19 @@ namespace AppGroupCar.Services.Market.ShipmentRequestServices
             _repo.Update(exitShipmentRequest);
 
             await _repo.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<ShipmentRequest>> GetMyShipmentRequestsAsync(Guid customerId)
+        {
+            if (customerId == Guid.Empty)
+            {
+                throw new AppException(400, "ID không hợp lệ");
+            }
+
+            var shipmentRequests = await _repo.GetQueryable()
+                                .Where(s => s.CustomerId == customerId && s.DeleteAt == null)
+                                .ToListAsync();
+            return shipmentRequests;
         }
     }
 }

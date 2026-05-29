@@ -45,7 +45,9 @@ namespace AppGroupCar.Entities.Market
     {
         Pending = 1,
         Compelete = 2,
-        Cancelled = 3
+        Cancelled = 3,
+        Accepted = 4,
+        Rejected = 5
     }
 
     public enum PaymentStatus

@@ -33,7 +33,7 @@ namespace AppGroupCar.Controllers.Market
             var userIdNullable = User.GetUserId();
             if (userIdNullable is not Guid userId)
             {
-                return Unauthorized(new ApiResponse<string> { Message = "Token khong hop le" });
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
             }
 
             var response = await _bookingService.GetMyBookingsAsync(userId);
@@ -73,6 +73,34 @@ namespace AppGroupCar.Controllers.Market
 
             await _bookingService.CancelAsync(userId, id);
             return Ok(new ApiResponse<string> { Code = 200, Message = "Hủy booking thành công" });
+        }
+
+        [HttpPost("{id}/accept")]
+        [Authorize(Roles = "Driver")]
+        public async Task<IActionResult> AcceptBooking(Guid id)
+        {
+            var userIdNullable = User.GetUserId();
+            if (userIdNullable is not Guid userId)
+            {
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
+            }
+
+            await _bookingService.AcceptBookingAsync(userId, id);
+            return Ok(new ApiResponse<string> { Code = 200, Message = "Chấp nhận booking thành công" });
+        }
+
+        [HttpPost("{id}/reject")]
+        [Authorize(Roles = "Driver")]
+        public async Task<IActionResult> RejectBooking(Guid id)
+        {
+            var userIdNullable = User.GetUserId();
+            if (userIdNullable is not Guid userId)
+            {
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
+            }
+
+            await _bookingService.RejectBookingAsync(userId, id);
+            return Ok(new ApiResponse<string> { Code = 200, Message = "Từ chối booking thành công" });
         }
     }
 }

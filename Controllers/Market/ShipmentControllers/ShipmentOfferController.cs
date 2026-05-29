@@ -77,6 +77,21 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
 
         }
 
+        [HttpGet("me")]
+        [Authorize(Roles = "Driver")]
+        public async Task<IActionResult> GetMyShipmentOffers()
+        {
+            var userIdNullable = User.GetUserId();
+
+            if (userIdNullable is not Guid userId)
+            {
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
+            }
+
+            var data = await _shipmentOfferService.GetMyShipmentOffersAsync(userId);
+            return Ok(new ApiResponse<IEnumerable<GetDetailShipmentOfferDTO>> { Code = 200, Data = data });
+        }
+
         [HttpGet()]
         public async Task<IActionResult> GetByShipmentRequest()
         {
