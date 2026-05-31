@@ -25,13 +25,13 @@ namespace AppGroupCar.Controllers.Market
         public async Task<IActionResult> SearchOfferSharedRide([FromQuery] GetOfferForUserRequestDTO request)
         {
             var data = await _offerService.GetOfferSharedRideAsync(request);
-            return Ok(new ApiResponse<PagedResult<GetOfferDTO>> { Data = data });
+            return Ok(new ApiResponse<PagedResult<GetOfferSharedRideDTO>> { Data = data });
         }
         [HttpGet("shipment")]
         public async Task<IActionResult> SearchOfferShipment([FromQuery] GetOfferForUserRequestDTO request)
         {
             var data = await _offerShipmentSerivce.GetOfferShipmentAsync(request);
-            return Ok(new ApiResponse<PagedResult<GetOfferDTO>> { Data = data });
+            return Ok(new ApiResponse<PagedResult<GetOfferShipmentDTO>> { Data = data });
         }
 
         [HttpGet("me")]

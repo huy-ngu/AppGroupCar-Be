@@ -1,6 +1,7 @@
 using AppGroupCar.DTO;
 using AppGroupCar.DTO.RequestDTO.Market.Offer;
 using AppGroupCar.DTO.ResponseDTO.Market.Offer;
+using AppGroupCar.Entities;
 using AppGroupCar.Entities.Market;
 using AppGroupCar.Exceptions;
 using AppGroupCar.Repositories.BaseRepo;
@@ -17,6 +18,7 @@ namespace AppGroupCar.Services.Market.OfferServices
         private readonly IBaseRepository<SharedRideOfferDetail> _repoOfferDetail;
         private readonly IBaseRepository<OfferRoutePoint> _repoOfferRoutePoint;
         private readonly IBaseRepository<Booking> _bookingRepo;
+        private readonly IBaseRepository<Location> _locationRepo;
         private readonly IMapper _mapper;
         private readonly IRouteValidationService _routeValidationService;
         private readonly IRouteRulePolicy _routeRulePolicy;
@@ -27,6 +29,7 @@ namespace AppGroupCar.Services.Market.OfferServices
             IBaseRepository<SharedRideOfferDetail> repoOfferDetail,
             IBaseRepository<OfferRoutePoint> repoOfferRoutePoint,
             IBaseRepository<Booking> bookingRepo,
+            IBaseRepository<Location> locationRepo,
             IMapper mapper,
             IRouteValidationService routeValidationService,
             IRouteRulePolicy routeRulePolicy)
@@ -36,6 +39,7 @@ namespace AppGroupCar.Services.Market.OfferServices
             _repoOfferDetail = repoOfferDetail;
             _repoOfferRoutePoint = repoOfferRoutePoint;
             _bookingRepo = bookingRepo;
+            _locationRepo = locationRepo;
             _mapper = mapper;
             _routeValidationService = routeValidationService;
             _routeRulePolicy = routeRulePolicy;
@@ -194,7 +198,7 @@ namespace AppGroupCar.Services.Market.OfferServices
             return _mapper.Map<GetOfferDTO>(offer);
         }
 
-        public async Task<PagedResult<GetOfferDTO>> GetOfferSharedRideAsync(GetOfferForUserRequestDTO request)
+        public async Task<PagedResult<GetOfferSharedRideDTO>> GetOfferSharedRideAsync(GetOfferForUserRequestDTO request)
         {
             var pickupStopTypes = _routeRulePolicy.PickupStopTypes.ToList();
             var dropoffStopTypes = _routeRulePolicy.DropoffStopTypes.ToList();
@@ -243,15 +247,45 @@ namespace AppGroupCar.Services.Market.OfferServices
 
             var totalRecords = await query.CountAsync();
 
-            var data = await query
+            var offers = await query
                 .OrderBy(o => o.DepartureTime)
                 .Skip((request.PageNumber - 1) * request.PageSize)
                 .Take(request.PageSize)
                 .AsNoTracking()
-                .Select(o => _mapper.Map<GetOfferDTO>(o))
                 .ToListAsync();
 
-            return new PagedResult<GetOfferDTO>
+            var data = new List<GetOfferSharedRideDTO>();
+            foreach (var offer in offers)
+            {
+                var dto = _mapper.Map<GetOfferSharedRideDTO>(offer);
+
+                var startPoint = offer.RoutePoints.FirstOrDefault(rp => rp.StopType == RouteStopType.Start);
+                var endPoint = offer.RoutePoints.FirstOrDefault(rp => rp.StopType == RouteStopType.End);
+
+                if (startPoint != null)
+                {
+                    var startLocation = await _locationRepo.GetByIdAsync(startPoint.LocationId);
+                    dto.StartPoint = new LocationDetailDTO
+                    {
+                        LocationId = startPoint.LocationId,
+                        LocationName = startLocation?.Name ?? ""
+                    };
+                }
+
+                if (endPoint != null)
+                {
+                    var endLocation = await _locationRepo.GetByIdAsync(endPoint.LocationId);
+                    dto.EndPoint = new LocationDetailDTO
+                    {
+                        LocationId = endPoint.LocationId,
+                        LocationName = endLocation?.Name ?? ""
+                    };
+                }
+
+                data.Add(dto);
+            }
+
+            return new PagedResult<GetOfferSharedRideDTO>
             {
                 Items = data,
                 TotalCount = totalRecords,
