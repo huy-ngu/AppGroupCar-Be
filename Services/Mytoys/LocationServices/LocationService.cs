@@ -29,7 +29,7 @@ namespace AppGroupCar.Services.Mytoys.LocationServices
             var newLocation = new Location
             {
                 Name = request.Name,
-                Address = request.Address,
+                //Address = request.Address,
                 ParentLocationId = request.ParentLocationId,
                 LocationType = request.LocationType
             };

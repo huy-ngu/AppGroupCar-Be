@@ -13,8 +13,8 @@ namespace AppGroupCar.DTO.RequestDTO
 
         public Guid? ParentLocationId { get; set; }
 
-        [MaxLength(300)]
-        public string? Address { get; set; }
+        //[MaxLength(300)]
+        //public string? Address { get; set; }
 
     }
 }

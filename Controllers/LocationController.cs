@@ -19,7 +19,7 @@ namespace AppGroupCar.Controllers
             _locationService = locationService;
         }
 
-        [HttpGet("id")]
+        [HttpGet("/locations/id")]
         public async Task<IActionResult> GetLocationById(Guid id)
         {
             var location = await _locationService.GetLocationByIdAsync(id);
@@ -40,13 +40,13 @@ namespace AppGroupCar.Controllers
             var locations = await _locationService.SearchLocationsAvailableForRouteAsync(parameters);
             return Ok(new ApiResponse<PagedResult<LocationSearchResultDTO>> { Data = locations });
         }
-        [HttpGet("all")]
-        public async Task<IActionResult> GetAllLocation()
-        {
-            var location = await _locationService.GetAllAsync();
-            return Ok(new ApiResponse<object> { Data = location });
-        }
-        [HttpPost("Create")]
+        //[HttpGet("all")]
+        //public async Task<IActionResult> GetAllLocation()
+        //{
+        //    var location = await _locationService.GetAllAsync();
+        //    return Ok(new ApiResponse<object> { Data = location });
+        //}
+        [HttpPost("/locations")]
         public async Task<IActionResult> CreateLocation(CreateLocationRequestDTO request)
         {
             var location = await _locationService.CreateLocationAsync(request);
