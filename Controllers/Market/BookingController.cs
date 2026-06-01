@@ -48,9 +48,16 @@ namespace AppGroupCar.Controllers.Market
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> CreateWithItems(CreateWithBookingIteamsRequestDTO request)
         {
-            var data = await _bookingService.CreateWithBookingIteamsAsync(request);
+            var userIdNullable = User.GetUserId();
+            if (userIdNullable is not Guid userId)
+            {
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
+            }
+
+            var data = await _bookingService.CreateWithBookingIteamsAsync(userId, request);
             return Ok(new ApiResponse<BookingResponseDTO> { Code = 201, Message = "Create success", Data = data });
 
         }

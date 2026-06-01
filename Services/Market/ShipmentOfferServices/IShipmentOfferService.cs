@@ -7,7 +7,7 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
     public interface IShipmentOfferService
     {
         Task<GetShipmentOfferDTO> CreateAsync(Guid driverId, CreateShipmentOfferRequestDTO request);
-        Task<GetShipmentOfferDTO> CreateFromOfferAsync(Guid offerId, Guid requestId, decimal ProposedPrice);
+        Task<GetShipmentOfferDTO> CreateFromOfferAsync(CreateShipmentOfferFromOfferRequestDTO request);
         Task<IEnumerable<GetDetailShipmentOfferDTO>> GetByRequestId(Guid shipmentRequestId);
         Task<IEnumerable<ShipmentOffer>> GetAll();
         Task<IEnumerable<GetDetailShipmentOfferDTO>> GetMyShipmentOffersAsync(Guid driverId);

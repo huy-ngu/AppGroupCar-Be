@@ -31,7 +31,7 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
         }
         [HttpPost("offer")]
         [Authorize]
-        public async Task<IActionResult> CreateFromOffer([FromBody] Guid offerId, Guid requestId, decimal proposedPrice)
+        public async Task<IActionResult> CreateFromOffer([FromBody] CreateShipmentOfferFromOfferRequestDTO request)
         {
             var userIdNullable = User.GetUserId();
 
@@ -40,7 +40,7 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
                 return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
             }
 
-            var data = await _shipmentOfferService.CreateFromOfferAsync(offerId, requestId, proposedPrice);
+            var data = await _shipmentOfferService.CreateFromOfferAsync(request);
             return Ok(new ApiResponse<GetShipmentOfferDTO> { Code = 201, Data = data });
 
         }

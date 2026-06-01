@@ -91,20 +91,20 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
             return response;
         }
 
-        public async Task<GetShipmentOfferDTO> CreateFromOfferAsync(Guid offerId, Guid requestId, decimal ProposedPrice)
+        public async Task<GetShipmentOfferDTO> CreateFromOfferAsync(CreateShipmentOfferFromOfferRequestDTO request)
         {
-            var offer = await _offerRepo.GetByIdAsync(offerId) ?? throw new AppException(404, "Không tìm thấy shipment offer");
+            var offer = await _offerRepo.GetByIdAsync(request.OfferId) ?? throw new AppException(404, "Không tìm thấy shipment offer");
 
-            var shipmentRequest = await _shipmentRequestRepo.GetByIdAsync(requestId) ?? throw new AppException(404, "Không tìm thấy Shipment Request");
+            var shipmentRequest = await _shipmentRequestRepo.GetByIdAsync(request.RequestId) ?? throw new AppException(404, "Không tìm thấy Shipment Request");
 
             var newShipmentOffer = new ShipmentOffer
             {
                 Id = Guid.NewGuid(),
-                OfferId = offerId,
-                RequestId = requestId,
+                OfferId = request.OfferId,
+                RequestId = request.RequestId,
                 VehicleId = offer.VehicleId,
                 DriverId = offer.DriverId,
-                ProposedPrice = ProposedPrice,
+                ProposedPrice = request.ProposedPrice,
                 Status = ShipmentOfferStatus.Pending
             };
             await _shipmentOfferRepo.AddAsync(newShipmentOffer);
