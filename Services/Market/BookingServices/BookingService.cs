@@ -152,14 +152,14 @@ namespace AppGroupCar.Services.Market.BookingServices
             throw new NotImplementedException();
         }
 
-        public async Task<BookingResponseDTO> CreateWithBookingIteamsAsync(CreateWithBookingIteamsRequestDTO request)
+        public async Task<BookingResponseDTO> CreateWithBookingIteamsAsync(Guid customerId, CreateWithBookingIteamsRequestDTO request)
         {
             if (request == null)
             {
                 throw new AppException(400, "Request không hợp lệ");
             }
 
-            if (request.CustomerId == Guid.Empty)
+            if (customerId == Guid.Empty)
             {
                 throw new AppException(400, "CustomerId không hợp lệ");
             }
@@ -221,7 +221,7 @@ namespace AppGroupCar.Services.Market.BookingServices
             var newBooking = new Booking
             {
                 Id = Guid.NewGuid(),
-                CustomerId = request.CustomerId,
+                CustomerId = customerId,
                 OfferId = request.OfferId,
                 Status = BookingStatus.Pending,
                 PaymentStatus = PaymentStatus.Unpaid,
@@ -244,7 +244,7 @@ namespace AppGroupCar.Services.Market.BookingServices
             return new BookingResponseDTO
             {
                 BookingId = newBooking.Id,
-                CustomerId = request.CustomerId,
+                CustomerId = customerId,
                 OfferId = request.OfferId,
                 Quantity = bookingItems.Count,
                 TotalPrice = totalprice

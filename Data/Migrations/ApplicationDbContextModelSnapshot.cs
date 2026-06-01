@@ -2117,7 +2117,7 @@ namespace AppGroupCar.Migrations
 
             modelBuilder.Entity("AppGroupCar.Entities.Market.OfferRoutePoint", b =>
                 {
-                    b.HasOne("AppGroupCar.Entities.Location", null)
+                    b.HasOne("AppGroupCar.Entities.Location", "Location")
                         .WithMany()
                         .HasForeignKey("LocationId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -2128,6 +2128,8 @@ namespace AppGroupCar.Migrations
                         .HasForeignKey("OfferId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Location");
 
                     b.Navigation("Offer");
                 });

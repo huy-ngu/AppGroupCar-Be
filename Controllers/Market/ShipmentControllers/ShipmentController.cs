@@ -1,4 +1,4 @@
-using AppGroupCar.DTO.RequestDTO.Market.Shipment;
+﻿using AppGroupCar.DTO.RequestDTO.Market.Shipment;
 using AppGroupCar.DTO.ResponseDTO;
 using AppGroupCar.DTO.ResponseDTO.Market.ShipmentDTO;
 using AppGroupCar.Helpers;
@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace AppGroupCar.Controllers.Market.ShipmentControllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class ShipmentController(IShipmentService shipmentService) : ControllerBase
     {
         [HttpGet("{id}")]
@@ -19,7 +19,7 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
             var userIdNullable = User.GetUserId();
             if (userIdNullable is not Guid userId)
             {
-                return Unauthorized(new ApiResponse<string> { Message = "Token khong hop le" });
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
             }
 
             var data = await shipmentService.GetDetailByIdAsync(userId, id);
@@ -33,7 +33,7 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
             var userIdNullable = User.GetUserId();
             if (userIdNullable is not Guid userId)
             {
-                return Unauthorized(new ApiResponse<string> { Message = "Token khong hop le" });
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
             }
 
             var data = await shipmentService.GetMyShipmentsAsync(userId);
@@ -47,7 +47,7 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
             var userIdNullable = User.GetUserId();
             if (userIdNullable is not Guid userId)
             {
-                return Unauthorized(new ApiResponse<string> { Message = "Token khong hop le" });
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
             }
 
             await shipmentService.UpdateAsync(userId, request);
@@ -77,11 +77,11 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
             var userIdNullable = User.GetUserId();
             if (userIdNullable is not Guid userId)
             {
-                return Unauthorized(new ApiResponse<string> { Message = "Token kh�ng h?p l?" });
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
             }
 
             await shipmentService.CancelAsync(userId, id);
-            return Ok(new ApiResponse<string> { Code = 200, Message = "H?y ??n h�ng th�nh c�ng" });
+            return Ok(new ApiResponse<string> { Code = 200, Message = "Hủy hàng thành công" });
         }
     }
 }

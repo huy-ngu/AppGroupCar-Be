@@ -2,6 +2,7 @@
 using AppGroupCar.DTO.PagingParam;
 using AppGroupCar.DTO.RequestDTO.Market.MarketDriver;
 using AppGroupCar.DTO.ResponseDTO;
+using AppGroupCar.DTO.ResponseDTO.Market;
 using AppGroupCar.Entities.Market;
 using AppGroupCar.Helpers;
 using AppGroupCar.Services.Market.MarketDriverServices;
@@ -34,7 +35,7 @@ namespace AppGroupCar.Controllers.Market
         public async Task<IActionResult> GetById(Guid id)
         {
             var data = await _marketDriverService.GetByIdAsync(id);
-            return Ok(new ApiResponse<Driver> { Data = data });
+            return Ok(new ApiResponse<GetMarketDriverDetailDTO> { Data = data });
         }
         [HttpPost]
         public async Task<IActionResult> Create([FromForm] CreateDriverRequestDTO request)

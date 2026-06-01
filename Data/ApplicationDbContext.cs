@@ -530,7 +530,7 @@ namespace AppGroupCar.Data
                     .OnDelete(DeleteBehavior.Cascade);
 
                 // Nếu cần ràng buộc Location, dùng HasOne<Location> không cần navigation
-                b.HasOne<Location>()
+                b.HasOne(x => x.Location)
                     .WithMany()
                     .HasForeignKey(x => x.LocationId)
                     .OnDelete(DeleteBehavior.Restrict);

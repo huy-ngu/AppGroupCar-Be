@@ -2,6 +2,7 @@
 using AppGroupCar.DTO;
 using AppGroupCar.DTO.PagingParam;
 using AppGroupCar.DTO.RequestDTO.Market.MarketDriver;
+using AppGroupCar.DTO.ResponseDTO.Market;
 using AppGroupCar.Entities;
 using AppGroupCar.Entities.Identity;
 using AppGroupCar.Entities.Market;
@@ -105,14 +106,18 @@ namespace AppGroupCar.Services.Market.MarketDriverServices
             return;
         }
 
-        public async Task<Driver> GetByIdAsync(Guid id)
+        public async Task<GetMarketDriverDetailDTO> GetByIdAsync(Guid id)
         {
-            var driver = await _repo.GetByIdAsync(id);
-            if (driver == null || driver?.DeleteAt != null)
+            var driver = await _repo.GetQueryable()
+                .Include(d => d.User)
+                .FirstOrDefaultAsync(d => d.Id == id && d.DeleteAt == null);
+
+            if (driver == null)
             {
                 throw new AppException(404, "Không tìm thấy bản ghi");
             }
-            return driver;
+
+            return _mapper.Map<GetMarketDriverDetailDTO>(driver);
         }
 
         public async Task<PagedResult<Driver>> GetMarketDriversAsync(DriverParameters request)

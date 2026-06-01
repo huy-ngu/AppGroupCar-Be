@@ -7,7 +7,7 @@ namespace AppGroupCar.Services.Market.OfferServices.OfferShipmentServices
     public interface IOfferShipmentSerivce
     {
         Task<GetOfferDTO> CreateWithCargoAsync(Guid driverId, CreateOfferShipmentRequestDTO request);
-        Task<PagedResult<GetOfferDTO>> GetOfferShipmentAsync(GetOfferForUserRequestDTO request);
+        Task<PagedResult<GetOfferShipmentDTO>> GetOfferShipmentAsync(GetOfferForUserRequestDTO request);
 
     }
 }

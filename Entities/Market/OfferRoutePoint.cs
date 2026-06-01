@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using AppGroupCar.Entities.Base;
+using AppGroupCar.Entities;
 
 namespace AppGroupCar.Entities.Market
 {
@@ -21,6 +22,8 @@ namespace AppGroupCar.Entities.Market
 
         [ForeignKey(nameof(OfferId))]
         public Offer Offer { get; set; } = null!;
+
+        public Location Location { get; set; } = null!;
     }
 
 }

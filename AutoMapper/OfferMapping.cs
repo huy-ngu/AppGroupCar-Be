@@ -31,6 +31,27 @@ namespace AppGroupCar.AutoMapper
             .ForMember(dest => dest.DriverName, opt => opt.MapFrom(src => src.Driver.Name))
             .ForMember(dest => dest.VehicleName, opt => opt.MapFrom(src => src.Vehicle.Brand));
 
+            CreateMap<Offer, GetOfferSharedRideDTO>()
+                .ForMember(dest => dest.DriverName, opt => opt.MapFrom(src => src.Driver.Name))
+                .ForMember(dest => dest.VehicleName, opt => opt.MapFrom(src => src.Vehicle.Brand))
+                .ForMember(dest => dest.VehicleUrlImage, opt => opt.MapFrom(src => src.Vehicle.UrlImage))
+                .ForMember(dest => dest.StartPoint, opt => opt.Ignore())
+                .ForMember(dest => dest.EndPoint, opt => opt.Ignore())
+                .ForMember(dest => dest.AvailableSeats, opt => opt.MapFrom(src => src.SharedRideDetail.AvailableSeats));
+
+            CreateMap<Offer, GetOfferShipmentDTO>()
+                .ForMember(dest => dest.DriverName, opt => opt.MapFrom(src => src.Driver.Name))
+                .ForMember(dest => dest.VehicleName, opt => opt.MapFrom(src => src.Vehicle.Brand))
+                .ForMember(dest => dest.VehicleUrlImage, opt => opt.MapFrom(src => src.Vehicle.UrlImage))
+                .ForMember(dest => dest.StartPoint, opt => opt.Ignore())
+                .ForMember(dest => dest.EndPoint, opt => opt.Ignore())
+                .ForMember(dest => dest.CargoDetail, opt => opt.MapFrom(src => src.CargoDetail));
+
+            CreateMap<CargoOfferDetail, CargoDetailDTO>();
+
+            CreateMap<OfferRoutePoint, GetOfferRoutePointDTO>()
+                .ForMember(dest => dest.LocationName, opt => opt.MapFrom(src => src.Location.Name));
+
         }
     }
 }
