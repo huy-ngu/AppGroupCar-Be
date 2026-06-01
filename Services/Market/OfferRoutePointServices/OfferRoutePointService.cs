@@ -24,6 +24,21 @@ namespace AppGroupCar.Services.Market.OfferRoutePointServices
         {
             return await _repo.GetQueryable()
                 .Where(x => x.DeleteAt == null)
+                .OrderBy(x => x.OfferId)
+                .ThenBy(x => x.Sequence)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<OfferRoutePoint>> GetByOfferIdOrderedAsync(Guid offerId)
+        {
+            if (offerId == Guid.Empty)
+            {
+                throw new AppException(400, "Invalid offer id");
+            }
+
+            return await _repo.GetQueryable()
+                .Where(x => x.OfferId == offerId && x.DeleteAt == null)
+                .OrderBy(x => x.Sequence)
                 .ToListAsync();
         }
 

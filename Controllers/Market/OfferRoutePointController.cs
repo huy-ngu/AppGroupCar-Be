@@ -23,7 +23,12 @@ namespace AppGroupCar.Controllers.Market
             var data = await _offerRoutePointService.GetAllAsync();
             return Ok(new ApiResponse<IEnumerable<OfferRoutePoint>> { Data = data });
         }
-
+        [HttpGet("OfferId")]
+        public async Task<IActionResult> GetByOffer([FromQuery] Guid OfferId)
+        {
+            var data = await _offerRoutePointService.GetByOfferIdOrderedAsync(OfferId);
+            return Ok(new ApiResponse<IEnumerable<OfferRoutePoint>> { Data = data });
+        }
         [HttpPost]
         public async Task<IActionResult> Create(CreateOfferRoutePointRequestDTO request)
         {

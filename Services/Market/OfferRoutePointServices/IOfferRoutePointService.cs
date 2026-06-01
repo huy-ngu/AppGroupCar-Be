@@ -6,6 +6,7 @@ namespace AppGroupCar.Services.Market.OfferRoutePointServices
     public interface IOfferRoutePointService
     {
         Task<IEnumerable<OfferRoutePoint>> GetAllAsync();
+        Task<IEnumerable<OfferRoutePoint>> GetByOfferIdOrderedAsync(Guid offerId);
         Task<OfferRoutePoint> CreateAsync(CreateOfferRoutePointRequestDTO request);
         Task UpdateAsync(Guid id, UpdateOfferRoutePointRequestDTO request);
         Task<bool> DeleteAsync(Guid id);
