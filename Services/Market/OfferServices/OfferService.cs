@@ -171,6 +171,7 @@ namespace AppGroupCar.Services.Market.OfferServices
             offer.DriverId = driverId;
             offer.ServiceType = ServiceType.Shared;
             offer.Status = OfferStatus.Active;
+            offer.EstimatedDurationMinutes = request.EstimatedDurationMinutes;
 
             var routePoints = request.OfferRoutePoints
                 .Select((item, index) => new OfferRoutePoint

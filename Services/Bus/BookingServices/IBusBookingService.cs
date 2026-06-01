@@ -8,5 +8,6 @@ namespace AppGroupCar.Services.Bus.BookingServices
         Task<BusBookingResponseDto> CreateAsync(Guid userId, CreateBusBookingRequest dto);
         Task<List<BusBookingResponseDto>> GetMyBookingsAsync(Guid userId);
         Task<BusBookingResponseDto> GetByIdAsync(Guid bookingId, Guid userId);
+        Task<BusBookingDetailResponseDto> GetDetailAsync(Guid bookingId, Guid userId);
     }
 }

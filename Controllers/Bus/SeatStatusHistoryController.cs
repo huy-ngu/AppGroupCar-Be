@@ -1,9 +1,12 @@
 using AppGroupCar.DTO.ResponseDTO;
 using AppGroupCar.DTO.RequestDTO.Bus.SeatStatusHistoryRequest;
 using AppGroupCar.DTO.ResponseDTO.Bus.SeatStatusHistoryResponse;
+using AppGroupCar.DTO.ResponseDTO.Bus.ShowtimeResponse;
+using AppGroupCar.DTO.ResponseDTO.Bus.CheckInResponse;
 using AppGroupCar.Exceptions;
 using AppGroupCar.Helpers;
 using AppGroupCar.Services.Bus.SeatStatusHistoryServices;
+using AppGroupCar.Services.Bus.ShowtimeServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,10 +18,14 @@ namespace AppGroupCar.Controllers.Bus
     public class SeatStatusHistoryController : ControllerBase
     {
         private readonly ISeatStatusHistoryService _service;
+        private readonly IBusShowtimeService _showtimeService;
 
-        public SeatStatusHistoryController(ISeatStatusHistoryService service)
+        public SeatStatusHistoryController(
+            ISeatStatusHistoryService service,
+            IBusShowtimeService showtimeService)
         {
             _service = service;
+            _showtimeService = showtimeService;
         }
 
         private Guid GetUserId()
@@ -31,12 +38,51 @@ namespace AppGroupCar.Controllers.Bus
             return userId.Value;
         }
 
+        private Guid GetCompanyId()
+        {
+            var companyId = User.GetCompanyId();
+
+            if (companyId == null)
+                throw new AppException(401, "Company not found in token");
+
+            return companyId.Value;
+        }
+
+        [HttpGet("showtimes/upcoming")]
+        public async Task<IActionResult> GetUpcomingShowtimes([FromQuery] DateOnly? fromDate)
+        {
+            var companyId = GetCompanyId();
+            var startDate = fromDate ?? DateOnly.FromDateTime(DateTime.Today);
+            var items = await _showtimeService.GetUpcomingForCompanyAsync(companyId, startDate);
+
+            var response = new UpcomingShowtimeListResponseDto
+            {
+                CompanyId = companyId,
+                FromDate = startDate,
+                Total = items.Count,
+                Items = items
+            };
+
+            return Ok(new ApiResponse<UpcomingShowtimeListResponseDto> { Data = response });
+        }
+
         [HttpPatch("status")]
         public async Task<IActionResult> ChangeStatus([FromBody] ChangeSeatStatusRequest dto)
         {
+            var companyId = GetCompanyId();
             var userId = GetUserId();
-            var result = await _service.ChangeStatusAsync(userId, dto);
+            var result = await _service.ChangeStatusAsync(companyId, userId, dto);
             return Ok(new ApiResponse<IEnumerable<SeatStatusHistoryResponseDto>> { Data = result });
+        }
+
+        [HttpGet("check-in-info")]
+        public async Task<IActionResult> GetCheckInInfo(
+            [FromQuery] Guid showtimeId,
+            [FromQuery] string seatNumber)
+        {
+            var companyId = GetCompanyId();
+            var result = await _service.GetCheckInInfoAsync(companyId, showtimeId, seatNumber);
+            return Ok(new ApiResponse<SeatCheckInInfoResponseDto> { Data = result });
         }
 
         [HttpGet("seat/{seatId:guid}")]

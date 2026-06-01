@@ -1,5 +1,6 @@
 using AppGroupCar.Data;
 using AppGroupCar.DTO.RequestDTO.Bus.SeatStatusHistoryRequest;
+using AppGroupCar.DTO.ResponseDTO.Bus.CheckInResponse;
 using AppGroupCar.DTO.ResponseDTO.Bus.SeatStatusHistoryResponse;
 using AppGroupCar.Entities.Bus;
 using AppGroupCar.Exceptions;
@@ -21,10 +22,22 @@ namespace AppGroupCar.Services.Bus.SeatStatusHistoryServices
             _mapper = mapper;
         }
 
-        public async Task<List<SeatStatusHistoryResponseDto>> ChangeStatusAsync(Guid userId, ChangeSeatStatusRequest dto)
+        public async Task<List<SeatStatusHistoryResponseDto>> ChangeStatusAsync(
+            Guid companyId,
+            Guid userId,
+            ChangeSeatStatusRequest dto)
         {
+            if (companyId == Guid.Empty)
+                throw new AppException(401, "Invalid company");
+
             if (userId == Guid.Empty)
                 throw new AppException(401, "Invalid user");
+
+            var showtimeExists = await _context.BusShowtimes
+                .AnyAsync(x => x.Id == dto.ShowtimeId && x.CompanyId == companyId && x.DeleteAt == null);
+
+            if (!showtimeExists)
+                throw new AppException(404, "Showtime not found for this company");
 
             var seatNumbers = NormalizeSeatNumbers(dto.SeatNumbers);
 
@@ -97,6 +110,62 @@ namespace AppGroupCar.Services.Bus.SeatStatusHistoryServices
                 .ToListAsync();
 
             return _mapper.Map<List<SeatStatusHistoryResponseDto>>(histories);
+        }
+
+        public async Task<SeatCheckInInfoResponseDto> GetCheckInInfoAsync(
+            Guid companyId,
+            Guid showtimeId,
+            string seatNumber)
+        {
+            if (companyId == Guid.Empty)
+                throw new AppException(401, "Invalid company");
+
+            if (showtimeId == Guid.Empty)
+                throw new AppException(400, "Invalid showtime id");
+
+            var normalizedSeatNumber = seatNumber?.Trim();
+
+            if (string.IsNullOrWhiteSpace(normalizedSeatNumber))
+                throw new AppException(400, "Seat number is required");
+
+            var showtimeExists = await _context.BusShowtimes
+                .AnyAsync(x => x.Id == showtimeId && x.CompanyId == companyId && x.DeleteAt == null);
+
+            if (!showtimeExists)
+                throw new AppException(404, "Showtime not found for this company");
+
+            var seatNumberLower = normalizedSeatNumber.ToLower();
+
+            var bookingSeat = await _context.BusBookingSeats
+                .AsNoTracking()
+                .Include(x => x.Booking)
+                    .ThenInclude(x => x.User)
+                .Where(x => x.Booking.ShowtimeId == showtimeId
+                    && x.SeatNumber.ToLower() == seatNumberLower
+                    && x.DeleteAt == null
+                    && x.Booking.DeleteAt == null)
+                .FirstOrDefaultAsync();
+
+            if (bookingSeat == null)
+                throw new AppException(404, "No booking found for this seat");
+
+            var booking = bookingSeat.Booking;
+            var user = booking.User;
+
+            return new SeatCheckInInfoResponseDto
+            {
+                BookingId = booking.Id,
+                TicketCode = bookingSeat.TicketCode,
+                ShowtimeId = booking.ShowtimeId,
+                SeatNumber = bookingSeat.SeatNumber,
+                BookingStatus = booking.Status,
+                CustomerId = booking.UserId,
+                CustomerFullName = user.FullName,
+                CustomerPhone = user.PhoneNumber,
+                CustomerEmail = user.Email,
+                IsCheckedIn = bookingSeat.IsCheckedIn,
+                CheckedInAt = bookingSeat.CheckedInAt
+            };
         }
 
         private static List<string> NormalizeSeatNumbers(IEnumerable<string>? seatNumbers)
