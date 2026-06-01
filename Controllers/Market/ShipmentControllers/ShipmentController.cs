@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace AppGroupCar.Controllers.Market.ShipmentControllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class ShipmentController(IShipmentService shipmentService) : ControllerBase
     {
         [HttpGet("{id}")]

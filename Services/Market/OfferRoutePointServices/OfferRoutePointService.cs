@@ -1,8 +1,10 @@
 using AppGroupCar.DTO.RequestDTO.Market.OfferRoutePoint;
+using AppGroupCar.DTO.ResponseDTO.Market;
 using AppGroupCar.Entities.Market;
 using AppGroupCar.Exceptions;
 using AppGroupCar.Repositories.BaseRepo;
 using AppGroupCar.Services.RouteRules;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
 namespace AppGroupCar.Services.Market.OfferRoutePointServices
@@ -11,13 +13,16 @@ namespace AppGroupCar.Services.Market.OfferRoutePointServices
     {
         private readonly IBaseRepository<OfferRoutePoint> _repo;
         private readonly IRouteValidationService _routeValidationService;
+        private readonly IMapper _mapper;
 
         public OfferRoutePointService(
             IBaseRepository<OfferRoutePoint> repo,
-            IRouteValidationService routeValidationService)
+            IRouteValidationService routeValidationService,
+            IMapper mapper)
         {
             _repo = repo;
             _routeValidationService = routeValidationService;
+            _mapper = mapper;
         }
 
         public async Task<IEnumerable<OfferRoutePoint>> GetAllAsync()
@@ -29,17 +34,20 @@ namespace AppGroupCar.Services.Market.OfferRoutePointServices
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<OfferRoutePoint>> GetByOfferIdOrderedAsync(Guid offerId)
+        public async Task<IEnumerable<GetOfferRoutePointDTO>> GetByOfferIdOrderedAsync(Guid offerId)
         {
             if (offerId == Guid.Empty)
             {
                 throw new AppException(400, "Invalid offer id");
             }
 
-            return await _repo.GetQueryable()
+            var routePoints = await _repo.GetQueryable()
                 .Where(x => x.OfferId == offerId && x.DeleteAt == null)
+                .Include(x => x.Location)
                 .OrderBy(x => x.Sequence)
                 .ToListAsync();
+
+            return _mapper.Map<IEnumerable<GetOfferRoutePointDTO>>(routePoints);
         }
 
         public async Task<OfferRoutePoint> CreateAsync(CreateOfferRoutePointRequestDTO request)

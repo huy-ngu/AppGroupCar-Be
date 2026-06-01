@@ -35,18 +35,6 @@ namespace AppGroupCar.DTO.RequestDTO.Market.ShipmentRequest
         [DefaultValue(false)]
         public bool IsFragile { get; set; } = false;
 
-        [Required]
-        [DefaultValue(false)]
-        public bool IsPerishable { get; set; } = false;
-
-        [Required]
-        [DefaultValue(false)]
-        public bool RequiresCooler { get; set; } = false;
-
-        [Required]
-        [DefaultValue(false)]
-        public bool AvoidSunLight { get; set; } = false;
-
         [MaxLength(500)]
         [DefaultValue("")]
         public string? HandlingNote { get; set; }

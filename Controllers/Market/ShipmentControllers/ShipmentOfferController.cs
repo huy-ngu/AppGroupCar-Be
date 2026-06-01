@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace AppGroupCar.Controllers.Market.ShipmentControllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class ShipmentOfferController(IShipmentOfferService _shipmentOfferService) : ControllerBase
     {
         [HttpPost("request")]
@@ -31,7 +31,7 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
         }
         [HttpPost("offer")]
         [Authorize]
-        public async Task<IActionResult> CreateFromOffer(Guid offerId, Guid requestId, decimal proposedPrice)
+        public async Task<IActionResult> CreateFromOffer([FromBody] Guid offerId, Guid requestId, decimal proposedPrice)
         {
             var userIdNullable = User.GetUserId();
 

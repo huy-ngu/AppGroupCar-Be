@@ -1,5 +1,6 @@
 ﻿using AppGroupCar.DTO.RequestDTO.Market.OfferRoutePoint;
 using AppGroupCar.DTO.ResponseDTO;
+using AppGroupCar.DTO.ResponseDTO.Market;
 using AppGroupCar.Entities.Market;
 using AppGroupCar.Services.Market.OfferRoutePointServices;
 using Microsoft.AspNetCore.Mvc;
@@ -27,7 +28,7 @@ namespace AppGroupCar.Controllers.Market
         public async Task<IActionResult> GetByOffer([FromQuery] Guid OfferId)
         {
             var data = await _offerRoutePointService.GetByOfferIdOrderedAsync(OfferId);
-            return Ok(new ApiResponse<IEnumerable<OfferRoutePoint>> { Data = data });
+            return Ok(new ApiResponse<IEnumerable<GetOfferRoutePointDTO>> { Data = data });
         }
         [HttpPost]
         public async Task<IActionResult> Create(CreateOfferRoutePointRequestDTO request)

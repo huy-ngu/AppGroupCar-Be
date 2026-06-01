@@ -14,7 +14,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace AppGroupCar.Controllers.Market.ShipmentControllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class ShipmentRequestController : ControllerBase
     {
         private readonly IShipmentRequestServices _shipmentRequestServices;

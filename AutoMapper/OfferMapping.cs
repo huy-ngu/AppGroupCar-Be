@@ -49,6 +49,9 @@ namespace AppGroupCar.AutoMapper
 
             CreateMap<CargoOfferDetail, CargoDetailDTO>();
 
+            CreateMap<OfferRoutePoint, GetOfferRoutePointDTO>()
+                .ForMember(dest => dest.LocationName, opt => opt.MapFrom(src => src.Location.Name));
+
         }
     }
 }
