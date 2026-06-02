@@ -216,6 +216,21 @@ namespace AppGroupCar.Services.Market.OfferServices
                 query = query.Where(o => o.DepartureTime >= request.startTime.Value);
             }
 
+            if (request.endTime.HasValue)
+            {
+                query = query.Where(o => o.DepartureTime <= request.endTime.Value);
+            }
+
+            if (request.startPrice.HasValue)
+            {
+                query = query.Where(o => o.BasePrice >= request.startPrice.Value);
+            }
+
+            if (request.endPrice.HasValue)
+            {
+                query = query.Where(o => o.BasePrice <= request.endPrice.Value);
+            }
+
             if (request.PickupLocationId.HasValue && request.DropoffLocationId.HasValue)
             {
                 var pickupId = request.PickupLocationId.Value;

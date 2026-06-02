@@ -527,5 +527,72 @@ namespace AppGroupCar.Services.Bus.ShowtimeServices
                 }
             };
         }
+
+        public async Task<PagedResult<BusShowtimeResponse>> SearchAsync(
+            BusShowtimeSearchParameters param)
+        {
+            if (param.PickupLocationId == Guid.Empty)
+                throw new AppException(400, "PickupLocationId không hợp lệ");
+
+            if (param.DropoffLocationId == Guid.Empty)
+                throw new AppException(400, "DropoffLocationId không hợp lệ");
+
+            if (param.StartPrice < 0 || param.EndPrice < 0)
+                throw new AppException(400, "Giá không hợp lệ");
+
+            if (param.StartPrice > param.EndPrice)
+                throw new AppException(400, "StartPrice không được lớn hơn EndPrice");
+
+            // Lấy danh sách RouteId có RoutePoint với LocationId trùng PickupLocationId hoặc DropoffLocationId
+            var validRouteIds = await _context.BusRoutePoints
+                .Where(p => p.LocationId == param.PickupLocationId && p.DeleteAt == null)
+                .Join(
+                    _context.BusRoutePoints.Where(d => d.LocationId == param.DropoffLocationId && d.DeleteAt == null),
+                    pickup => pickup.RouteId,
+                    dropoff => dropoff.RouteId,
+                    (pickup, dropoff) => new { pickup, dropoff }
+                )
+                .Where(x => (x.pickup.Sequence < x.dropoff.Sequence) || (x.pickup.Sequence == x.dropoff.Sequence)) // Đảm bảo điểm đón và điểm trả không phải là cùng một điểm trên tuyến
+                .Select(x => x.pickup.RouteId)
+                .Distinct() // Tránh trùng lặp nếu một tuyến đi qua điểm đó nhiều lần
+                .ToListAsync();
+
+            if (!validRouteIds.Any())
+                throw new AppException(404, "Không tìm thấy tuyến đường phù hợp");
+
+            // Xây dựng query tìm BusShowtime
+            var query = _context.BusShowtimes
+                .Where(x =>
+                    validRouteIds.Contains(x.RouteId) &&
+                    x.DepartureDate >= param.StartDate &&
+                    x.DepartureDate <= param.EndDate &&
+                    x.DepartureTime >= param.StartTime &&
+                    x.DepartureTime <= param.EndTime &&
+                    x.Price >= param.StartPrice &&
+                    x.Price <= param.EndPrice &&
+                    x.Status == BusShowtimeStatus.Scheduled &&
+                    x.DeleteAt == null)
+                .OrderBy(x => x.DepartureDate)
+                .ThenBy(x => x.DepartureTime)
+                .ThenBy(x => x.Price);
+
+            // Đếm tổng số bản ghi
+            var totalCount = await query.CountAsync();
+
+            // Phân trang và map
+            var items = await query
+                .Skip((param.PageNumber - 1) * param.PageSize)
+                .Take(param.PageSize)
+                .ProjectTo<BusShowtimeResponse>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+
+            return new PagedResult<BusShowtimeResponse>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                PageNumber = param.PageNumber,
+                PageSize = param.PageSize
+            };
+        }
     }
 }

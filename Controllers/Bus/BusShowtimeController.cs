@@ -107,5 +107,13 @@ namespace AppGroupCar.Controllers.Bus
             var result = await _service.ChangeStatusAsync(id, companyId, userId, dto);
             return Ok(new ApiResponse<BusShowtimeResponse> { Data = result });
         }
+
+        [AllowAnonymous]
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] BusShowtimeSearchParameters param)
+        {
+            var result = await _service.SearchAsync(param);
+            return Ok(new ApiResponse<PagedResult<BusShowtimeResponse>> { Data = result });
+        }
     }
 }
