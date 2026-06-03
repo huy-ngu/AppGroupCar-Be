@@ -528,9 +528,10 @@ namespace AppGroupCar.Services.Bus.ShowtimeServices
             };
         }
 
-        public async Task<PagedResult<BusShowtimeResponse>> SearchAsync(
-            BusShowtimeSearchParameters param)
+
+        public async Task<PagedResult<BusShowtimeResponse>> SearchAsync(BusShowtimeSearchParameters param)
         {
+            // 1. Validation cơ bản
             if (param.PickupLocationId == Guid.Empty)
                 throw new AppException(400, "PickupLocationId không hợp lệ");
 
@@ -543,8 +544,12 @@ namespace AppGroupCar.Services.Bus.ShowtimeServices
             if (param.StartPrice > param.EndPrice)
                 throw new AppException(400, "StartPrice không được lớn hơn EndPrice");
 
-            // Lấy danh sách RouteId có RoutePoint với LocationId trùng PickupLocationId hoặc DropoffLocationId
-            var validRouteIds = await _context.BusRoutePoints
+            // Đảm bảo PageNumber và PageSize hợp lệ nếu chưa được gán mặc định
+            param.PageNumber = param.PageNumber <= 0 ? 1 : param.PageNumber;
+            param.PageSize = param.PageSize <= 0 ? 10 : param.PageSize;
+
+            // 2. Tạo subquery lấy danh sách RouteId hợp lệ (Chỉ chạy dưới DB, chưa ToList)
+            var validRouteIdsQuery = _context.BusRoutePoints
                 .Where(p => p.LocationId == param.PickupLocationId && p.DeleteAt == null)
                 .Join(
                     _context.BusRoutePoints.Where(d => d.LocationId == param.DropoffLocationId && d.DeleteAt == null),
@@ -552,18 +557,16 @@ namespace AppGroupCar.Services.Bus.ShowtimeServices
                     dropoff => dropoff.RouteId,
                     (pickup, dropoff) => new { pickup, dropoff }
                 )
-                .Where(x => (x.pickup.Sequence < x.dropoff.Sequence) || (x.pickup.Sequence == x.dropoff.Sequence)) // Đảm bảo điểm đón và điểm trả không phải là cùng một điểm trên tuyến
+                .Where(x => x.pickup.Sequence < x.dropoff.Sequence) // Sửa lỗi: Điểm đón bắt buộc phải trước điểm trả
                 .Select(x => x.pickup.RouteId)
-                .Distinct() // Tránh trùng lặp nếu một tuyến đi qua điểm đó nhiều lần
-                .ToListAsync();
+                .Distinct();
 
-            if (!validRouteIds.Any())
-                throw new AppException(404, "Không tìm thấy tuyến đường phù hợp");
+            if (validRouteIdsQuery == null) throw new AppException(404, "không tìm thấy chuyến");
 
-            // Xây dựng query tìm BusShowtime
+            // 3. Xây dựng query tìm BusShowtime (Gộp chung với subquery trên để DB tối ưu)
             var query = _context.BusShowtimes
                 .Where(x =>
-                    validRouteIds.Contains(x.RouteId) &&
+                    validRouteIdsQuery.Contains(x.RouteId) && // Tìm trực tiếp bằng Subquery
                     x.DepartureDate >= param.StartDate &&
                     x.DepartureDate <= param.EndDate &&
                     x.DepartureTime >= param.StartTime &&
@@ -576,10 +579,22 @@ namespace AppGroupCar.Services.Bus.ShowtimeServices
                 .ThenBy(x => x.DepartureTime)
                 .ThenBy(x => x.Price);
 
-            // Đếm tổng số bản ghi
+            // 4. Đếm tổng số bản ghi thỏa mãn điều kiện lọc
             var totalCount = await query.CountAsync();
 
-            // Phân trang và map
+            // Nếu không có kết quả, trả về kết quả rỗng thay vì throw lỗi 404
+            if (totalCount == 0)
+            {
+                return new PagedResult<BusShowtimeResponse>
+                {
+                    Items = new List<BusShowtimeResponse>(),
+                    TotalCount = 0,
+                    PageNumber = param.PageNumber,
+                    PageSize = param.PageSize
+                };
+            }
+
+            // 5. Phân trang và map dữ liệu
             var items = await query
                 .Skip((param.PageNumber - 1) * param.PageSize)
                 .Take(param.PageSize)
@@ -594,5 +609,7 @@ namespace AppGroupCar.Services.Bus.ShowtimeServices
                 PageSize = param.PageSize
             };
         }
+
+
     }
 }

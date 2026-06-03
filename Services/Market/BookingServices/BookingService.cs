@@ -2,6 +2,7 @@
 using AppGroupCar.DTO.Filters;
 using AppGroupCar.DTO.RequestDTO.Market.Booking;
 using AppGroupCar.DTO.ResponseDTO.Market;
+using AppGroupCar.Entities;
 using AppGroupCar.Entities.Market;
 using AppGroupCar.Exceptions;
 using AppGroupCar.Repositories.BaseRepo;
@@ -33,6 +34,13 @@ namespace AppGroupCar.Services.Market.BookingServices
         {
             var bookings = await _bookingRepository.GetQueryable()
                 .Where(b => b.DeleteAt == null)
+                .Include(b => b.Offer)
+                .ThenInclude(o => o.Driver)
+                .Include(b => b.Offer)
+                .ThenInclude(o => o.Vehicle)
+                .Include(b => b.Offer)
+                .ThenInclude(o => o.RoutePoints)
+                .ThenInclude(rp => rp.Location)
                 .Select(b => new BookingResponseDTO
                 {
                     BookingId = b.Id,
@@ -42,6 +50,18 @@ namespace AppGroupCar.Services.Market.BookingServices
                     Status = b.Status,
                     TotalPrice = b.TotalPrice,
                     PaymentStatus = b.PaymentStatus,
+                    DepartureDate = b.Offer.DepartureTime,
+                    DriverName = b.Offer.Driver.Name,
+                    VehicleBrand = b.Offer.Vehicle.Brand,
+                    RoutePoints = b.Offer.RoutePoints
+                        .Where(rp => rp.StopType == RouteStopType.Start || rp.StopType == RouteStopType.End)
+                        .Select(rp => new RoutePointInfo
+                        {
+                            LocationId = rp.LocationId,
+                            LocationName = rp.Location.Name,
+                            StopType = rp.StopType.ToString(),
+                            Sequence = rp.Sequence
+                        }),
                     Items = b.Items.Select(i => new BookingItemBooking
                     {
                         ItemId = i.Id,
@@ -68,6 +88,13 @@ namespace AppGroupCar.Services.Market.BookingServices
 
             var bookings = await _bookingRepository.GetQueryable()
                 .Where(b => b.CustomerId == customerId && b.DeleteAt == null)
+                .Include(b => b.Offer)
+                .ThenInclude(o => o.Driver)
+                .Include(b => b.Offer)
+                .ThenInclude(o => o.Vehicle)
+                .Include(b => b.Offer)
+                .ThenInclude(o => o.RoutePoints)
+                .ThenInclude(rp => rp.Location)
                 .Select(b => new BookingResponseDTO
                 {
                     BookingId = b.Id,
@@ -77,6 +104,18 @@ namespace AppGroupCar.Services.Market.BookingServices
                     Status = b.Status,
                     TotalPrice = b.TotalPrice,
                     PaymentStatus = b.PaymentStatus,
+                    DepartureDate = b.Offer.DepartureTime,
+                    DriverName = b.Offer.Driver.Name,
+                    VehicleBrand = b.Offer.Vehicle.Brand,
+                    RoutePoints = b.Offer.RoutePoints
+                        .Where(rp => rp.StopType == RouteStopType.Start || rp.StopType == RouteStopType.End)
+                        .Select(rp => new RoutePointInfo
+                        {
+                            LocationId = rp.LocationId,
+                            LocationName = rp.Location.Name,
+                            StopType = rp.StopType.ToString(),
+                            Sequence = rp.Sequence
+                        }),
                     Items = b.Items.Select(i => new BookingItemBooking
                     {
                         ItemId = i.Id,
@@ -104,6 +143,13 @@ namespace AppGroupCar.Services.Market.BookingServices
             // Dùng .Select() NGAY TRÊN IQueryable
             var response = await _bookingRepository.GetQueryable()
                 .Where(b => b.Id == bookingId && b.DeleteAt == null)
+                .Include(b => b.Offer)
+                .ThenInclude(o => o.Driver)
+                .Include(b => b.Offer)
+                .ThenInclude(o => o.Vehicle)
+                .Include(b => b.Offer)
+                .ThenInclude(o => o.RoutePoints)
+                .ThenInclude(rp => rp.Location)
                 // Áp dụng luôn Mapping vào thẳng câu SQL
                 .Select(b => new BookingResponseDTO
                 {
@@ -114,6 +160,19 @@ namespace AppGroupCar.Services.Market.BookingServices
                     Status = b.Status,
                     TotalPrice = b.TotalPrice,
                     PaymentStatus = b.PaymentStatus,
+                    DepartureDate = b.Offer.DepartureTime,
+                    DriverName = b.Offer.Driver.Name,
+                    VehicleBrand = b.Offer.Vehicle.Brand,
+                    RoutePoints = b.Offer.RoutePoints
+                        .Where(rp => rp.StopType == RouteStopType.Start || rp.StopType == RouteStopType.End)
+                        .Select(rp => new RoutePointInfo
+                        {
+                            LocationId = rp.LocationId,
+                            LocationName = rp.Location.Name,
+                            StopType = rp.StopType.ToString(),
+                            Sequence = rp.Sequence
+                        })
+                        .ToList(),
                     Items = b.Items.Select(i => new BookingItemBooking
                     {
                         ItemId = i.Id,
@@ -179,6 +238,8 @@ namespace AppGroupCar.Services.Market.BookingServices
                         .Where(o => o.Id == request.OfferId)
                         .Where(o => o.DeleteAt == null)
                         .Include(o => o.SharedRideDetail)
+                        .Include(o => o.Driver)
+                        .Include(o => o.Vehicle)
                         .FirstOrDefaultAsync();
 
             if (offer == null)
@@ -247,7 +308,19 @@ namespace AppGroupCar.Services.Market.BookingServices
                 CustomerId = customerId,
                 OfferId = request.OfferId,
                 Quantity = bookingItems.Count,
-                TotalPrice = totalprice
+                TotalPrice = totalprice,
+                DepartureDate = offer.DepartureTime,
+                DriverName = offer.Driver.Name,
+                VehicleBrand = offer.Vehicle.Brand,
+                RoutePoints = offer.RoutePoints
+                    .Where(rp => rp.StopType == RouteStopType.Start || rp.StopType == RouteStopType.End)
+                    .Select(rp => new RoutePointInfo
+                    {
+                        LocationId = rp.LocationId,
+                        LocationName = rp.Location.Name,
+                        StopType = rp.StopType.ToString(),
+                        Sequence = rp.Sequence
+                    })
             };
         }
 

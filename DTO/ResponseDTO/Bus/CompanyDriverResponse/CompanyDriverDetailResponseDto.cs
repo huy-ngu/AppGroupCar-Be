@@ -8,9 +8,9 @@ namespace AppGroupCar.DTO.ResponseDTO.Bus.CompanyDriverResponse
 
         public Guid UserId { get; set; }
 
-        public string UserFullName { get; set; } = null!;
+        public string FullName { get; set; } = null!;
 
-        public string UserEmail { get; set; } = null!;
+        public string Email { get; set; } = null!;
 
         public string CompanyName { get; set; } = null!;
 

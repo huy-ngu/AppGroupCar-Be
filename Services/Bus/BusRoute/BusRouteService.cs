@@ -85,6 +85,18 @@ namespace AppGroupCar.Services.Bus.BusRoute
                 ? null
                 : _mapper.Map<BusRouteResponse>(route);
         }
+        public async Task<BusRouteResponse?> GetByIdAsync(Guid id)
+        {
+            var route = await _context.BusRoutes
+                .Where(x => x.Id == id && x.DeleteAt == null)
+                .Include(x => x.RoutePoints.Where(p => p.DeleteAt == null))
+                    .ThenInclude(x => x.Location)
+                .FirstOrDefaultAsync();
+
+            return route == null
+                ? null
+                : _mapper.Map<BusRouteResponse>(route);
+        }
 
         public async Task<BusRouteResponse> UpdateAsync(
             Guid id,

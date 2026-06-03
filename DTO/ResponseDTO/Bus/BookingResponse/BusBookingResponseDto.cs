@@ -10,6 +10,11 @@ namespace AppGroupCar.DTO.ResponseDTO.Bus.BookingResponse
         public decimal TotalPrice { get; set; }
         public BusBookingStatus Status { get; set; }
         public DateTime? ExpireAt { get; set; }
+        public DateOnly DepartureDate { get; set; }
+        public TimeOnly DepartureTime { get; set; }
+        public int SeatCount { get; set; }
+        public BusRoutePointDto StartPoint { get; set; }
+        public BusRoutePointDto EndPoint { get; set; }
         public List<BusBookingSeatResponseDto> Seats { get; set; } = new();
     }
 
@@ -21,4 +26,13 @@ namespace AppGroupCar.DTO.ResponseDTO.Bus.BookingResponse
         public bool IsCheckedIn { get; set; }
         public DateTime? CheckedInAt { get; set; }
     }
+
+    public class BusRoutePointDto
+    {
+        public Guid LocationId { get; set; }
+        public string LocationName { get; set; }
+        public string StopType { get; set; }
+        public int Sequence { get; set; }
+    }
 }
+

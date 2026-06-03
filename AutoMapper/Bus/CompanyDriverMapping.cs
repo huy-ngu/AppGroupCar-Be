@@ -18,11 +18,12 @@ namespace AppGroupCar.AutoMapper.Bus
                 .ForMember(d => d.CompanyId, opt => opt.Ignore())
                 .ForMember(d => d.UserId, opt => opt.Ignore());
 
-            CreateMap<CompanyDriver, CompanyDriverResponseDto>();
-            
+            CreateMap<CompanyDriver, CompanyDriverResponseDto>()
+                .ForMember(d => d.FullName, opt => opt.MapFrom(s => s.User.FullName));
+
             CreateMap<CompanyDriver, CompanyDriverDetailResponseDto>()
-                .ForMember(d => d.UserFullName, opt => opt.MapFrom(s => s.User.FullName))
-                .ForMember(d => d.UserEmail, opt => opt.MapFrom(s => s.User.Email))
+                .ForMember(d => d.FullName, opt => opt.MapFrom(s => s.User.FullName))
+                .ForMember(d => d.Email, opt => opt.MapFrom(s => s.User.Email))
                 .ForMember(d => d.CompanyName, opt => opt.MapFrom(s => s.Company.CompanyName));
         }
     }

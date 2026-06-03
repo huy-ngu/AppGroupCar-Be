@@ -13,8 +13,20 @@ namespace AppGroupCar.DTO.ResponseDTO.Market
         public decimal TotalPrice { get; set; } = 0;
         public BookingStatus Status { get; set; } = BookingStatus.Pending;
         public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Unpaid;
+        public DateTime DepartureDate { get; set; }
+        public string DriverName { get; set; }
+        public string VehicleBrand { get; set; }
+        public IEnumerable<RoutePointInfo> RoutePoints { get; set; }
         public IEnumerable<BookingItemBooking> Items { get; set; }
 
+    }
+
+    public class RoutePointInfo
+    {
+        public Guid LocationId { get; set; }
+        public string LocationName { get; set; }
+        public string StopType { get; set; }
+        public int Sequence { get; set; }
     }
     public class BookingItemBooking
     {

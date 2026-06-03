@@ -15,7 +15,6 @@ namespace AppGroupCar.Controllers.Bus
 {
     [ApiController]
     [Route("bus-routes")]
-    [Authorize(Roles = "ADMIN_COMPANY")]
     public class BusRouteController : ControllerBase
     {
         private readonly IBusRouteService _service;
@@ -39,6 +38,7 @@ namespace AppGroupCar.Controllers.Bus
         // CREATE
 
         [HttpPost]
+        [Authorize(Roles = "ADMIN_COMPANY")]
         public async Task<IActionResult> Create(
             CreateBusRouteRequest dto)
         {
@@ -51,8 +51,9 @@ namespace AppGroupCar.Controllers.Bus
         }
 
         // GET ALL
-
         [HttpGet]
+        [Authorize(Roles = "ADMIN_COMPANY")]
+
         public async Task<IActionResult> GetAll([FromQuery] BusRouteParameters param)
         {
             var companyId = GetCompanyId();
@@ -65,6 +66,8 @@ namespace AppGroupCar.Controllers.Bus
         // GET BY ID
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "ADMIN_COMPANY")]
+
         public async Task<IActionResult>
             GetById(Guid id)
         {
@@ -80,9 +83,22 @@ namespace AppGroupCar.Controllers.Bus
             return Ok(new ApiResponse<BusRouteResponse> { Data = result });
         }
 
+        [HttpGet("detail/{id}")]
+        public async Task<IActionResult>
+           GetDetail(Guid id)
+        {
+            var result = await _service.GetByIdAsync(id);
+
+            if (result == null) throw new AppException(404, "Bus route not found");
+
+            return Ok(new ApiResponse<BusRouteResponse> { Data = result });
+        }
+
         // UPDATE
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "ADMIN_COMPANY")]
+
         public async Task<IActionResult>
             Update(Guid id, UpdateBusRouteRequest dto)
         {
@@ -97,6 +113,8 @@ namespace AppGroupCar.Controllers.Bus
         // DELETE
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "ADMIN_COMPANY")]
+
         public async Task<IActionResult>
             Delete(Guid id)
         {

@@ -64,11 +64,11 @@ namespace AppGroupCar.Services.Bus.CompanyDriverServices
             var totalCount = await query.CountAsync();
 
             var entities = await query
+                .Include(x => x.User)
+                .Include(x => x.Company)
                 .OrderByDescending(x => x.CreatedAt)
                 .Skip((param.PageNumber - 1) * param.PageSize)
                 .Take(param.PageSize)
-                .Include(x => x.User)
-                .Include(x => x.Company)
                 .ToListAsync();
 
             return new PagedResult<CompanyDriverResponseDto>

@@ -41,6 +41,7 @@ namespace AppGroupCar.Controllers.Bus
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAll([FromQuery] CompanyDriverParameters param)
         {
             var companyId = GetCompanyId();
@@ -50,9 +51,9 @@ namespace AppGroupCar.Controllers.Bus
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(Guid id)
+        [AllowAnonymous]
+        public async Task<IActionResult> GetById(Guid id, Guid companyId)
         {
-            var companyId = GetCompanyId();
             var result = await _service.GetByIdAsync(id, companyId);
 
             if (result == null)

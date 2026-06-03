@@ -16,6 +16,8 @@ namespace AppGroupCar.DTO.ResponseDTO.Bus.CompanyDriverResponse
 
         public string? LicenseDocumentUrl { get; set; }
 
+        public string? FullName { get; set; }
+
         public DateTime? VerifiedAt { get; set; }
 
         public Guid? VerifiedBy { get; set; }

@@ -17,7 +17,7 @@ namespace AppGroupCar.Services.Bus.BusRoute
         Task<BusRouteResponse?> GetByIdAsync(
             Guid id,
             Guid companyId);
-
+        Task<BusRouteResponse?> GetByIdAsync(Guid id);
         Task<BusRouteResponse> UpdateAsync(
             Guid id,
             Guid companyId,

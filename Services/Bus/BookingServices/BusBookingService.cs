@@ -133,6 +133,10 @@ namespace AppGroupCar.Services.Bus.BookingServices
             var bookings = await _context.BusBookings
                 .Where(x => x.UserId == userId && x.DeleteAt == null)
                 .Include(x => x.Seats)
+                .Include(x => x.Showtime)
+                .ThenInclude(s => s.Route)
+                .ThenInclude(r => r.RoutePoints)
+                .ThenInclude(rp => rp.Location)
                 .OrderByDescending(x => x.CreatedAt)
                 .ToListAsync();
 
@@ -147,6 +151,10 @@ namespace AppGroupCar.Services.Bus.BookingServices
             var booking = await _context.BusBookings
                 .Where(x => x.Id == bookingId && x.UserId == userId && x.DeleteAt == null)
                 .Include(x => x.Seats)
+                .Include(x => x.Showtime)
+                .ThenInclude(s => s.Route)
+                .ThenInclude(r => r.RoutePoints)
+                .ThenInclude(rp => rp.Location)
                 .FirstOrDefaultAsync();
 
             if (booking == null)
