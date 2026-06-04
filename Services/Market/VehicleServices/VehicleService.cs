@@ -1,4 +1,4 @@
-﻿using AppGroupCar.DTO;
+using AppGroupCar.DTO;
 using AppGroupCar.DTO.Filters;
 using AppGroupCar.DTO.RequestDTO.Market.Vehicle;
 using AppGroupCar.DTO.ResponseDTO.Market;
@@ -123,6 +123,21 @@ namespace AppGroupCar.Services.Market.VehicleServices
 
             var vehicles = await _vehicleRepo.FindAsync(
                 v => v.DriverId == driverId && v.DeleteAt == null,
+                1,
+                int.MaxValue
+            );
+
+            return _mapper.Map<IEnumerable<VehicleDTO>>(vehicles);
+        }
+
+        public async Task<IEnumerable<VehicleDTO>> GetApprovedByDriverIdAsync(Guid driverId)
+        {
+            var driver = await _driverRepo.GetByIdAsync(driverId);
+            if (driver == null)
+                throw new AppException(404, "Driver not found");
+
+            var vehicles = await _vehicleRepo.FindAsync(
+                v => v.DriverId == driverId && v.Status == VehicleStatus.Active && v.DeleteAt == null,
                 1,
                 int.MaxValue
             );

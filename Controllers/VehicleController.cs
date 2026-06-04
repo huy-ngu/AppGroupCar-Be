@@ -1,4 +1,4 @@
-﻿using AppGroupCar.DTO;
+using AppGroupCar.DTO;
 using AppGroupCar.DTO.Filters;
 using AppGroupCar.DTO.RequestDTO.Market.Vehicle;
 using AppGroupCar.DTO.ResponseDTO;
@@ -53,6 +53,17 @@ namespace AppGroupCar.Controllers
             var driverId = GetDriverIdFromToken();
             var result = await _vehicleService.GetByDriverIdAsync(driverId);
             return Ok(new ApiResponse<IEnumerable<VehicleDTO>> { Data = result, Message = "Vehicles retrieved successfully" });
+        }
+
+        /// <summary>
+        /// Get approved vehicles of current driver
+        /// </summary>
+        [HttpGet("my-vehicles/approved")]
+        public async Task<IActionResult> GetMyApprovedVehicles()
+        {
+            var driverId = GetDriverIdFromToken();
+            var result = await _vehicleService.GetApprovedByDriverIdAsync(driverId);
+            return Ok(new ApiResponse<IEnumerable<VehicleDTO>> { Data = result, Message = "Approved vehicles retrieved successfully" });
         }
 
         /// <summary>
