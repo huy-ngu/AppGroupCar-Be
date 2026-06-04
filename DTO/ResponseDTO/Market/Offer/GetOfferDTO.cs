@@ -9,11 +9,14 @@ namespace AppGroupCar.DTO.ResponseDTO.Market.Offer
         public string DriverName { get; set; } = null!;
         public Guid VehicleId { get; set; }
         public string VehicleName { get; set; } = null!;
+        public string VehicleUrlImage { get; set; } = null!;
+        public string PlateNumber { get; set; } = null!;
         public ServiceType ServiceType { get; set; }
         public DateTime DepartureTime { get; set; }
         public int? EstimatedDurationMinutes { get; set; }
         public decimal BasePrice { get; set; }
         public OfferStatus Status { get; set; }
-
+        public LocationDetailDTO StartPoint { get; set; } = null!;
+        public LocationDetailDTO EndPoint { get; set; } = null!;
     }
 }

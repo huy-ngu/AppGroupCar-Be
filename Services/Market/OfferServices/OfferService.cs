@@ -70,8 +70,12 @@ namespace AppGroupCar.Services.Market.OfferServices
         {
             var offers = await _repo.GetQueryable()
                 .Where(o => o.DriverId == driverId && o.DeleteAt == null)
+                .Include(o => o.SharedRideDetail)
+                .Include(o => o.RoutePoints)
+                    .ThenInclude(rp => rp.Location)
                 .Include(o => o.Driver)
                 .Include(o => o.Vehicle)
+                .AsNoTracking()
                 .ToListAsync();
 
             return _mapper.Map<IEnumerable<GetOfferDTO>>(offers);
@@ -348,6 +352,8 @@ namespace AppGroupCar.Services.Market.OfferServices
             return _repo.GetQueryable()
                 .Include(o => o.Driver)
                 .Include(o => o.Vehicle)
+                .Include(o => o.RoutePoints)
+                    .ThenInclude(rp => rp.Location)
                 .Include(o => o.SharedRideDetail);
         }
     }

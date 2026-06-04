@@ -10,6 +10,7 @@ namespace AppGroupCar.DTO.ResponseDTO.Market.Offer
         public Guid VehicleId { get; set; }
         public string VehicleName { get; set; } = null!;
         public string VehicleUrlImage { get; set; } = null!;
+        public string PlateNumber { get; set; } = null!;
         public DateTime DepartureTime { get; set; }
         public decimal BasePrice { get; set; }
         public OfferStatus Status { get; set; }

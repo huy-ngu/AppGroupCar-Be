@@ -1,6 +1,7 @@
 using AppGroupCar.DTO.RequestDTO.Market.Offer;
 using AppGroupCar.DTO.ResponseDTO.Market;
 using AppGroupCar.DTO.ResponseDTO.Market.Offer;
+using AppGroupCar.Entities;
 using AppGroupCar.Entities.Market;
 using AutoMapper;
 
@@ -28,13 +29,32 @@ namespace AppGroupCar.AutoMapper
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
             CreateMap<Offer, GetOfferDTO>()
-            .ForMember(dest => dest.DriverName, opt => opt.MapFrom(src => src.Driver.Name))
-            .ForMember(dest => dest.VehicleName, opt => opt.MapFrom(src => src.Vehicle.Brand));
+                .ForMember(dest => dest.DriverName, opt => opt.MapFrom(src => src.Driver.Name))
+                .ForMember(dest => dest.VehicleName, opt => opt.MapFrom(src => src.Vehicle.Brand))
+                .ForMember(dest => dest.VehicleUrlImage, opt => opt.MapFrom(src => src.Vehicle.UrlImage))
+                .ForMember(dest => dest.PlateNumber, opt => opt.MapFrom(src => src.Vehicle.PlateNumber))
+                .ForMember(dest => dest.StartPoint, opt => opt.MapFrom(src => src.RoutePoints
+                    .Where(rp => rp.StopType == RouteStopType.Start)
+                    .Select(rp => new LocationDetailDTO
+                    {
+                        LocationId = rp.LocationId,
+                        LocationName = rp.Location.Name
+                    })
+                    .FirstOrDefault()))
+                .ForMember(dest => dest.EndPoint, opt => opt.MapFrom(src => src.RoutePoints
+                    .Where(rp => rp.StopType == RouteStopType.End)
+                    .Select(rp => new LocationDetailDTO
+                    {
+                        LocationId = rp.LocationId,
+                        LocationName = rp.Location.Name
+                    })
+                    .FirstOrDefault()));
 
             CreateMap<Offer, GetOfferSharedRideDTO>()
                 .ForMember(dest => dest.DriverName, opt => opt.MapFrom(src => src.Driver.Name))
                 .ForMember(dest => dest.VehicleName, opt => opt.MapFrom(src => src.Vehicle.Brand))
                 .ForMember(dest => dest.VehicleUrlImage, opt => opt.MapFrom(src => src.Vehicle.UrlImage))
+                .ForMember(dest => dest.PlateNumber, opt => opt.MapFrom(src => src.Vehicle.PlateNumber))
                 .ForMember(dest => dest.StartPoint, opt => opt.Ignore())
                 .ForMember(dest => dest.EndPoint, opt => opt.Ignore())
                 .ForMember(dest => dest.AvailableSeats, opt => opt.MapFrom(src => src.SharedRideDetail.AvailableSeats));
