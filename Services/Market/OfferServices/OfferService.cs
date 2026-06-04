@@ -328,6 +328,80 @@ namespace AppGroupCar.Services.Market.OfferServices
             return _mapper.Map<GetOfferDTO>(offer);
         }
 
+        public async Task<OfferDetailResponseDto> GetOfferDetailAsync(Guid id)
+        {
+            var offer = await _repo.GetQueryable()
+                .Include(o => o.Driver)
+                    .ThenInclude(d => d.User)
+                .Include(o => o.Vehicle)
+                .Include(o => o.SharedRideDetail)
+                .Include(o => o.RoutePoints)
+                    .ThenInclude(rp => rp.Location)
+                .FirstOrDefaultAsync(o => o.Id == id && o.DeleteAt == null);
+
+            if (offer == null)
+            {
+                throw new AppException(404, "Không tìm thấy bản ghi");
+            }
+
+            var routePoints = offer.RoutePoints
+                .Where(rp => rp.DeleteAt == null)
+                .OrderBy(rp => rp.Sequence)
+                .Select(rp => new OfferRoutePointResponseDto
+                {
+                    Id = rp.Id,
+                    LocationId = rp.LocationId,
+                    LocationName = rp.Location?.Name ?? string.Empty,
+                    Sequence = rp.Sequence,
+                    StopType = rp.StopType
+                })
+                .ToList();
+
+            var startLocation = routePoints.FirstOrDefault(rp => rp.StopType == RouteStopType.Start)?.LocationName;
+            var endLocation = routePoints.FirstOrDefault(rp => rp.StopType == RouteStopType.End)?.LocationName;
+            var routeName = (startLocation != null && endLocation != null) ? $"{startLocation} - {endLocation}" : $"Route for Offer {offer.Id}";
+
+            var route = new OfferRouteResponseDto
+            {
+                Id = offer.Id,
+                Name = routeName,
+                EstimatedDurationMinutes = offer.EstimatedDurationMinutes,
+                RoutePoints = routePoints
+            };
+
+            return new OfferDetailResponseDto
+            {
+                Id = offer.Id,
+                DriverId = offer.DriverId,
+                DepartureTime = offer.DepartureTime,
+                BasePrice = offer.BasePrice,
+                Status = offer.Status,
+                ServiceType = offer.ServiceType,
+                TotalSeats = offer.SharedRideDetail?.TotalSeats ?? 0,
+                AvailableSeats = offer.SharedRideDetail?.AvailableSeats ?? 0,
+                Route = route,
+                Vehicle = new OfferVehicleDto
+                {
+                    VehicleId = offer.VehicleId,
+                    PlateNumber = offer.Vehicle.PlateNumber,
+                    Brand = offer.Vehicle.Brand,
+                    SeatCapacity = offer.Vehicle.SeatCapacity,
+                    VehicleType = (int)offer.Vehicle.VehicleType,
+                    UrlImage = offer.Vehicle.UrlImage
+                },
+                Driver = new OfferDriverDto
+                {
+                    DriverId = offer.DriverId,
+                    FullName = offer.Driver.Name,
+                    AvatarUrl = offer.Driver.User?.AvatarUrl,
+                    LicenseNumber = offer.Driver.LicenseNumber,
+                    LicenseClass = offer.Driver.LicenseClass,
+                    DriverRatingAverage = offer.Driver.DriverRatingAverage,
+                    DriverRatingCount = offer.Driver.DriverRatingCount
+                }
+            };
+        }
+
         private IQueryable<Offer> GetOfferWithRelationsQuery()
         {
             return _repo.GetQueryable()
