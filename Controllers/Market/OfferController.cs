@@ -47,7 +47,7 @@ namespace AppGroupCar.Controllers.Market
             return Ok(new ApiResponse<IEnumerable<GetOfferDTO>> { Data = data });
         }
 
-        [HttpGet("shared-ride/{id}/detail")]
+        [HttpGet("shared-ride/{id}/my-detail")]
         public async Task<IActionResult> GetSharedRideDetail(Guid id)
         {
             var data = await _offerService.GetSharedRideDetailAsync(id);
