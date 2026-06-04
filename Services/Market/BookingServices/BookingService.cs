@@ -136,6 +136,76 @@ namespace AppGroupCar.Services.Market.BookingServices
             return bookings;
         }
 
+        public async Task<IEnumerable<BookingResponseDTO>> GetPendingByOfferIdAsync(Guid driverId, Guid offerId)
+        {
+            if (driverId == Guid.Empty || offerId == Guid.Empty)
+            {
+                throw new AppException(400, "ID không hợp lệ");
+            }
+
+            var offer = await _offerRepository.GetQueryable()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(o => o.Id == offerId && o.DeleteAt == null)
+                ?? throw new AppException(404, "Không tìm thấy offer");
+
+            if (offer.DriverId != driverId)
+            {
+                throw new AppException(403, "Bạn không được phép xem booking của offer này");
+            }
+
+            var bookings = await _bookingRepository.GetQueryable()
+                .AsNoTracking()
+                .Where(b => b.OfferId == offerId && b.Status == BookingStatus.Pending && b.DeleteAt == null)
+                .Select(b => new BookingResponseDTO
+                {
+                    BookingId = b.Id,
+                    OfferId = b.OfferId,
+                    CustomerId = b.CustomerId,
+                    Customer = new BookingCustomerInfoDTO
+                    {
+                        CustomerId = b.CustomerId,
+                        FullName = b.Customer.FullName,
+                        Email = b.Customer.Email,
+                        PhoneNumber = b.Customer.PhoneNumber,
+                        AvatarUrl = b.Customer.AvatarUrl
+                    },
+                    Quantity = b.Quantity,
+                    Status = b.Status,
+                    TotalPrice = b.TotalPrice,
+                    PaymentStatus = b.PaymentStatus,
+                    DepartureDate = b.Offer.DepartureTime,
+                    DriverName = b.Offer.Driver.Name,
+                    VehicleBrand = b.Offer.Vehicle.Brand,
+                    RoutePoints = b.Offer.RoutePoints
+                        .Where(rp => rp.StopType == RouteStopType.Start || rp.StopType == RouteStopType.End)
+                        .Select(rp => new RoutePointInfo
+                        {
+                            LocationId = rp.LocationId,
+                            LocationName = rp.Location.Name,
+                            StopType = rp.StopType.ToString(),
+                            Sequence = rp.Sequence
+                        }),
+                    Items = b.Items.Select(i => new BookingItemBooking
+                    {
+                        ItemId = i.Id,
+                        Price = i.Price,
+                        PickupLocation = new LocationBooking
+                        {
+                            LocationId = i.PickupLocation.Id,
+                            LocationName = i.PickupLocation.Name,
+                        },
+                        DropoffLocation = new LocationBooking
+                        {
+                            LocationId = i.DropoffLocation.Id,
+                            LocationName = i.DropoffLocation.Name,
+                        }
+                    })
+                })
+                .ToListAsync();
+
+            return bookings;
+        }
+
         public async Task<BookingResponseDTO> GetByIdAsync(Guid bookingId)
         {
             if (bookingId == Guid.Empty) throw new AppException(400, "ID không hợp lệ");

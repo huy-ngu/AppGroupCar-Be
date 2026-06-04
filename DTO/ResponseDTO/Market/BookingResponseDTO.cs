@@ -9,6 +9,7 @@ namespace AppGroupCar.DTO.ResponseDTO.Market
         public Guid BookingId { get; set; }
         public Guid OfferId { get; set; }
         public Guid CustomerId { get; set; }
+        public BookingCustomerInfoDTO? Customer { get; set; }
         public int Quantity { get; set; }
         public decimal TotalPrice { get; set; } = 0;
         public BookingStatus Status { get; set; } = BookingStatus.Pending;
@@ -19,6 +20,15 @@ namespace AppGroupCar.DTO.ResponseDTO.Market
         public IEnumerable<RoutePointInfo> RoutePoints { get; set; }
         public IEnumerable<BookingItemBooking> Items { get; set; }
 
+    }
+
+    public class BookingCustomerInfoDTO
+    {
+        public Guid CustomerId { get; set; }
+        public string FullName { get; set; } = null!;
+        public string? Email { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? AvatarUrl { get; set; }
     }
 
     public class RoutePointInfo
