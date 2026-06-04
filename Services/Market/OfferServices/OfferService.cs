@@ -94,6 +94,83 @@ namespace AppGroupCar.Services.Market.OfferServices
             return _mapper.Map<GetOfferDTO>(offer);
         }
 
+        public async Task<GetOfferSharedRideDetailDTO> GetSharedRideDetailAsync(Guid id)
+        {
+            var offer = await _repo.GetQueryable()
+                .AsNoTracking()
+                .Include(o => o.SharedRideDetail)
+                .Include(o => o.Driver)
+                    .ThenInclude(d => d.User)
+                .Include(o => o.Vehicle)
+                .Include(o => o.RoutePoints)
+                    .ThenInclude(rp => rp.Location)
+                .FirstOrDefaultAsync(o =>
+                    o.Id == id &&
+                    o.ServiceType == ServiceType.Shared &&
+                    o.DeleteAt == null);
+
+            if (offer == null)
+            {
+                throw new AppException(404, "Không tìm thấy chuyến xe ghép");
+            }
+
+            if (offer.SharedRideDetail == null)
+            {
+                throw new AppException(404, "Không tìm thấy thông tin chi tiết chuyến xe ghép");
+            }
+
+            return new GetOfferSharedRideDetailDTO
+            {
+                Id = offer.Id,
+                DriverId = offer.DriverId,
+                VehicleId = offer.VehicleId,
+                ServiceType = offer.ServiceType,
+                DepartureTime = offer.DepartureTime,
+                EstimatedDurationMinutes = offer.EstimatedDurationMinutes,
+                BasePrice = offer.BasePrice,
+                Status = offer.Status,
+                SharedRideDetail = new SharedRideDetailInfoDTO
+                {
+                    TotalSeats = offer.SharedRideDetail.TotalSeats,
+                    AvailableSeats = offer.SharedRideDetail.AvailableSeats
+                },
+                Driver = new SharedRideDriverInfoDTO
+                {
+                    DriverId = offer.DriverId,
+                    Name = offer.Driver.Name,
+                    LicenseNumber = offer.Driver.LicenseNumber,
+                    LicenseClass = offer.Driver.LicenseClass,
+                    RatingAverage = offer.Driver.DriverRatingAverage,
+                    RatingCount = offer.Driver.DriverRatingCount,
+                    AvatarUrl = offer.Driver.User?.AvatarUrl,
+                    PhoneNumber = offer.Driver.User?.PhoneNumber
+                },
+                Vehicle = new SharedRideVehicleInfoDTO
+                {
+                    VehicleId = offer.VehicleId,
+                    PlateNumber = offer.Vehicle.PlateNumber,
+                    Brand = offer.Vehicle.Brand,
+                    SeatCapacity = offer.Vehicle.SeatCapacity,
+                    VehicleType = offer.Vehicle.VehicleType,
+                    Status = offer.Vehicle.Status,
+                    UrlImage = offer.Vehicle.UrlImage
+                },
+                RoutePoints = offer.RoutePoints
+                    .OrderBy(rp => rp.Sequence)
+                    .Select(rp => new SharedRideRoutePointInfoDTO
+                    {
+                        RoutePointId = rp.Id,
+                        LocationId = rp.LocationId,
+                        LocationName = rp.Location?.Name ?? "",
+                        Address = rp.Location?.Address,
+                        LocationType = rp.Location?.LocationType ?? LocationType.Other,
+                        StopType = rp.StopType,
+                        Sequence = rp.Sequence
+                    })
+                    .ToList()
+            };
+        }
+
         public async Task<GetOfferDTO> UpdateAsync(Guid driverId, UpdateOfferRequestDTO request)
         {
             var offer = await GetOfferWithRelationsQuery()

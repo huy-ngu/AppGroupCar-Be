@@ -38,7 +38,7 @@ namespace AppGroupCar.AutoMapper
                     .Select(rp => new LocationDetailDTO
                     {
                         LocationId = rp.LocationId,
-                        LocationName = rp.Location.Name
+                        LocationName = rp.Location != null ? rp.Location.Name : ""
                     })
                     .FirstOrDefault()))
                 .ForMember(dest => dest.EndPoint, opt => opt.MapFrom(src => src.RoutePoints
@@ -46,7 +46,7 @@ namespace AppGroupCar.AutoMapper
                     .Select(rp => new LocationDetailDTO
                     {
                         LocationId = rp.LocationId,
-                        LocationName = rp.Location.Name
+                        LocationName = rp.Location != null ? rp.Location.Name : ""
                     })
                     .FirstOrDefault()));
 

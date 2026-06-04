@@ -16,6 +16,7 @@ namespace AppGroupCar.Services.Market.OfferServices
         Task<GetOfferDTO> CreateWithDetailAsync(Guid driverId, CreateOfferSharedRidelRequestDTO request);
         Task<GetOfferDTO> UpdateAsync(Guid driverId, UpdateOfferRequestDTO request);
         Task<GetOfferDTO> GetByIdAsync(Guid id);
+        Task<GetOfferSharedRideDetailDTO> GetSharedRideDetailAsync(Guid id);
         Task<IEnumerable<GetOfferDTO>> GetAllAsync();
         Task<IEnumerable<GetOfferDTO>> GetMyOffersAsync(Guid driverId);
         Task DeleteAsync(Guid driverId, Guid id);
