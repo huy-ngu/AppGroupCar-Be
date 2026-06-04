@@ -466,6 +466,16 @@ namespace AppGroupCar.Data
                     .HasForeignKey(x => x.UserId)
                     .OnDelete(DeleteBehavior.Restrict);
 
+                b.HasOne(x => x.PickupLocation)
+                    .WithMany()
+                    .HasForeignKey(x => x.PickupLocationId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasOne(x => x.DropoffLocation)
+                    .WithMany()
+                    .HasForeignKey(x => x.DropoffLocationId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
                 b.HasQueryFilter(b => b.DeleteAt == null);
 
             });

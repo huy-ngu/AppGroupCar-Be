@@ -7,6 +7,8 @@ namespace AppGroupCar.DTO.ResponseDTO.Bus.BookingResponse
         public Guid BookingId { get; set; }
         public Guid ShowtimeId { get; set; }
         public Guid UserId { get; set; }
+        public Guid PickupLocationId { get; set; }
+        public Guid DropoffLocationId { get; set; }
         public decimal TotalPrice { get; set; }
         public BusBookingStatus Status { get; set; }
         public DateTime? ExpireAt { get; set; }

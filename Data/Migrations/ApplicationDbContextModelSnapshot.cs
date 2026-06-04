@@ -123,11 +123,17 @@ namespace AppGroupCar.Migrations
                     b.Property<DateTime?>("DeleteAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("DropoffLocationId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime?>("ExpireAt")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("LastUpdateAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<Guid>("PickupLocationId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("ShowtimeId")
                         .HasColumnType("uniqueidentifier");
@@ -142,6 +148,10 @@ namespace AppGroupCar.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DropoffLocationId");
+
+                    b.HasIndex("PickupLocationId");
 
                     b.HasIndex("ShowtimeId");
 
@@ -1769,6 +1779,18 @@ namespace AppGroupCar.Migrations
 
             modelBuilder.Entity("AppGroupCar.Entities.Bus.BusBooking", b =>
                 {
+                    b.HasOne("AppGroupCar.Entities.Location", "DropoffLocation")
+                        .WithMany()
+                        .HasForeignKey("DropoffLocationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AppGroupCar.Entities.Location", "PickupLocation")
+                        .WithMany()
+                        .HasForeignKey("PickupLocationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("AppGroupCar.Entities.Bus.BusShowtime", "Showtime")
                         .WithMany()
                         .HasForeignKey("ShowtimeId")
@@ -1780,6 +1802,10 @@ namespace AppGroupCar.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("DropoffLocation");
+
+                    b.Navigation("PickupLocation");
 
                     b.Navigation("Showtime");
 

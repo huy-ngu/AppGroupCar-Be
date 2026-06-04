@@ -9,6 +9,12 @@ namespace AppGroupCar.DTO.RequestDTO.Bus.BookingRequest
         public Guid ShowtimeId { get; set; }
 
         [Required]
+        public Guid PickupLocationId { get; set; }
+
+        [Required]
+        public Guid DropoffLocationId { get; set; }
+
+        [Required]
         public BusBookingStatus Status { get; set; }
 
         [Required]

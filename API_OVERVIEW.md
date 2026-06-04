@@ -388,6 +388,8 @@ Ghi chu:
 - `GET /bus-bookings/me`
 - `GET /bus-bookings/{id}`
 
+Bus booking payload now includes `PickupLocationId` and `DropoffLocationId`, and the service validates both locations against the selected bus route.
+
 ## 8) Ownership va role matrix ngan gon
 
 - `Admin`: quan ly user/role/company approval
@@ -443,14 +445,17 @@ Khi them API moi lien quan cac bang tren, can ton trong rang buoc DB de tranh 40
 Nhung diem nay khong chan app chay, nhung de gay loi khi FE tich hop hoac mo rong nghiep vu:
 
 1. Route naming chua dong nhat:
+
 - Tr?n `api/...` va non-`api`
 - Tr?n `Create/GetById/id` va REST style `{id}`
 - Co typo path: `compelete`, `Appoval`
 
 2. Auth coverage chua dong nhat:
+
 - Co endpoint su dung `User.GetUserId()` nhung khong gan `[Authorize]`
 
 3. Mot so logic co dau hieu sai hoac can review gap:
+
 - `OfferController.Update` nhan `offerId` tren route nhung service dung `request.Id`
 - `ShipmentOfferService.DriverAcceptAsync` dang load `Offer` bang `driverId`
 - `ShipmentOfferService.CreateFromOfferAsync` load `ShipmentRequest` bang `offerId` thay vi `requestId`
@@ -459,6 +464,7 @@ Nhung diem nay khong chan app chay, nhung de gay loi khi FE tich hop hoac mo ron
 - `ShipmentRequestServices.DeleteAsync` dieu kien null-check co the NRE (`data == null && data.DeleteAt != null`)
 
 4. Security/deploy note:
+
 - `appsettings.json` dang chua thong tin secret (JWT key, Cloudinary, Google, email). Can dua ve secret manager/env var truoc khi deploy.
 
 ## 12) File map de doc nhanh theo use-case

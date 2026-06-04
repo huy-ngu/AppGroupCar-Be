@@ -3,6 +3,7 @@ using AppGroupCar.DTO.RequestDTO.Bus.BookingRequest;
 using AppGroupCar.DTO.ResponseDTO.Bus.BookingResponse;
 using AppGroupCar.DTO.ResponseDTO.Bus.RouteResponse;
 using AppGroupCar.DTO.ResponseDTO.Bus.ShowtimeResponse;
+using AppGroupCar.Entities;
 using AppGroupCar.Entities.Bus;
 using AppGroupCar.Exceptions;
 using AutoMapper;
@@ -28,6 +29,12 @@ namespace AppGroupCar.Services.Bus.BookingServices
             if (userId == Guid.Empty)
                 throw new AppException(401, "Invalid user");
 
+            if (dto.PickupLocationId == Guid.Empty || dto.DropoffLocationId == Guid.Empty)
+                throw new AppException(400, "Invalid pickup or dropoff location");
+
+            if (dto.PickupLocationId == dto.DropoffLocationId)
+                throw new AppException(400, "Pickup and dropoff locations must be different");
+
             var seatNumbers = NormalizeSeatNumbers(dto.SeatNumbers);
 
             if (!Enum.IsDefined(typeof(BusBookingStatus), dto.Status) ||
@@ -38,10 +45,35 @@ namespace AppGroupCar.Services.Bus.BookingServices
             }
 
             var showtime = await _context.BusShowtimes
+                .Include(x => x.Route)
+                    .ThenInclude(r => r.RoutePoints)
                 .FirstOrDefaultAsync(x => x.Id == dto.ShowtimeId && x.DeleteAt == null);
 
             if (showtime == null)
                 throw new AppException(404, "Showtime not found");
+
+            var routePoints = showtime.Route?.RoutePoints
+                .Where(x => x.DeleteAt == null)
+                .OrderBy(x => x.Sequence)
+                .ToList();
+
+            if (routePoints == null || routePoints.Count == 0)
+                throw new AppException(400, "Showtime route is not available");
+
+            var pickupPoint = routePoints.FirstOrDefault(x => x.LocationId == dto.PickupLocationId)
+                ?? throw new AppException(400, "Pickup location is not on the route");
+
+            var dropoffPoint = routePoints.FirstOrDefault(x => x.LocationId == dto.DropoffLocationId)
+                ?? throw new AppException(400, "Dropoff location is not on the route");
+
+            if (pickupPoint.Sequence >= dropoffPoint.Sequence)
+                throw new AppException(400, "Pickup location must be before dropoff location");
+
+            if (pickupPoint.StopType is not (RouteStopType.Start or RouteStopType.Pickup))
+                throw new AppException(400, "Pickup location is not allowed for this route point");
+
+            if (dropoffPoint.StopType is not (RouteStopType.Dropoff or RouteStopType.End))
+                throw new AppException(400, "Dropoff location is not allowed for this route point");
 
             BusBooking? created = null;
 
@@ -73,6 +105,8 @@ namespace AppGroupCar.Services.Bus.BookingServices
                         Id = Guid.NewGuid(),
                         ShowtimeId = dto.ShowtimeId,
                         UserId = userId,
+                        PickupLocationId = dto.PickupLocationId,
+                        DropoffLocationId = dto.DropoffLocationId,
                         TotalPrice = showtime.Price * seats.Count,
                         Status = dto.Status,
                         ExpireAt = null
