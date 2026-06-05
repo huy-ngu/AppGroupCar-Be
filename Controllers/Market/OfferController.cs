@@ -115,7 +115,7 @@ namespace AppGroupCar.Controllers.Market
             return Ok(new ApiResponse<GetOfferDTO> { Data = offer });
         }
 
-        [HttpPost("{offerId}/cancel")]
+        [HttpPost("shared-ride/{offerId}/cancel")]
         [Authorize(Roles = "Driver")]
         public async Task<IActionResult> CancelOffer(Guid offerId)
         {
@@ -125,7 +125,49 @@ namespace AppGroupCar.Controllers.Market
                 return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
             }
 
-            var offer = await _offerService.CancelOfferAsync(userId, offerId);
+            var offer = await _offerService.CancelOfferSharedRideAsync(userId, offerId);
+            return Ok(new ApiResponse<GetOfferDTO> { Data = offer });
+        }
+
+        [HttpPost("shipment/{offerId}/cancel")]
+        [Authorize(Roles = "Driver")]
+        public async Task<IActionResult> CancelShipmentOffer(Guid offerId)
+        {
+            var userIdNullable = User.GetUserId();
+            if (userIdNullable is not Guid userId)
+            {
+                return Unauthorized(new ApiResponse<string> { Message = "Token khÃ´ng há»£p lá»‡" });
+            }
+
+            var offer = await _offerService.CancelOfferShipmentAsync(userId, offerId);
+            return Ok(new ApiResponse<GetOfferDTO> { Data = offer });
+        }
+
+        [HttpPost("shared-ride/{offerId}/complete")]
+        [Authorize(Roles = "Driver")]
+        public async Task<IActionResult> CompleteSharedRideOffer(Guid offerId)
+        {
+            var userIdNullable = User.GetUserId();
+            if (userIdNullable is not Guid userId)
+            {
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
+            }
+
+            var offer = await _offerService.CompleteOfferSharedRideAsync(userId, offerId);
+            return Ok(new ApiResponse<GetOfferDTO> { Data = offer });
+        }
+
+        [HttpPost("offer/shipment/{offerId}/complete")]
+        [Authorize(Roles = "Driver")]
+        public async Task<IActionResult> CompleteShipmentOffer(Guid offerId)
+        {
+            var userIdNullable = User.GetUserId();
+            if (userIdNullable is not Guid userId)
+            {
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
+            }
+
+            var offer = await _offerService.CompleteOfferShipmentAsync(userId, offerId);
             return Ok(new ApiResponse<GetOfferDTO> { Data = offer });
         }
 

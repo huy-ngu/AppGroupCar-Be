@@ -18,6 +18,8 @@ namespace AppGroupCar.Services.Market.OfferServices
         private readonly IBaseRepository<SharedRideOfferDetail> _repoOfferDetail;
         private readonly IBaseRepository<OfferRoutePoint> _repoOfferRoutePoint;
         private readonly IBaseRepository<Booking> _bookingRepo;
+        private readonly IBaseRepository<ShipmentOffer> _shipmentOfferRepo;
+        private readonly IBaseRepository<Shipment> _shipmentRepo;
         private readonly IBaseRepository<Location> _locationRepo;
         private readonly IMapper _mapper;
         private readonly IRouteValidationService _routeValidationService;
@@ -29,6 +31,8 @@ namespace AppGroupCar.Services.Market.OfferServices
             IBaseRepository<SharedRideOfferDetail> repoOfferDetail,
             IBaseRepository<OfferRoutePoint> repoOfferRoutePoint,
             IBaseRepository<Booking> bookingRepo,
+            IBaseRepository<ShipmentOffer> shipmentOfferRepo,
+            IBaseRepository<Shipment> shipmentRepo,
             IBaseRepository<Location> locationRepo,
             IMapper mapper,
             IRouteValidationService routeValidationService,
@@ -39,6 +43,8 @@ namespace AppGroupCar.Services.Market.OfferServices
             _repoOfferDetail = repoOfferDetail;
             _repoOfferRoutePoint = repoOfferRoutePoint;
             _bookingRepo = bookingRepo;
+            _shipmentOfferRepo = shipmentOfferRepo;
+            _shipmentRepo = shipmentRepo;
             _locationRepo = locationRepo;
             _mapper = mapper;
             _routeValidationService = routeValidationService;
@@ -61,6 +67,7 @@ namespace AppGroupCar.Services.Market.OfferServices
         {
             var offers = await GetOfferWithRelationsQuery()
                 .Where(x => x.DeleteAt == null)
+                .OrderByDescending(x => x.DepartureTime)
                 .ToListAsync();
 
             return _mapper.Map<IEnumerable<GetOfferDTO>>(offers);
@@ -76,6 +83,7 @@ namespace AppGroupCar.Services.Market.OfferServices
                 .Include(o => o.Driver)
                 .Include(o => o.Vehicle)
                 .AsNoTracking()
+                .OrderByDescending(x => x.DepartureTime)
                 .ToListAsync();
 
             return _mapper.Map<IEnumerable<GetOfferDTO>>(offers);
@@ -472,6 +480,11 @@ namespace AppGroupCar.Services.Market.OfferServices
 
         public async Task<GetOfferDTO> CancelOfferAsync(Guid driverId, Guid offerId)
         {
+            return await CancelOfferSharedRideAsync(driverId, offerId);
+        }
+
+        public async Task<GetOfferDTO> CancelOfferSharedRideAsync(Guid driverId, Guid offerId)
+        {
             var offer = await GetOfferWithRelationsQuery()
                                 .FirstOrDefaultAsync(x => x.Id == offerId);
 
@@ -495,6 +508,118 @@ namespace AppGroupCar.Services.Market.OfferServices
             {
                 booking.Status = BookingStatus.Cancelled;
                 _bookingRepo.Update(booking);
+            }
+
+            _repo.Update(offer);
+            await _repo.SaveChangesAsync();
+
+            return _mapper.Map<GetOfferDTO>(offer);
+        }
+
+        public async Task<GetOfferDTO> CancelOfferShipmentAsync(Guid driverId, Guid offerId)
+        {
+            var offer = await GetOfferWithRelationsQuery()
+                                .FirstOrDefaultAsync(x => x.Id == offerId);
+
+            if (offer == null || offer.DeleteAt != null || offer.DriverId != driverId)
+            {
+                throw new AppException(404, "Không tìm thấy bản ghi hoặc bạn không có quyền hủy");
+            }
+
+            if (offer.Status != OfferStatus.Active)
+            {
+                throw new AppException(400, "Chỉ có thể hủy Offer ở trạng thái Active");
+            }
+
+            offer.Status = OfferStatus.Closed;
+
+            var relatedShipments = await _shipmentRepo.GetQueryable()
+                .Include(s => s.ShipmentOffer)
+                .Where(s => s.DeleteAt == null && s.ShipmentOffer != null && s.ShipmentOffer.OfferId == offerId)
+                .ToListAsync();
+
+            foreach (var shipment in relatedShipments)
+            {
+                shipment.ShipmentStatus = ShipmentStatus.Cancelled;
+                _shipmentRepo.Update(shipment);
+            }
+
+            var relatedShipmentOffers = await _shipmentOfferRepo.GetQueryable()
+                .Where(so => so.DeleteAt == null && so.OfferId == offerId)
+                .ToListAsync();
+
+            foreach (var shipmentOffer in relatedShipmentOffers)
+            {
+                shipmentOffer.Status = ShipmentOfferStatus.Cancelled;
+                _shipmentOfferRepo.Update(shipmentOffer);
+            }
+
+            _repo.Update(offer);
+            await _repo.SaveChangesAsync();
+
+            return _mapper.Map<GetOfferDTO>(offer);
+        }
+
+        public async Task<GetOfferDTO> CompleteOfferSharedRideAsync(Guid driverId, Guid offerId)
+        {
+            var offer = await GetOfferWithRelationsQuery()
+                                .FirstOrDefaultAsync(x => x.Id == offerId);
+
+            if (offer == null || offer.DeleteAt != null || offer.DriverId != driverId)
+            {
+                throw new AppException(404, "KhÃ´ng tÃ¬m tháº¥y báº£n ghi hoáº·c báº¡n khÃ´ng cÃ³ quyá»n hoàn thành");
+            }
+
+            if (offer.Status != OfferStatus.Active)
+            {
+                throw new AppException(400, "Chá»‰ cÃ³ thá»ƒ hoàn thành Offer á»Ÿ tráº¡ng thÃ¡i Active");
+            }
+
+            offer.Status = OfferStatus.Complete;
+
+            var relatedBookings = await _bookingRepo.GetQueryable()
+                                            .Where(b => b.OfferId == offerId && b.DeleteAt == null)
+                                            .ToListAsync();
+
+            foreach (var booking in relatedBookings)
+            {
+                booking.Status = BookingStatus.Compelete;
+                _bookingRepo.Update(booking);
+            }
+
+            _repo.Update(offer);
+            await _repo.SaveChangesAsync();
+
+            return _mapper.Map<GetOfferDTO>(offer);
+        }
+
+        public async Task<GetOfferDTO> CompleteOfferShipmentAsync(Guid driverId, Guid offerId)
+        {
+            var offer = await GetOfferWithRelationsQuery()
+                                .FirstOrDefaultAsync(x => x.Id == offerId);
+
+            if (offer == null || offer.DeleteAt != null || offer.DriverId != driverId)
+            {
+                throw new AppException(404, "KhÃ´ng tÃ¬m tháº¥y báº£n ghi hoáº·c báº¡n khÃ´ng cÃ³ quyá»n hoàn thành");
+            }
+
+            if (offer.Status != OfferStatus.Active)
+            {
+                throw new AppException(400, "Chá»‰ cÃ³ thá»ƒ hoàn thành Offer á»Ÿ tráº¡ng thÃ¡i Active");
+            }
+
+            offer.Status = OfferStatus.Complete;
+
+            var relatedShipments = await _shipmentRepo.GetQueryable()
+                .Include(s => s.ShipmentOffer)
+                .Where(s => s.DeleteAt == null && s.ShipmentOffer != null && s.ShipmentOffer.OfferId == offerId)
+                .ToListAsync();
+
+            foreach (var shipment in relatedShipments)
+            {
+                shipment.ShipmentStatus = ShipmentStatus.Delivered;
+                shipment.DeliveredDate = DateTime.Now;
+                _shipmentRepo.Update(shipment);
             }
 
             _repo.Update(offer);

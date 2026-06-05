@@ -23,6 +23,10 @@ namespace AppGroupCar.Services.Market.OfferServices
         Task DeleteAsync(Guid driverId, Guid id);
         Task<PagedResult<GetOfferSharedRideDTO>> GetOfferSharedRideAsync(GetOfferForUserRequestDTO request);
         Task<GetOfferDTO> CancelOfferAsync(Guid driverId, Guid offerId);
+        Task<GetOfferDTO> CancelOfferSharedRideAsync(Guid driverId, Guid offerId);
+        Task<GetOfferDTO> CancelOfferShipmentAsync(Guid driverId, Guid offerId);
+        Task<GetOfferDTO> CompleteOfferSharedRideAsync(Guid driverId, Guid offerId);
+        Task<GetOfferDTO> CompleteOfferShipmentAsync(Guid driverId, Guid offerId);
         Task<OfferDetailResponseDto> GetOfferDetailAsync(Guid id);
     }
 }
