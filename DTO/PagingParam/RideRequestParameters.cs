@@ -4,8 +4,8 @@ namespace AppGroupCar.DTO.Filters
 {
     public class RideRequestParameters : PagingParameters
     {
-        public string? FromLocation { get; set; }
-        public string? ToLocation { get; set; }
+        public Guid? FromLocationId { get; set; }
+        public Guid? ToLocationId { get; set; }
         public DateTime? FromTime { get; set; }
         public DateTime? ToTime { get; set; }
     }

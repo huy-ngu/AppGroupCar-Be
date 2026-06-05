@@ -1,6 +1,8 @@
-﻿using AppGroupCar.DTO;
+using AppGroupCar.DTO;
 using AppGroupCar.DTO.Filters;
 using AppGroupCar.DTO.RequestDTO.Market.ShipmentRequest;
+using AppGroupCar.DTO.ResponseDTO.Market.ShipmentDTO;
+using AppGroupCar.DTO.ResponseDTO.Shared;
 using AppGroupCar.Entities.Market;
 using AppGroupCar.Exceptions;
 using AppGroupCar.Repositories.BaseRepo;
@@ -79,31 +81,68 @@ namespace AppGroupCar.Services.Market.ShipmentRequestServices
             await _repo.SaveChangesAsync();
         }
 
-        public async Task<PagedResult<ShipmentRequest>> FilterAsync(ShipmentRequestParameters param)
+        public async Task<PagedResult<ShipmentRequestFilterResponseDTO>> FilterAsync(ShipmentRequestParameters param)
         {
-            var data = await _repo.FindAndFilter(
-                predicate: r =>
-                    // Lọc điểm đi (nếu null/rỗng thì bỏ qua điều kiện này)
-                    (string.IsNullOrEmpty(param.pickUpLocation) || r.PickupLocation.Name.Contains(param.pickUpLocation)) &&
+            var query = _repo.GetQueryable()
+                .AsNoTracking()
+                .Include(r => r.Customer)
+                .Include(r => r.PickupLocation)
+                .Include(r => r.DropoffLocation)
+                .Where(r =>
+                    (!param.PickupLocationId.HasValue || r.PickupLocationId == param.PickupLocationId.Value) &&
+                    (!param.DropoffLocationId.HasValue || r.DropoffLocationId == param.DropoffLocationId.Value) &&
+                    (!param.FromTime.HasValue || r.DeliveryDate >= param.FromTime.Value) &&
+                    (!param.ToTime.HasValue || r.DeliveryDate <= param.ToTime.Value) &&
+                    r.Status == ShipmentRequestStatus.Open &&
+                    r.DeleteAt == null);
 
-                    // Lọc điểm đến
-                    (string.IsNullOrEmpty(param.dropOffLocation) || r.DropoffLocation.Name.Contains(param.dropOffLocation)) &&
+            var totalCount = await query.CountAsync();
 
-                    // Lọc thời gian bắt đầu (chỉ lấy yêu cầu có ngày giao SAU FromDeliveryDate)
-                    (!param.FromDeliveryDate.HasValue || r.DeliveryDate >= param.FromDeliveryDate.Value) &&
+            var items = await query
+                .OrderByDescending(r => r.DeliveryDate)
+                .Skip((param.PageNumber - 1) * param.PageSize)
+                .Take(param.PageSize)
+                .Select(r => new ShipmentRequestFilterResponseDTO
+                {
+                    Id = r.Id,
+                    CreatedAt = r.CreatedAt,
+                    LastUpdateAt = r.LastUpdateAt,
+                    DeleteAt = r.DeleteAt,
+                    Customer = new CustomerSummaryDTO
+                    {
+                        Id = r.Customer.Id,
+                        FullName = r.Customer.FullName,
+                        PhoneNumber = r.Customer.PhoneNumber,
+                        AvatarUrl = r.Customer.AvatarUrl
+                    },
+                    PickupLocation = new LocationSummaryDTO
+                    {
+                        Id = r.PickupLocation.Id,
+                        Name = r.PickupLocation.Name
+                    },
+                    DropoffLocation = new LocationSummaryDTO
+                    {
+                        Id = r.DropoffLocation.Id,
+                        Name = r.DropoffLocation.Name
+                    },
+                    DeliveryDate = r.DeliveryDate,
+                    Weight = r.Weight,
+                    Volume = r.Volume,
+                    Description = r.Description,
+                    IsFragile = r.IsFragile,
+                    HandlingNote = r.HandlingNote,
+                    Status = r.Status,
+                    ImageUrl = r.ImageUrl
+                })
+                .ToListAsync();
 
-                    // Lọc thời gian kết thúc (chỉ lấy yêu cầu có ngày giao TRƯỚC ToDeliveryDate)
-                    (!param.ToDeliveryDate.HasValue || r.DeliveryDate <= param.ToDeliveryDate.Value) &&
-
-                    // Mặc định chỉ lấy các yêu cầu đang Open
-                    r.Status == ShipmentRequestStatus.Open && r.DeleteAt == null,
-
-                orderBy: q => q.OrderByDescending(r => r.DeliveryDate),
-                pageNumber: param.PageNumber,
-                pageSize: param.PageSize
-            );
-
-            return data;
+            return new PagedResult<ShipmentRequestFilterResponseDTO>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                PageNumber = param.PageNumber,
+                PageSize = param.PageSize
+            };
         }
 
         public async Task<ShipmentRequest> GetByIdAsync(Guid id)

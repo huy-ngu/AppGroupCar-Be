@@ -1,12 +1,12 @@
-﻿using AppGroupCar.DTO;
+using AppGroupCar.DTO;
+using AppGroupCar.DTO.Filters;
 using AppGroupCar.DTO.RequestDTO.Market.RideRequest;
 using AppGroupCar.DTO.ResponseDTO;
-using AppGroupCar.DTO.Filters;
+using AppGroupCar.DTO.ResponseDTO.Market.RideRequest;
 using AppGroupCar.Entities.Market;
 using AppGroupCar.Services.Market.RideRequestServices;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace AppGroupCar.Controllers.Market
 {
@@ -47,7 +47,7 @@ namespace AppGroupCar.Controllers.Market
         public async Task<IActionResult> FilterByTimeAndLocation([FromQuery] RideRequestParameters parameters)
         {
             var data = await _service.FilterByTimeAndLocationAsync(parameters);
-            return Ok(new ApiResponse<PagedResult<RideRequest>> { Data = data });
+            return Ok(new ApiResponse<PagedResult<RideRequestFilterResponseDTO>> { Data = data });
         }
 
         [HttpPatch("id")]

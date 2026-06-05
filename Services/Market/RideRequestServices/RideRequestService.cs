@@ -1,12 +1,12 @@
-﻿using AppGroupCar.DTO;
-using AppGroupCar.DTO.RequestDTO.Market.RideRequest;
+using AppGroupCar.DTO;
 using AppGroupCar.DTO.Filters;
+using AppGroupCar.DTO.RequestDTO.Market.RideRequest;
+using AppGroupCar.DTO.ResponseDTO.Market.RideRequest;
+using AppGroupCar.DTO.ResponseDTO.Shared;
 using AppGroupCar.Entities.Market;
 using AppGroupCar.Exceptions;
 using AppGroupCar.Repositories.BaseRepo;
-using System.ComponentModel;
-using System.Data;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace AppGroupCar.Services.Market.RideRequestServices
 {
@@ -14,7 +14,10 @@ namespace AppGroupCar.Services.Market.RideRequestServices
     {
         private readonly IBaseRepository<RideRequest> _repo;
 
-        public RideRequestService(IBaseRepository<RideRequest> repo) { _repo = repo; }
+        public RideRequestService(IBaseRepository<RideRequest> repo)
+        {
+            _repo = repo;
+        }
 
         public async Task<RideRequest> CreateRideRequestAsync(Guid userId, CreateRideRequestDTO rideRequest)
         {
@@ -48,31 +51,63 @@ namespace AppGroupCar.Services.Market.RideRequestServices
             await _repo.SaveChangesAsync();
         }
 
-        public async Task<PagedResult<RideRequest>> FilterByTimeAndLocationAsync(RideRequestParameters parameters)
+        public async Task<PagedResult<RideRequestFilterResponseDTO>> FilterByTimeAndLocationAsync(RideRequestParameters parameters)
         {
-            var data = await _repo.FindAndFilter(
-                predicate: r =>
-                    //  Lọc điểm đi (nếu null/rỗng thì bỏ qua điều kiện này)
-                    (string.IsNullOrEmpty(parameters.FromLocation) || r.FromLocation.Name.Contains(parameters.FromLocation)) &&
-
-                    // Lọc điểm đến (đã sửa lại thành ToLocation)
-                    (string.IsNullOrEmpty(parameters.ToLocation) || r.ToLocation.Name.Contains(parameters.ToLocation)) &&
-
-                    // Lọc thời gian bắt đầu (chỉ lấy cuốc xe đi SAU FromTime)
+            var query = _repo.GetQueryable()
+                .AsNoTracking()
+                .Include(r => r.Customer)
+                .Include(r => r.FromLocation)
+                .Include(r => r.ToLocation)
+                .Where(r =>
+                    (!parameters.FromLocationId.HasValue || r.FromLocationId == parameters.FromLocationId.Value) &&
+                    (!parameters.ToLocationId.HasValue || r.ToLocationId == parameters.ToLocationId.Value) &&
                     (!parameters.FromTime.HasValue || r.DesiredDepartureTime >= parameters.FromTime.Value) &&
-
-                    // Lọc thời gian kết thúc (chỉ lấy cuốc xe đi TRƯỚC ToTime)
                     (!parameters.ToTime.HasValue || r.DesiredDepartureTime <= parameters.ToTime.Value) &&
+                    r.Status == RideRequestStatus.Open &&
+                    r.DeleteAt == null);
 
-                    // Mặc định luôn chỉ lấy cuốc xe đang Open
-                    r.Status == RideRequestStatus.Open && r.DeleteAt == null,
+            var totalCount = await query.CountAsync();
 
-                orderBy: q => q.OrderByDescending(r => r.DesiredDepartureTime),
-                pageNumber: parameters.PageNumber,
-                pageSize: parameters.PageSize
-            );
+            var items = await query
+                .OrderByDescending(r => r.DesiredDepartureTime)
+                .Skip((parameters.PageNumber - 1) * parameters.PageSize)
+                .Take(parameters.PageSize)
+                .Select(r => new RideRequestFilterResponseDTO
+                {
+                    Id = r.Id,
+                    CreatedAt = r.CreatedAt,
+                    LastUpdateAt = r.LastUpdateAt,
+                    DeleteAt = r.DeleteAt,
+                    Customer = new CustomerSummaryDTO
+                    {
+                        Id = r.Customer.Id,
+                        FullName = r.Customer.FullName,
+                        PhoneNumber = r.Customer.PhoneNumber,
+                        AvatarUrl = r.Customer.AvatarUrl
+                    },
+                    FromLocation = new LocationSummaryDTO
+                    {
+                        Id = r.FromLocation.Id,
+                        Name = r.FromLocation.Name
+                    },
+                    ToLocation = new LocationSummaryDTO
+                    {
+                        Id = r.ToLocation.Id,
+                        Name = r.ToLocation.Name
+                    },
+                    DesiredDepartureTime = r.DesiredDepartureTime,
+                    SeatsRequired = r.SeatsRequired,
+                    Status = r.Status
+                })
+                .ToListAsync();
 
-            return data;
+            return new PagedResult<RideRequestFilterResponseDTO>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                PageNumber = parameters.PageNumber,
+                PageSize = parameters.PageSize
+            };
         }
 
         public async Task<PagedResult<RideRequest>> FindByNameAsync(string name, int pageNumber, int pageSize)

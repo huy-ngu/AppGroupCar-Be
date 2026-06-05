@@ -1,7 +1,8 @@
-﻿using AppGroupCar.DTO;
+using AppGroupCar.DTO;
 using AppGroupCar.DTO.Filters;
 using AppGroupCar.DTO.RequestDTO.Market.ShipmentRequest;
 using AppGroupCar.DTO.ResponseDTO;
+using AppGroupCar.DTO.ResponseDTO.Market.ShipmentDTO;
 using AppGroupCar.Entities.Market;
 using AppGroupCar.Helpers;
 using AppGroupCar.Services.Market.ShipmentRequestServices;
@@ -9,7 +10,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Security.Claims;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace AppGroupCar.Controllers.Market.ShipmentControllers
 {
@@ -26,7 +26,7 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
         public async Task<IActionResult> Filter([FromQuery] ShipmentRequestParameters param)
         {
             var data = await _shipmentRequestServices.FilterAsync(param);
-            return Ok(new ApiResponse<PagedResult<ShipmentRequest>> { Data = data });
+            return Ok(new ApiResponse<PagedResult<ShipmentRequestFilterResponseDTO>> { Data = data });
         }
 
         [HttpGet("me")]

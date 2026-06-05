@@ -1,6 +1,7 @@
-﻿using AppGroupCar.DTO;
+using AppGroupCar.DTO;
 using AppGroupCar.DTO.Filters;
 using AppGroupCar.DTO.RequestDTO.Market.ShipmentRequest;
+using AppGroupCar.DTO.ResponseDTO.Market.ShipmentDTO;
 using AppGroupCar.Entities.Market;
 
 namespace AppGroupCar.Services.Market.ShipmentRequestServices
@@ -12,6 +13,6 @@ namespace AppGroupCar.Services.Market.ShipmentRequestServices
         public Task<IEnumerable<ShipmentRequest>> GetMyShipmentRequestsAsync(Guid customerId);
         public Task DeleteAsync(Guid id);
         public Task UpdateAsync(UpdateShipmentRequestDTO request);
-        public Task<PagedResult<ShipmentRequest>> FilterAsync(ShipmentRequestParameters param);
+        public Task<PagedResult<ShipmentRequestFilterResponseDTO>> FilterAsync(ShipmentRequestParameters param);
     }
 }
