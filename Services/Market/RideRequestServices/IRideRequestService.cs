@@ -14,6 +14,7 @@ namespace AppGroupCar.Services.Market.RideRequestServices
         public Task<RideRequest> GetByIdAsync(Guid id);
         public Task<PagedResult<RideRequest>> FindByNameAsync(string name, int pageNumber, int PageSize);
         public Task<PagedResult<RideRequestFilterResponseDTO>> FilterByTimeAndLocationAsync(RideRequestParameters parameters);
+        public Task<IEnumerable<RideRequestFilterResponseDTO>> GetMyRideRequestsAsync(Guid customerId);
         public Task DeleteByIdAsync(Guid id);
         public Task UpdateAsync(UpdateRideRequestDTO rideRequest);
     }

@@ -24,9 +24,8 @@ namespace AppGroupCar.Services.Market.ShipmentRequestServices
             _mapper = mapper;
             _photoService = photoService;
         }
-        public async Task<ShipmentRequest> CreateAsync(
-            Guid userId,
-            CreateShipmentRequestDTO request)
+
+        public async Task<ShipmentRequest> CreateAsync(Guid userId, CreateShipmentRequestDTO request)
         {
             string? imgUrl = null;
 
@@ -54,17 +53,12 @@ namespace AppGroupCar.Services.Market.ShipmentRequestServices
             var shipmentRequest = _mapper.Map<ShipmentRequest>(request);
 
             shipmentRequest.CustomerId = userId;
-
             shipmentRequest.Status = ShipmentRequestStatus.Open;
-
             shipmentRequest.ImageUrl = imgUrl;
-
             shipmentRequest.DropoffLocationId = request.DropoffLocationId;
-
             shipmentRequest.PickupLocationId = request.PickupLocationId;
 
             await _repo.AddAsync(shipmentRequest);
-
             await _repo.SaveChangesAsync();
 
             return shipmentRequest;
@@ -77,6 +71,7 @@ namespace AppGroupCar.Services.Market.ShipmentRequestServices
             {
                 throw new AppException(404, "Không tìm thấy bản ghi");
             }
+
             _repo.Delete(data);
             await _repo.SaveChangesAsync();
         }
@@ -186,38 +181,70 @@ namespace AppGroupCar.Services.Market.ShipmentRequestServices
                     );
                 }
 
-                exitShipmentRequest.ImageUrl =
-                    uploadResult.SecureUrl.AbsoluteUri;
+                exitShipmentRequest.ImageUrl = uploadResult.SecureUrl.AbsoluteUri;
             }
 
             if (request.DropoffLocationId != null)
             {
-                exitShipmentRequest.DropoffLocationId =
-                    request.DropoffLocationId.Value;
+                exitShipmentRequest.DropoffLocationId = request.DropoffLocationId.Value;
             }
 
             if (request.PickupLocationId != null)
             {
-                exitShipmentRequest.PickupLocationId =
-                    request.PickupLocationId.Value;
+                exitShipmentRequest.PickupLocationId = request.PickupLocationId.Value;
             }
 
             _repo.Update(exitShipmentRequest);
-
             await _repo.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<ShipmentRequest>> GetMyShipmentRequestsAsync(Guid customerId)
+        public async Task<IEnumerable<ShipmentRequestFilterResponseDTO>> GetMyShipmentRequestsAsync(Guid customerId)
         {
             if (customerId == Guid.Empty)
             {
-                throw new AppException(400, "ID không hợp lệ");
+                throw new AppException(400, "ID khÃ´ng há»£p lá»‡");
             }
 
-            var shipmentRequests = await _repo.GetQueryable()
-                                .Where(s => s.CustomerId == customerId && s.DeleteAt == null)
-                                .ToListAsync();
-            return shipmentRequests;
+            return await _repo.GetQueryable()
+                .AsNoTracking()
+                .Include(r => r.Customer)
+                .Include(r => r.PickupLocation)
+                .Include(r => r.DropoffLocation)
+                .Where(s => s.CustomerId == customerId && s.DeleteAt == null)
+                .OrderByDescending(r => r.DeliveryDate)
+                .Select(r => new ShipmentRequestFilterResponseDTO
+                {
+                    Id = r.Id,
+                    CreatedAt = r.CreatedAt,
+                    LastUpdateAt = r.LastUpdateAt,
+                    DeleteAt = r.DeleteAt,
+                    Customer = new CustomerSummaryDTO
+                    {
+                        Id = r.Customer.Id,
+                        FullName = r.Customer.FullName,
+                        PhoneNumber = r.Customer.PhoneNumber,
+                        AvatarUrl = r.Customer.AvatarUrl
+                    },
+                    PickupLocation = new LocationSummaryDTO
+                    {
+                        Id = r.PickupLocation.Id,
+                        Name = r.PickupLocation.Name
+                    },
+                    DropoffLocation = new LocationSummaryDTO
+                    {
+                        Id = r.DropoffLocation.Id,
+                        Name = r.DropoffLocation.Name
+                    },
+                    DeliveryDate = r.DeliveryDate,
+                    Weight = r.Weight,
+                    Volume = r.Volume,
+                    Description = r.Description,
+                    IsFragile = r.IsFragile,
+                    HandlingNote = r.HandlingNote,
+                    Status = r.Status,
+                    ImageUrl = r.ImageUrl
+                })
+                .ToListAsync();
         }
     }
 }

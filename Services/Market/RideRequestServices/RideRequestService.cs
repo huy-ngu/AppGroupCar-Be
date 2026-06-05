@@ -41,11 +41,11 @@ namespace AppGroupCar.Services.Market.RideRequestServices
             var rideRequest = await _repo.GetByIdAsync(id);
             if (rideRequest == null)
             {
-                throw new AppException(404, "Không tìm thấy bản ghi");
+                throw new AppException(404, "KhÃ´ng tÃ¬m tháº¥y báº£n ghi");
             }
             if (rideRequest.DeleteAt != null)
             {
-                throw new AppException(404, "Không tìm thấy bản ghi");
+                throw new AppException(404, "KhÃ´ng tÃ¬m tháº¥y báº£n ghi");
             }
             _repo.Delete(rideRequest);
             await _repo.SaveChangesAsync();
@@ -108,6 +108,50 @@ namespace AppGroupCar.Services.Market.RideRequestServices
                 PageNumber = parameters.PageNumber,
                 PageSize = parameters.PageSize
             };
+        }
+
+        public async Task<IEnumerable<RideRequestFilterResponseDTO>> GetMyRideRequestsAsync(Guid customerId)
+        {
+            if (customerId == Guid.Empty)
+            {
+                throw new AppException(400, "ID không hợp lệ");
+            }
+
+            return await _repo.GetQueryable()
+                .AsNoTracking()
+                .Include(r => r.Customer)
+                .Include(r => r.FromLocation)
+                .Include(r => r.ToLocation)
+                .Where(r => r.CustomerId == customerId && r.DeleteAt == null)
+                .OrderByDescending(r => r.DesiredDepartureTime)
+                .Select(r => new RideRequestFilterResponseDTO
+                {
+                    Id = r.Id,
+                    CreatedAt = r.CreatedAt,
+                    LastUpdateAt = r.LastUpdateAt,
+                    DeleteAt = r.DeleteAt,
+                    Customer = new CustomerSummaryDTO
+                    {
+                        Id = r.Customer.Id,
+                        FullName = r.Customer.FullName,
+                        PhoneNumber = r.Customer.PhoneNumber,
+                        AvatarUrl = r.Customer.AvatarUrl
+                    },
+                    FromLocation = new LocationSummaryDTO
+                    {
+                        Id = r.FromLocation.Id,
+                        Name = r.FromLocation.Name
+                    },
+                    ToLocation = new LocationSummaryDTO
+                    {
+                        Id = r.ToLocation.Id,
+                        Name = r.ToLocation.Name
+                    },
+                    DesiredDepartureTime = r.DesiredDepartureTime,
+                    SeatsRequired = r.SeatsRequired,
+                    Status = r.Status
+                })
+                .ToListAsync();
         }
 
         public async Task<PagedResult<RideRequest>> FindByNameAsync(string name, int pageNumber, int pageSize)

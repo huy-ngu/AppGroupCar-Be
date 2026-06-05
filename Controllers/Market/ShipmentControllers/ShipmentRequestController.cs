@@ -8,7 +8,6 @@ using AppGroupCar.Helpers;
 using AppGroupCar.Services.Market.ShipmentRequestServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Security.Claims;
 
 namespace AppGroupCar.Controllers.Market.ShipmentControllers
@@ -18,10 +17,12 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
     public class ShipmentRequestController : ControllerBase
     {
         private readonly IShipmentRequestServices _shipmentRequestServices;
+
         public ShipmentRequestController(IShipmentRequestServices shipmentRequestServices)
         {
             _shipmentRequestServices = shipmentRequestServices;
         }
+
         [HttpGet]
         public async Task<IActionResult> Filter([FromQuery] ShipmentRequestParameters param)
         {
@@ -36,11 +37,10 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
             var userIdNullable = User.GetUserId();
             if (userIdNullable is not Guid userId)
             {
-                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
-            }
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });            }
 
             var data = await _shipmentRequestServices.GetMyShipmentRequestsAsync(userId);
-            return Ok(new ApiResponse<IEnumerable<ShipmentRequest>> { Data = data });
+            return Ok(new ApiResponse<IEnumerable<ShipmentRequestFilterResponseDTO>> { Data = data });
         }
 
         [HttpPost]
@@ -49,24 +49,23 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
             var userIdNullable = User.GetUserId();
             if (userIdNullable is not Guid userId)
             {
-                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
-            }
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });            }
             var data = await _shipmentRequestServices.CreateAsync(userId, request);
             return Ok(new ApiResponse<ShipmentRequest> { Data = data });
         }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var data = await _shipmentRequestServices.GetByIdAsync(id);
             return Ok(new ApiResponse<ShipmentRequest> { Data = data });
         }
+
         [HttpPatch]
         public async Task<IActionResult> Update([FromBody] UpdateShipmentRequestDTO request)
         {
             await _shipmentRequestServices.UpdateAsync(request);
             return Ok(new ApiResponse<ShipmentRequest> { });
-
         }
-
     }
 }

@@ -10,7 +10,7 @@ namespace AppGroupCar.Services.Market.ShipmentRequestServices
     {
         public Task<ShipmentRequest> CreateAsync(Guid userId, CreateShipmentRequestDTO request);
         public Task<ShipmentRequest> GetByIdAsync(Guid id);
-        public Task<IEnumerable<ShipmentRequest>> GetMyShipmentRequestsAsync(Guid customerId);
+        public Task<IEnumerable<ShipmentRequestFilterResponseDTO>> GetMyShipmentRequestsAsync(Guid customerId);
         public Task DeleteAsync(Guid id);
         public Task UpdateAsync(UpdateShipmentRequestDTO request);
         public Task<PagedResult<ShipmentRequestFilterResponseDTO>> FilterAsync(ShipmentRequestParameters param);
