@@ -130,6 +130,58 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
             return list;
         }
 
+        public async Task<IEnumerable<GetPendingShipmentOfferDTO>> GetPendingByOfferIdAsync(Guid driverId, Guid offerId)
+        {
+            if (driverId == Guid.Empty || offerId == Guid.Empty)
+            {
+                throw new AppException(400, "ID không hợp lệ");
+            }
+
+            var offer = await _offerRepo.GetByIdAsync(offerId)
+                ?? throw new AppException(404, "Không tìm thấy offer");
+
+            if (offer.DriverId != driverId)
+            {
+                throw new AppException(403, "Bạn không được phép xem danh sách này");
+            }
+
+            var shipmentOffers = await _shipmentOfferRepo.GetQueryable()
+                .AsNoTracking()
+                .Where(s => s.DeleteAt == null &&
+                            s.OfferId == offerId &&
+                            s.Status == ShipmentOfferStatus.Pending)
+                .Select(n => new GetPendingShipmentOfferDTO
+                {
+                    Id = n.Id,
+                    OfferId = n.OfferId,
+                    RequestId = n.RequestId,
+                    ProposedPrice = n.ProposedPrice,
+                    Status = n.Status,
+                    CreatedAt = n.CreatedAt,
+                    ShipmentRequest = new ShipmentRequestInfoDTO
+                    {
+                        Id = n.Request.Id,
+                        CreatedAt = n.Request.CreatedAt,
+                        LastUpdateAt = n.Request.LastUpdateAt,
+                        DeleteAt = n.Request.DeleteAt,
+                        CustomerId = n.Request.CustomerId,
+                        PickupLocationId = n.Request.PickupLocationId,
+                        DropoffLocationId = n.Request.DropoffLocationId,
+                        DeliveryDate = n.Request.DeliveryDate,
+                        Weight = n.Request.Weight,
+                        Volume = n.Request.Volume,
+                        Description = n.Request.Description,
+                        IsFragile = n.Request.IsFragile,
+                        HandlingNote = n.Request.HandlingNote,
+                        Status = n.Request.Status,
+                        ImageUrl = n.Request.ImageUrl
+                    },
+                })
+                .ToListAsync();
+
+            return shipmentOffers;
+        }
+
         public async Task<IEnumerable<GetDetailShipmentOfferDTO>> GetByRequestId(Guid ShipmentRequestId)
         {
             var shipmentOffers = await _shipmentOfferRepo.GetQueryable()

@@ -313,6 +313,7 @@ Ghi chu:
 - `POST /api/ShipmentOffer/{id}/driver-accept` (`Driver`)
 - `GET /api/ShipmentOffer`
 - `GET /api/ShipmentOffer/shipmentRequestId?shipmentRequestId=...` (`[Authorize]`)
+- `GET /api/ShipmentOffer/offer/{offerId}/pending` (`Driver`)
 
 `ShipmentController` (`/api/Shipment`)
 
