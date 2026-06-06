@@ -186,13 +186,14 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
         {
             var shipmentOffers = await _shipmentOfferRepo.GetQueryable()
                                 .AsNoTracking()
-                                .Where(s => s.Id == ShipmentRequestId)
+                                .Where(s => s.RequestId == ShipmentRequestId)
                                 .Select(n => new GetDetailShipmentOfferDTO
                                 {
                                     Id = n.Id,
                                     RequestId = n.RequestId,
                                     ProposedPrice = n.ProposedPrice,
                                     Status = n.Status,
+                                    OfferId = n.OfferId,
                                     Driver = new DriverShipmentOfferDTO
                                     {
                                         DriverId = n.DriverId,

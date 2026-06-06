@@ -7,9 +7,12 @@ namespace AppGroupCar.DTO.ResponseDTO.Market.Offer
         public Guid Id { get; set; }
         public Guid DriverId { get; set; }
         public string DriverName { get; set; } = null!;
+        public decimal DriverRatingAverage { get; set; }
+        public int DriverRatingCount { get; set; }
         public Guid VehicleId { get; set; }
         public string VehicleName { get; set; } = null!;
         public string VehicleUrlImage { get; set; } = null!;
+        public int EstimatedDurationMinutes { get; set; }
         public DateTime DepartureTime { get; set; }
         public decimal BasePrice { get; set; }
         public OfferStatus Status { get; set; }

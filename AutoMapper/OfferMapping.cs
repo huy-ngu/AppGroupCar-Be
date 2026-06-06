@@ -52,6 +52,8 @@ namespace AppGroupCar.AutoMapper
 
             CreateMap<Offer, GetOfferSharedRideDTO>()
                 .ForMember(dest => dest.DriverName, opt => opt.MapFrom(src => src.Driver.Name))
+                .ForMember(dest => dest.DriverRatingAverage, opt => opt.MapFrom(src => src.Driver.DriverRatingAverage))
+                .ForMember(dest => dest.DriverRatingCount, opt => opt.MapFrom(src => src.Driver.DriverRatingCount))
                 .ForMember(dest => dest.VehicleName, opt => opt.MapFrom(src => src.Vehicle.Brand))
                 .ForMember(dest => dest.VehicleUrlImage, opt => opt.MapFrom(src => src.Vehicle.UrlImage))
                 .ForMember(dest => dest.PlateNumber, opt => opt.MapFrom(src => src.Vehicle.PlateNumber))
@@ -61,6 +63,8 @@ namespace AppGroupCar.AutoMapper
 
             CreateMap<Offer, GetOfferShipmentDTO>()
                 .ForMember(dest => dest.DriverName, opt => opt.MapFrom(src => src.Driver.Name))
+                .ForMember(dest => dest.DriverRatingAverage, opt => opt.MapFrom(src => src.Driver.DriverRatingAverage))
+                .ForMember(dest => dest.DriverRatingCount, opt => opt.MapFrom(src => src.Driver.DriverRatingCount))
                 .ForMember(dest => dest.VehicleName, opt => opt.MapFrom(src => src.Vehicle.Brand))
                 .ForMember(dest => dest.VehicleUrlImage, opt => opt.MapFrom(src => src.Vehicle.UrlImage))
                 .ForMember(dest => dest.StartPoint, opt => opt.Ignore())

@@ -8,6 +8,7 @@ namespace AppGroupCar.DTO.ResponseDTO.Market
     {
         public Guid BookingId { get; set; }
         public Guid OfferId { get; set; }
+        public Guid DriverId { get; set; }
         public Guid CustomerId { get; set; }
         public BookingCustomerInfoDTO? Customer { get; set; }
         public int Quantity { get; set; }

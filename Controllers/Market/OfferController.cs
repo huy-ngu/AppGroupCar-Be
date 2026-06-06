@@ -47,6 +47,34 @@ namespace AppGroupCar.Controllers.Market
             return Ok(new ApiResponse<IEnumerable<GetOfferDTO>> { Data = data });
         }
 
+        [HttpGet("me/shared-ride/active")]
+        [Authorize(Roles = "Driver")]
+        public async Task<IActionResult> GetMyActiveSharedRideOffers()
+        {
+            var userIdNullable = User.GetUserId();
+            if (userIdNullable is not Guid userId)
+            {
+                return Unauthorized(new ApiResponse<string> { Message = "Token khÃ´ng há»£p lá»‡" });
+            }
+
+            var data = await _offerService.GetMyActiveSharedRideOffersAsync(userId);
+            return Ok(new ApiResponse<IEnumerable<GetOfferDTO>> { Data = data });
+        }
+
+        [HttpGet("me/shipment/active")]
+        [Authorize(Roles = "Driver")]
+        public async Task<IActionResult> GetMyActiveShipmentOffers()
+        {
+            var userIdNullable = User.GetUserId();
+            if (userIdNullable is not Guid userId)
+            {
+                return Unauthorized(new ApiResponse<string> { Message = "Token khÃ´ng há»£p lá»‡" });
+            }
+
+            var data = await _offerService.GetMyActiveShipmentOffersAsync(userId);
+            return Ok(new ApiResponse<IEnumerable<GetOfferDTO>> { Data = data });
+        }
+
         [HttpGet("shared-ride/{id}/detail")]
         public async Task<IActionResult> GetSharedRideDetail(Guid id)
         {

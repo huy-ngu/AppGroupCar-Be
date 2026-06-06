@@ -83,7 +83,35 @@ namespace AppGroupCar.Services.Market.OfferServices
                 .Include(o => o.Driver)
                 .Include(o => o.Vehicle)
                 .AsNoTracking()
-                .OrderByDescending(x => x.DepartureTime)
+                .OrderByDescending(x => x.CreatedAt)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<GetOfferDTO>>(offers);
+        }
+
+        public async Task<IEnumerable<GetOfferDTO>> GetMyActiveSharedRideOffersAsync(Guid driverId)
+        {
+            var offers = await GetOfferWithRelationsQuery()
+                .Where(o =>
+                    o.DriverId == driverId &&
+                    o.DeleteAt == null &&
+                    o.Status == OfferStatus.Active &&
+                    o.ServiceType == ServiceType.Shared)
+                .OrderByDescending(o => o.DepartureTime)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<GetOfferDTO>>(offers);
+        }
+
+        public async Task<IEnumerable<GetOfferDTO>> GetMyActiveShipmentOffersAsync(Guid driverId)
+        {
+            var offers = await GetOfferWithRelationsQuery()
+                .Where(o =>
+                    o.DriverId == driverId &&
+                    o.DeleteAt == null &&
+                    o.Status == OfferStatus.Active &&
+                    o.ServiceType == ServiceType.Truck)
+                .OrderByDescending(o => o.DepartureTime)
                 .ToListAsync();
 
             return _mapper.Map<IEnumerable<GetOfferDTO>>(offers);
@@ -567,18 +595,18 @@ namespace AppGroupCar.Services.Market.OfferServices
 
             if (offer == null || offer.DeleteAt != null || offer.DriverId != driverId)
             {
-                throw new AppException(404, "KhÃ´ng tÃ¬m tháº¥y báº£n ghi hoáº·c báº¡n khÃ´ng cÃ³ quyá»n hoàn thành");
+                throw new AppException(404, "Không tìm thấy bản ghi hoặc bạn không có quyền hoàn thành");
             }
 
             if (offer.Status != OfferStatus.Active)
             {
-                throw new AppException(400, "Chá»‰ cÃ³ thá»ƒ hoàn thành Offer á»Ÿ tráº¡ng thÃ¡i Active");
+                throw new AppException(400, "Chỉ có thể hoàn thành Offer ở trạng thái Active");
             }
 
             offer.Status = OfferStatus.Complete;
 
             var relatedBookings = await _bookingRepo.GetQueryable()
-                                            .Where(b => b.OfferId == offerId && b.DeleteAt == null)
+                                            .Where(b => b.OfferId == offerId && b.DeleteAt == null && b.Status == BookingStatus.Accepted)
                                             .ToListAsync();
 
             foreach (var booking in relatedBookings)
@@ -600,19 +628,19 @@ namespace AppGroupCar.Services.Market.OfferServices
 
             if (offer == null || offer.DeleteAt != null || offer.DriverId != driverId)
             {
-                throw new AppException(404, "KhÃ´ng tÃ¬m tháº¥y báº£n ghi hoáº·c báº¡n khÃ´ng cÃ³ quyá»n hoàn thành");
+                throw new AppException(404, "Không tìm thấy bản ghi hoặc bạn không có quyền hoàn thành");
             }
 
             if (offer.Status != OfferStatus.Active)
             {
-                throw new AppException(400, "Chá»‰ cÃ³ thá»ƒ hoàn thành Offer á»Ÿ tráº¡ng thÃ¡i Active");
+                throw new AppException(400, "Chỉ có thể hoàn thành Offer ở trạng thái Active");
             }
 
             offer.Status = OfferStatus.Complete;
 
             var relatedShipments = await _shipmentRepo.GetQueryable()
                 .Include(s => s.ShipmentOffer)
-                .Where(s => s.DeleteAt == null && s.ShipmentOffer != null && s.ShipmentOffer.OfferId == offerId)
+                .Where(s => s.DeleteAt == null && s.ShipmentOffer != null && s.ShipmentOffer.OfferId == offerId )
                 .ToListAsync();
 
             foreach (var shipment in relatedShipments)

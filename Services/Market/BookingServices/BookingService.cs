@@ -45,6 +45,7 @@ namespace AppGroupCar.Services.Market.BookingServices
                 {
                     BookingId = b.Id,
                     OfferId = b.OfferId,
+                    DriverId = b.Offer.DriverId,
                     CustomerId = b.CustomerId,
                     Quantity = b.Quantity,
                     Status = b.Status,
@@ -95,10 +96,12 @@ namespace AppGroupCar.Services.Market.BookingServices
                 .Include(b => b.Offer)
                 .ThenInclude(o => o.RoutePoints)
                 .ThenInclude(rp => rp.Location)
+                .OrderByDescending(b => b.CreatedAt)
                 .Select(b => new BookingResponseDTO
                 {
                     BookingId = b.Id,
                     OfferId = b.OfferId,
+                    DriverId = b.Offer.DriverId,
                     CustomerId = b.CustomerId,
                     Quantity = b.Quantity,
                     Status = b.Status,
@@ -160,6 +163,7 @@ namespace AppGroupCar.Services.Market.BookingServices
                 {
                     BookingId = b.Id,
                     OfferId = b.OfferId,
+                    DriverId = b.Offer.DriverId,
                     CustomerId = b.CustomerId,
                     Customer = new BookingCustomerInfoDTO
                     {
@@ -225,6 +229,7 @@ namespace AppGroupCar.Services.Market.BookingServices
                 {
                     BookingId = b.Id,
                     OfferId = b.OfferId,
+                    DriverId = b.Offer.DriverId,
                     CustomerId = b.CustomerId,
                     Quantity = b.Quantity,
                     Status = b.Status,
@@ -377,6 +382,7 @@ namespace AppGroupCar.Services.Market.BookingServices
                 BookingId = newBooking.Id,
                 CustomerId = customerId,
                 OfferId = request.OfferId,
+                DriverId = offer.DriverId,
                 Quantity = bookingItems.Count,
                 TotalPrice = totalprice,
                 DepartureDate = offer.DepartureTime,
