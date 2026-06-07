@@ -87,6 +87,21 @@ namespace AppGroupCar.Services.Market.ShipmentServices
             };
         }
 
+        public async Task<GetShipmentDetailDTO> GetDetailByOfferIdAsync(Guid userId, Guid shipmentOfferId)
+        {
+            if (userId == Guid.Empty || shipmentOfferId == Guid.Empty)
+            {
+                throw new AppException(400, "ID không hợp lệ");
+            }
+
+            var shipment = await _shipmentRepo.GetQueryable()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(s => s.ShipmentOfferId == shipmentOfferId)
+                ?? throw new AppException(404, "Không tìm thấy đơn hàng");
+
+            return await GetDetailByIdAsync(userId, shipment.Id);
+        }
+
         public async Task<IEnumerable<GetShipmentDTO>> GetMyShipmentsAsync(Guid userId)
         {
             if (userId == Guid.Empty)

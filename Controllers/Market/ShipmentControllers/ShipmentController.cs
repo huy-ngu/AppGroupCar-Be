@@ -26,6 +26,20 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
             return Ok(new ApiResponse<GetShipmentDetailDTO> { Code = 200, Data = data });
         }
 
+        [HttpGet("offer/{shipmentOfferId}")]
+        [Authorize]
+        public async Task<IActionResult> GetByOfferId(Guid shipmentOfferId)
+        {
+            var userIdNullable = User.GetUserId();
+            if (userIdNullable is not Guid userId)
+            {
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
+            }
+
+            var data = await shipmentService.GetDetailByOfferIdAsync(userId, shipmentOfferId);
+            return Ok(new ApiResponse<GetShipmentDetailDTO> { Code = 200, Data = data });
+        }
+
         [HttpGet("me")]
         [Authorize]
         public async Task<IActionResult> GetMyShipments()
@@ -54,21 +68,21 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
             return Ok(new ApiResponse<GetShipmentDTO> { Code = 200 });
         }
 
-        [HttpPatch("compelete")]
-        [Authorize(Roles = "Driver")]
-        public async Task<IActionResult> Compelete(Guid id)
-        {
-            await shipmentService.Compelete(id);
-            return Ok(new ApiResponse<GetShipmentDTO> { Code = 200 });
-        }
+        // [HttpPatch("compelete")]
+        // [Authorize(Roles = "Driver")]
+        // public async Task<IActionResult> Compelete(Guid id)
+        // {
+        //     await shipmentService.Compelete(id);
+        //     return Ok(new ApiResponse<GetShipmentDTO> { Code = 200 });
+        // }
 
-        [HttpPatch("return")]
-        [Authorize(Roles = "Driver")]
-        public async Task<IActionResult> Return(Guid id)
-        {
-            await shipmentService.ReturnDelivery(id);
-            return Ok(new ApiResponse<GetShipmentDTO> { Code = 200 });
-        }
+        // [HttpPatch("return")]
+        // [Authorize(Roles = "Driver")]
+        // public async Task<IActionResult> Return(Guid id)
+        // {
+        //     await shipmentService.ReturnDelivery(id);
+        //     return Ok(new ApiResponse<GetShipmentDTO> { Code = 200 });
+        // }
 
         [HttpPost("{id}/cancel")]
         [Authorize]

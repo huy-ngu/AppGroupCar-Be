@@ -10,6 +10,7 @@ namespace AppGroupCar.DTO.ResponseDTO.Market.ShipmentDTO
         public decimal ProposedPrice { get; set; }
         public ShipmentOfferStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
+        public Guid? ShipmentId { get; set; }
         public ShipmentRequestInfoDTO ShipmentRequest { get; set; } = null!;
     }
 }

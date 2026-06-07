@@ -158,6 +158,7 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
                     ProposedPrice = n.ProposedPrice,
                     Status = n.Status,
                     CreatedAt = n.CreatedAt,
+                    ShipmentId = n.Shipment != null ? n.Shipment.Id : (Guid?)null,
                     ShipmentRequest = new ShipmentRequestInfoDTO
                     {
                         Id = n.Request.Id,

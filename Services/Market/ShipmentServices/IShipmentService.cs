@@ -8,6 +8,7 @@ namespace AppGroupCar.Services.Market.ShipmentServices
         Task UpdateAsync(Guid userId, UpdateShipmentDTO request);
         Task<IEnumerable<GetShipmentDTO>> GetMyShipmentsAsync(Guid userId);
         Task<GetShipmentDetailDTO> GetDetailByIdAsync(Guid userId, Guid shipmentId);
+        Task<GetShipmentDetailDTO> GetDetailByOfferIdAsync(Guid userId, Guid shipmentOfferId);
         Task Compelete(Guid shipmentId);
         Task ReturnDelivery(Guid shipmentId);
         Task CancelAsync(Guid userId, Guid shipmentId);
