@@ -28,7 +28,7 @@ namespace AppGroupCar.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin,User")]
+        [Authorize(Roles = "Admin,User,Driver,ADMIN_COMPANY")]
         public async Task<IActionResult> Get(string id)
         {
             var user = await _userService.GetByIdAsync(id);

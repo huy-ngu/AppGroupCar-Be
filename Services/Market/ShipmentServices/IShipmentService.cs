@@ -1,4 +1,4 @@
-﻿using AppGroupCar.DTO.RequestDTO.Market.Shipment;
+using AppGroupCar.DTO.RequestDTO.Market.Shipment;
 using AppGroupCar.DTO.ResponseDTO.Market.ShipmentDTO;
 
 namespace AppGroupCar.Services.Market.ShipmentServices
@@ -11,5 +11,6 @@ namespace AppGroupCar.Services.Market.ShipmentServices
         Task Compelete(Guid shipmentId);
         Task ReturnDelivery(Guid shipmentId);
         Task CancelAsync(Guid userId, Guid shipmentId);
+        Task DriverUpdateStatusAsync(Guid userId, UpdateShipmentStatusDTO request);
     }
 }

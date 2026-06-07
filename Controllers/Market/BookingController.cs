@@ -47,9 +47,9 @@ namespace AppGroupCar.Controllers.Market
             return Ok(new ApiResponse<object> { Data = response });
         }
 
-        [HttpGet("offer/{offerId}/pending")]
+        [HttpGet("offer/{offerId}")]
         [Authorize(Roles = "Driver")]
-        public async Task<IActionResult> GetPendingByOfferId(Guid offerId)
+        public async Task<IActionResult> GetByOfferId(Guid offerId)
         {
             var userIdNullable = User.GetUserId();
             if (userIdNullable is not Guid userId)
@@ -57,7 +57,7 @@ namespace AppGroupCar.Controllers.Market
                 return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
             }
 
-            var response = await _bookingService.GetPendingByOfferIdAsync(userId, offerId);
+            var response = await _bookingService.GetByOfferIdAsync(userId, offerId);
             return Ok(new ApiResponse<IEnumerable<BookingResponseDTO>> { Data = response });
         }
 

@@ -139,7 +139,7 @@ namespace AppGroupCar.Services.Market.BookingServices
             return bookings;
         }
 
-        public async Task<IEnumerable<BookingResponseDTO>> GetPendingByOfferIdAsync(Guid driverId, Guid offerId)
+        public async Task<IEnumerable<BookingResponseDTO>> GetByOfferIdAsync(Guid driverId, Guid offerId)
         {
             if (driverId == Guid.Empty || offerId == Guid.Empty)
             {
@@ -158,7 +158,8 @@ namespace AppGroupCar.Services.Market.BookingServices
 
             var bookings = await _bookingRepository.GetQueryable()
                 .AsNoTracking()
-                .Where(b => b.OfferId == offerId && b.Status == BookingStatus.Pending && b.DeleteAt == null)
+                .Where(b => b.OfferId == offerId && (b.Status == BookingStatus.Pending || b.Status == BookingStatus.Accepted) && b.DeleteAt == null)
+                .OrderByDescending(b => b.Status == BookingStatus.Accepted)
                 .Select(b => new BookingResponseDTO
                 {
                     BookingId = b.Id,

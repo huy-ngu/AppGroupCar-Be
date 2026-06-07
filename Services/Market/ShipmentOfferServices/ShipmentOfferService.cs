@@ -1,4 +1,4 @@
-﻿using AppGroupCar.DTO.RequestDTO.Market.Shipment;
+using AppGroupCar.DTO.RequestDTO.Market.Shipment;
 using AppGroupCar.DTO.ResponseDTO.Market.ShipmentDTO;
 using AppGroupCar.Entities.Market;
 using AppGroupCar.Exceptions;
@@ -130,7 +130,7 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
             return list;
         }
 
-        public async Task<IEnumerable<GetPendingShipmentOfferDTO>> GetPendingByOfferIdAsync(Guid driverId, Guid offerId)
+        public async Task<IEnumerable<GetPendingShipmentOfferDTO>> GetByOfferIdAsync(Guid driverId, Guid offerId)
         {
             if (driverId == Guid.Empty || offerId == Guid.Empty)
             {
@@ -149,7 +149,7 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
                 .AsNoTracking()
                 .Where(s => s.DeleteAt == null &&
                             s.OfferId == offerId &&
-                            s.Status == ShipmentOfferStatus.Pending)
+                            (s.Status == ShipmentOfferStatus.Pending || s.Status == ShipmentOfferStatus.Accepted))
                 .Select(n => new GetPendingShipmentOfferDTO
                 {
                     Id = n.Id,
@@ -177,6 +177,7 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
                         ImageUrl = n.Request.ImageUrl
                     },
                 })
+                .OrderByDescending(n => n.Status == ShipmentOfferStatus.Accepted)
                 .ToListAsync();
 
             return shipmentOffers;

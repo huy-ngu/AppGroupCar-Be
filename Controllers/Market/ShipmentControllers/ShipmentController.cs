@@ -1,4 +1,4 @@
-﻿using AppGroupCar.DTO.RequestDTO.Market.Shipment;
+using AppGroupCar.DTO.RequestDTO.Market.Shipment;
 using AppGroupCar.DTO.ResponseDTO;
 using AppGroupCar.DTO.ResponseDTO.Market.ShipmentDTO;
 using AppGroupCar.Helpers;
@@ -82,6 +82,20 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
 
             await shipmentService.CancelAsync(userId, id);
             return Ok(new ApiResponse<string> { Code = 200, Message = "Hủy hàng thành công" });
+        }
+
+        [HttpPatch("status")]
+        [Authorize(Roles = "Driver")]
+        public async Task<IActionResult> UpdateStatus([FromBody] UpdateShipmentStatusDTO request)
+        {
+            var userIdNullable = User.GetUserId();
+            if (userIdNullable is not Guid userId)
+            {
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
+            }
+
+            await shipmentService.DriverUpdateStatusAsync(userId, request);
+            return Ok(new ApiResponse<GetShipmentDTO> { Code = 200 });
         }
     }
 }

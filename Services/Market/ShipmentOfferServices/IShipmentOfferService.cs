@@ -9,7 +9,7 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
         Task<GetShipmentOfferDTO> CreateAsync(Guid driverId, CreateShipmentOfferRequestDTO request);
         Task<GetShipmentOfferDTO> CreateFromOfferAsync(CreateShipmentOfferFromOfferRequestDTO request);
         Task<IEnumerable<GetDetailShipmentOfferDTO>> GetByRequestId(Guid shipmentRequestId);
-        Task<IEnumerable<GetPendingShipmentOfferDTO>> GetPendingByOfferIdAsync(Guid driverId, Guid offerId);
+        Task<IEnumerable<GetPendingShipmentOfferDTO>> GetByOfferIdAsync(Guid driverId, Guid offerId);
         Task<IEnumerable<ShipmentOffer>> GetAll();
         Task<IEnumerable<GetDetailShipmentOfferDTO>> GetMyShipmentOffersAsync(Guid driverId);
         Task AcceptAsync(Guid shipmentOfferId, Guid UserId);

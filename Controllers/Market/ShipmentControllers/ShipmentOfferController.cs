@@ -105,7 +105,7 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
             return Ok(new ApiResponse<IEnumerable<GetDetailShipmentOfferDTO>> { Code = 200, Data = data });
         }
 
-        [HttpGet("offer/{offerId}/pending")]
+        [HttpGet("offer/{offerId}")]
         [Authorize(Roles = "Driver")]
         public async Task<IActionResult> GetPendingByOfferId(Guid offerId)
         {
@@ -116,7 +116,7 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
                 return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
             }
 
-            var data = await _shipmentOfferService.GetPendingByOfferIdAsync(userId, offerId);
+            var data = await _shipmentOfferService.GetByOfferIdAsync(userId, offerId);
             return Ok(new ApiResponse<IEnumerable<GetPendingShipmentOfferDTO>> { Code = 200, Data = data });
         }
 

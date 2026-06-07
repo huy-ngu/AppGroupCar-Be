@@ -15,7 +15,7 @@ namespace AppGroupCar.Services.Market.ShipmentServices
         {
             if (userId == Guid.Empty || shipmentId == Guid.Empty)
             {
-                throw new AppException(400, "ID khong hop le");
+                throw new AppException(400, "ID không hợp lệ");
             }
 
             var detail = await _shipmentRepo.GetQueryable()
@@ -31,14 +31,14 @@ namespace AppGroupCar.Services.Market.ShipmentServices
 
             if (detail == null)
             {
-                throw new AppException(404, "Khong tim thay ban ghi");
+                throw new AppException(404, "Không tìm thấy đơn hàng");
             }
 
             var isOwner = detail.ShipmentOffer.DriverId == userId ||
                           detail.ShipmentRequest.CustomerId == userId;
             if (!isOwner)
             {
-                throw new AppException(403, "Ban khong duoc phep xem ban ghi nay");
+                throw new AppException(403, "Bạn không được phép xem đơn hàng này");
             }
 
             return new GetShipmentDetailDTO
@@ -91,7 +91,7 @@ namespace AppGroupCar.Services.Market.ShipmentServices
         {
             if (userId == Guid.Empty)
             {
-                throw new AppException(400, "ID khong hop le");
+                throw new AppException(400, "ID không hợp lệ");
             }
 
             var shipments = await _shipmentRepo.GetQueryable()
@@ -117,7 +117,7 @@ namespace AppGroupCar.Services.Market.ShipmentServices
 
         public async Task ReturnDelivery(Guid shipmentId)
         {
-            var shipment = await _shipmentRepo.GetByIdAsync(shipmentId) ?? throw new AppException(404, "Kh�ng t?n t?i ??n h�ng");
+            var shipment = await _shipmentRepo.GetByIdAsync(shipmentId) ?? throw new AppException(404, "Kh�ng t?n t?i ??n h�ng");
             shipment.ShipmentStatus = ShipmentStatus.Return;
             shipment.Price = shipment.Price * 2;
 
@@ -129,7 +129,7 @@ namespace AppGroupCar.Services.Market.ShipmentServices
 
         public async Task Compelete(Guid shipmentId)
         {
-            var shipment = await _shipmentRepo.GetByIdAsync(shipmentId) ?? throw new AppException(404, "Kh�ng t?n t?i ??n h�ng");
+            var shipment = await _shipmentRepo.GetByIdAsync(shipmentId) ?? throw new AppException(404, "Kh�ng t?n t?i ??n h�ng");
             shipment.ShipmentStatus = ShipmentStatus.Delivered;
             shipment.DeliveredDate = DateTime.Now;
 
@@ -141,25 +141,25 @@ namespace AppGroupCar.Services.Market.ShipmentServices
         {
             if (userId == Guid.Empty)
             {
-                throw new AppException(400, "ID khong hop le");
+                throw new AppException(400, "ID không hợp lệ");
             }
 
             var shipment = await _shipmentRepo.GetQueryable()
                 .Include(s => s.ShipmentOffer)
                 .ThenInclude(so => so.Request)
                 .FirstOrDefaultAsync(s => s.Id == request.Id)
-                ?? throw new AppException(404, "Khong tim thay ban ghi");
+                ?? throw new AppException(404, "Không tìm thấy bản ghi");
 
             if (shipment.ShipmentOffer == null)
             {
-                throw new AppException(404, "Khong tim thay thong tin don van chuyen");
+                throw new AppException(404, "Không tìm thấy thông tin đơn vận chuyển");
             }
 
             var isOwner = shipment.ShipmentOffer.DriverId == userId ||
                           (shipment.ShipmentOffer.Request != null && shipment.ShipmentOffer.Request.CustomerId == userId);
             if (!isOwner)
             {
-                throw new AppException(403, "Ban khong duoc phep sua ban ghi nay");
+                throw new AppException(403, "Bạn không được phép sửa đơn hàng này");
             }
 
             if (request.ShipmentStatus is not null)
@@ -180,48 +180,81 @@ namespace AppGroupCar.Services.Market.ShipmentServices
         {
             if (userId == Guid.Empty || shipmentId == Guid.Empty)
             {
-                throw new AppException(400, "ID kh�ng h?p l?");
+                throw new AppException(400, "ID không hợp lệ");
             }
 
             var shipment = await _shipmentRepo.GetQueryable()
                 .Include(s => s.ShipmentOffer)
                 .ThenInclude(so => so.Request)
                 .FirstOrDefaultAsync(s => s.Id == shipmentId)
-                ?? throw new AppException(404, "Kh�ng t�m th?y b?n ghi");
+                ?? throw new AppException(404, "Không tìm thấy bản ghi");
 
             if (shipment.DeleteAt != null)
             {
-                throw new AppException(404, "Kh�ng t�m th?y b?n ghi");
+                throw new AppException(404, "Không tìm thấy bản ghi");
             }
 
             if (shipment.ShipmentOffer == null)
             {
-                throw new AppException(404, "Kh�ng t�m th?y th�ng tin ??n v?n chuy?n");
+                throw new AppException(404, "Không tìm thấy thông tin đơn vận chuyển");
             }
 
             var isOwner = shipment.ShipmentOffer.DriverId == userId ||
                           (shipment.ShipmentOffer.Request != null && shipment.ShipmentOffer.Request.CustomerId == userId);
             if (!isOwner)
             {
-                throw new AppException(403, "B?n kh�ng ???c ph�p h?y b?n ghi n�y");
+                throw new AppException(403, "Bạn không được phép hủy đơn hàng này");
             }
 
             if (shipment.ShipmentStatus == ShipmentStatus.Delivered)
             {
-                throw new AppException(400, "Kh�ng th? h?y ??n h�ng ?� giao");
+                throw new AppException(400, "Không thể hủy đơn hàng đã giao");
             }
 
             if (shipment.ShipmentStatus == ShipmentStatus.Cancelled)
             {
-                throw new AppException(400, "??n h�ng ?� b? h?y");
+                throw new AppException(400, "Đơn hàng đã bị hủy");
             }
 
             if (shipment.ShipmentStatus == ShipmentStatus.Return)
             {
-                throw new AppException(400, "Kh�ng th? h?y ??n h�ng ?ang ho�n tr?");
+                throw new AppException(400, "Không thể hủy đơn hàng đang hoàn trả");
             }
 
             shipment.ShipmentStatus = ShipmentStatus.Cancelled;
+            _shipmentRepo.Update(shipment);
+            await _shipmentRepo.SaveChangesAsync();
+        }
+
+        public async Task DriverUpdateStatusAsync(Guid userId, UpdateShipmentStatusDTO request)
+        {
+            if (userId == Guid.Empty || request.ShipmentId == Guid.Empty)
+            {
+                throw new AppException(400, "ID không hợp lệ");
+            }
+
+            var shipment = await _shipmentRepo.GetQueryable()
+                .Include(s => s.ShipmentOffer)
+                .FirstOrDefaultAsync(s => s.Id == request.ShipmentId)
+                ?? throw new AppException(404, "Không tìm thấy bản ghi");
+
+            if (shipment.ShipmentOffer == null)
+            {
+                throw new AppException(404, "Không tìm thấy thông tin đơn vận chuyển");
+            }
+
+            if (shipment.ShipmentOffer.DriverId != userId)
+            {
+                throw new AppException(403, "Bạn không phải là tài xế của chuyến đi này");
+            }
+
+            shipment.ShipmentStatus = request.ShipmentStatus;
+
+            if (request.ShipmentStatus == ShipmentStatus.Delivered)
+            {
+                shipment.DeliveredDate = DateTime.Now;
+            }
+
             _shipmentRepo.Update(shipment);
             await _shipmentRepo.SaveChangesAsync();
         }
