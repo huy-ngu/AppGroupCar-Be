@@ -1,4 +1,4 @@
-﻿using AppGroupCar.DTO;
+using AppGroupCar.DTO;
 using AppGroupCar.DTO.PagingParam;
 using AppGroupCar.DTO.RequestDTO.Market.MarketDriver;
 using AppGroupCar.DTO.ResponseDTO;
@@ -37,7 +37,23 @@ namespace AppGroupCar.Controllers.Market
             var data = await _marketDriverService.GetByIdAsync(id);
             return Ok(new ApiResponse<GetMarketDriverDetailDTO> { Data = data });
         }
+
+        [HttpGet("me")]
+        [Authorize]
+        public async Task<IActionResult> Me()
+        {
+            var userIdNullable = User.GetUserId();
+            if (userIdNullable is not Guid userId)
+            {
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
+            }
+
+            var data = await _marketDriverService.GetMeAsync(userId);
+            return Ok(new ApiResponse<GetMarketDriverMeDTO> { Data = data });
+        }
+
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Create([FromForm] CreateDriverRequestDTO request)
         {
             var userIdNullable = User.GetUserId();
@@ -49,6 +65,7 @@ namespace AppGroupCar.Controllers.Market
             return Ok(new ApiResponse<Driver> { Data = driver });
         }
         [HttpPatch("update")]
+        [Authorize]
         public async Task<IActionResult> Update([FromForm] UpdateDriverRequestDTO request)
         {
             var userIdNullable = User.GetUserId();

@@ -1,4 +1,4 @@
-﻿using AppGroupCar.DTO;
+using AppGroupCar.DTO;
 using AppGroupCar.DTO.Filters;
 using AppGroupCar.DTO.PagingParam;
 using AppGroupCar.DTO.RequestDTO.Market.MarketDriver;
@@ -13,6 +13,7 @@ namespace AppGroupCar.Services.Market.MarketDriverServices
         Task<Driver> CreatAsync(Guid id, CreateDriverRequestDTO request);
         Task<Driver> UpdateAsync(Guid id, UpdateDriverRequestDTO request);
         Task<GetMarketDriverDetailDTO> GetByIdAsync(Guid id);
+        Task<GetMarketDriverMeDTO> GetMeAsync(Guid id);
         Task DeleteAsync(Guid id);
         Task ApprovalDriverAsync(Guid id);
         Task RefuseDriverAsync(Guid id);

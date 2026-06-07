@@ -55,10 +55,8 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
             {
                 return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
             }
-
             await _shipmentOfferService.AcceptAsync(id, userId);
             return Ok(new ApiResponse<string> { Code = 200 });
-
         }
 
         [HttpPost("{id}/driver-accept")]

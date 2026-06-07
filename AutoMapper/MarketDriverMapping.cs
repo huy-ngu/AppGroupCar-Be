@@ -1,4 +1,4 @@
-﻿using AppGroupCar.DTO.RequestDTO.Market.ShipmentRequest;
+using AppGroupCar.DTO.RequestDTO.Market.ShipmentRequest;
 using AppGroupCar.DTO.RequestDTO;
 using AppGroupCar.Entities.Market;
 using AutoMapper;
@@ -18,6 +18,11 @@ namespace AppGroupCar.AutoMapper
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
             CreateMap<Driver, GetMarketDriverDetailDTO>()
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber))
+                .ForMember(dest => dest.AvatarUrl, opt => opt.MapFrom(src => src.User.AvatarUrl))
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FullName));
+
+            CreateMap<Driver, GetMarketDriverMeDTO>()
                 .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber))
                 .ForMember(dest => dest.AvatarUrl, opt => opt.MapFrom(src => src.User.AvatarUrl))
                 .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FullName));

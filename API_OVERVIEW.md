@@ -251,6 +251,7 @@ Ghi chu:
 
 - `GET /MarketDriver`
 - `GET /MarketDriver/{id}`
+- `GET /MarketDriver/me` (`[Authorize]`)
 - `POST /MarketDriver`
 - `PATCH /MarketDriver/update`
 - `PATCH /MarketDriver/approval` (`Admin`)
