@@ -1,4 +1,5 @@
 using AppGroupCar.DTO.ResponseDTO.Market;
+using AppGroupCar.DTO.ResponseDTO.Market.Offer;
 using AppGroupCar.Entities.Market;
 using AppGroupCar.Exceptions;
 using AppGroupCar.Repositories.BaseRepo;
@@ -71,20 +72,72 @@ namespace AppGroupCar.Services.Market.BookingOfferServices
             };
         }
 
-        public async Task<IEnumerable<BookingOfferResponseDTO>> GetByRideRequestAsync(Guid RideRequestId)
+        public async Task<IEnumerable<BookingOfferDetailResponseDTO>> GetByRideRequestAsync(Guid RideRequestId)
         {
             if (RideRequestId == Guid.Empty) throw new AppException(400, "ID không hợp lệ");
 
             var result = await _bookingOfferRepo.GetQueryable()
                 .Where(b => b.RideRequestId == RideRequestId && b.DeleteAt == null)
-                .Select(b => new BookingOfferResponseDTO
+                .Include(b => b.Offer)
+                    .ThenInclude(o => o.Driver)
+                    .ThenInclude(d => d.User)
+                .Include(b => b.Offer)
+                    .ThenInclude(o => o.Vehicle)
+                .Include(b => b.Offer)
+                    .ThenInclude(o => o.RoutePoints)
+                    .ThenInclude(rp => rp.Location)
+                .Select(b => new BookingOfferDetailResponseDTO
                 {
                     Id = b.Id,
                     OfferId = b.OfferId,
                     RideRequestId = b.RideRequestId,
                     Status = b.Status,
                     BookingId = b.BookingId,
-                    CreatedAt = b.CreatedAt
+                    CreatedAt = b.CreatedAt,
+                    Driver = new GetMarketDriverDetailDTO
+                    {
+                        Id = b.Offer.Driver.Id,
+                        LicenseClass = b.Offer.Driver.LicenseClass,
+                        IdentityNumber = b.Offer.Driver.IdentityNumber,
+                        LicenseNumber = b.Offer.Driver.LicenseNumber,
+                        DriverRatingAverage = b.Offer.Driver.DriverRatingAverage,
+                        DriverRatingCount = b.Offer.Driver.DriverRatingCount,
+                        AvatarUrl = b.Offer.Driver.User.AvatarUrl,
+                        PhoneNumber = b.Offer.Driver.User.PhoneNumber,
+                        FullName = b.Offer.Driver.User.FullName,
+                        status = b.Offer.Driver.VerificationStatus
+                    },
+                    Offer = new GetOfferDTO
+                    {
+                        Id = b.Offer.Id,
+                        DriverId = b.Offer.DriverId,
+                        DriverName = b.Offer.Driver.User.FullName,
+                        VehicleId = b.Offer.VehicleId,
+                        VehicleName = b.Offer.Vehicle.Brand,
+                        VehicleUrlImage = b.Offer.Vehicle.UrlImage,
+                        PlateNumber = b.Offer.Vehicle.PlateNumber,
+                        ServiceType = b.Offer.ServiceType,
+                        DepartureTime = b.Offer.DepartureTime,
+                        EstimatedDurationMinutes = b.Offer.EstimatedDurationMinutes,
+                        BasePrice = b.Offer.BasePrice,
+                        Status = b.Offer.Status,
+                        StartPoint = b.Offer.RoutePoints
+                            .Where(rp => rp.StopType == AppGroupCar.Entities.RouteStopType.Start)
+                            .Select(rp => new LocationDetailDTO
+                            {
+                                LocationId = rp.LocationId,
+                                LocationName = rp.Location.Name
+                            })
+                            .FirstOrDefault()!,
+                        EndPoint = b.Offer.RoutePoints
+                            .Where(rp => rp.StopType == AppGroupCar.Entities.RouteStopType.End)
+                            .Select(rp => new LocationDetailDTO
+                            {
+                                LocationId = rp.LocationId,
+                                LocationName = rp.Location.Name
+                            })
+                            .FirstOrDefault()!
+                    }
                 })
                 .ToListAsync();
 
