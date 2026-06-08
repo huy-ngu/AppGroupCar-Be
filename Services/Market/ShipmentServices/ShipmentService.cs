@@ -25,7 +25,9 @@ namespace AppGroupCar.Services.Market.ShipmentServices
                 {
                     Shipment = s,
                     ShipmentOffer = s.ShipmentOffer!,
-                    ShipmentRequest = s.ShipmentOffer!.Request
+                    ShipmentRequest = s.ShipmentOffer!.Request,
+                    Driver = s.ShipmentOffer.Driver,
+                    Vehicle = s.ShipmentOffer.Vehicle
                 })
                 .FirstOrDefaultAsync();
 
@@ -83,7 +85,24 @@ namespace AppGroupCar.Services.Market.ShipmentServices
                     HandlingNote = detail.ShipmentRequest.HandlingNote,
                     Status = detail.ShipmentRequest.Status,
                     ImageUrl = detail.ShipmentRequest.ImageUrl
-                }
+                },
+                Driver = detail.Driver != null ? new DriverInfoDTO
+                {
+                    Id = detail.Driver.Id,
+                    Name = detail.Driver.Name,
+                    LicenseNumber = detail.Driver.LicenseNumber,
+                    LicenseClass = detail.Driver.LicenseClass,
+                    DriverRatingAverage = detail.Driver.DriverRatingAverage,
+                    DriverRatingCount = detail.Driver.DriverRatingCount
+                } : null,
+                Vehicle = detail.Vehicle != null ? new VehicleInfoDTO
+                {
+                    Id = detail.Vehicle.Id,
+                    PlateNumber = detail.Vehicle.PlateNumber,
+                    Brand = detail.Vehicle.Brand,
+                    SeatCapacity = detail.Vehicle.SeatCapacity,
+                    UrlImage = detail.Vehicle.UrlImage
+                } : null
             };
         }
 
@@ -123,7 +142,20 @@ namespace AppGroupCar.Services.Market.ShipmentServices
                         ? s.ShipmentOffer.Request.DeliveryDate
                         : DateTime.MinValue,
                     ShipmentStatus = s.ShipmentStatus,
-                    PaymentStatus = s.PaymentStatus
+                    PaymentStatus = s.PaymentStatus,
+                    Weight = s.ShipmentOffer.Request != null ? s.ShipmentOffer.Request.Weight : 0,
+                    Volume = s.ShipmentOffer.Request != null ? s.ShipmentOffer.Request.Volume : 0,
+                    ImageUrl = s.ShipmentOffer.Request != null ? s.ShipmentOffer.Request.ImageUrl : null,
+                    PickupPoint = s.ShipmentOffer.Request != null ? new AppGroupCar.DTO.ResponseDTO.Market.Offer.LocationDetailDTO
+                    {
+                        LocationId = s.ShipmentOffer.Request.PickupLocationId,
+                        LocationName = s.ShipmentOffer.Request.PickupLocation != null ? s.ShipmentOffer.Request.PickupLocation.Name : string.Empty
+                    } : null!,
+                    DropoffPoint = s.ShipmentOffer.Request != null ? new AppGroupCar.DTO.ResponseDTO.Market.Offer.LocationDetailDTO
+                    {
+                        LocationId = s.ShipmentOffer.Request.DropoffLocationId,
+                        LocationName = s.ShipmentOffer.Request.DropoffLocation != null ? s.ShipmentOffer.Request.DropoffLocation.Name : string.Empty
+                    } : null!
                 })
                 .ToListAsync();
 

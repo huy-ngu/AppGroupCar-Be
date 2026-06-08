@@ -42,7 +42,7 @@ namespace AppGroupCar.Services.Bus.ShowtimeServices
             Guid userId,
             ChangeBusShowtimeStatusRequest dto);
 
-        Task<PagedResult<BusShowtimeResponse>> SearchAsync(
+        Task<PagedResult<BusShowtimeSearchResponse>> SearchAsync(
             BusShowtimeSearchParameters param);
     }
 }

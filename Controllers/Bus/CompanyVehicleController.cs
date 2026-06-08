@@ -60,11 +60,27 @@ namespace AppGroupCar.Controllers.Bus
 
             return Ok(new ApiResponse<object> { Data = result });
         }
+        [HttpGet("companyId")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAllBycompanyId(Guid companyId,[FromQuery] CompanyVehicleParameters param)
+        {
+            var result = await _service.GetByCompanyAsync(param, companyId);
 
+            return Ok(new ApiResponse<object> { Data = result });
+        }
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, [FromForm] UpdateCompanyVehicleRequest dto)
         {
             var companyId = GetCompanyId();
+            var result = await _service.UpdateAsync(id, companyId, dto);
+
+            return Ok(new ApiResponse<object> { Data = result });
+        }
+
+        [HttpPut("{id}/status")]
+        [AllowAnonymous]
+        public async Task<IActionResult> UpdateStatus(Guid id, Guid companyId, [FromForm] UpdateCompanyVehicleRequest dto)
+        {
             var result = await _service.UpdateAsync(id, companyId, dto);
 
             return Ok(new ApiResponse<object> { Data = result });

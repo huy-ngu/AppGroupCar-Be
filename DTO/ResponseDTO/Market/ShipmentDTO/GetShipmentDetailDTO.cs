@@ -7,6 +7,27 @@ namespace AppGroupCar.DTO.ResponseDTO.Market.ShipmentDTO
         public ShipmentInfoDTO Shipment { get; set; } = null!;
         public ShipmentOfferInfoDTO ShipmentOffer { get; set; } = null!;
         public ShipmentRequestInfoDTO ShipmentRequest { get; set; } = null!;
+        public DriverInfoDTO? Driver { get; set; }
+        public VehicleInfoDTO? Vehicle { get; set; }
+    }
+
+    public class DriverInfoDTO
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string LicenseNumber { get; set; } = string.Empty;
+        public string LicenseClass { get; set; } = string.Empty;
+        public decimal DriverRatingAverage { get; set; }
+        public int DriverRatingCount { get; set; }
+    }
+
+    public class VehicleInfoDTO
+    {
+        public Guid Id { get; set; }
+        public string PlateNumber { get; set; } = string.Empty;
+        public string Brand { get; set; } = string.Empty;
+        public int SeatCapacity { get; set; }
+        public string? UrlImage { get; set; }
     }
 
     public class ShipmentInfoDTO

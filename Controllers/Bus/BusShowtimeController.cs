@@ -113,7 +113,7 @@ namespace AppGroupCar.Controllers.Bus
         public async Task<IActionResult> Search([FromQuery] BusShowtimeSearchParameters param)
         {
             var result = await _service.SearchAsync(param);
-            return Ok(new ApiResponse<PagedResult<BusShowtimeResponse>> { Data = result });
+            return Ok(new ApiResponse<PagedResult<BusShowtimeSearchResponse>> { Data = result });
         }
     }
 }

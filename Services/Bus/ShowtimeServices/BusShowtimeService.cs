@@ -529,7 +529,7 @@ namespace AppGroupCar.Services.Bus.ShowtimeServices
         }
 
 
-        public async Task<PagedResult<BusShowtimeResponse>> SearchAsync(BusShowtimeSearchParameters param)
+        public async Task<PagedResult<BusShowtimeSearchResponse>> SearchAsync(BusShowtimeSearchParameters param)
         {
             // 1. Validation cơ bản
             if (param.PickupLocationId == Guid.Empty)
@@ -585,9 +585,9 @@ namespace AppGroupCar.Services.Bus.ShowtimeServices
             // Nếu không có kết quả, trả về kết quả rỗng thay vì throw lỗi 404
             if (totalCount == 0)
             {
-                return new PagedResult<BusShowtimeResponse>
+                return new PagedResult<BusShowtimeSearchResponse>
                 {
-                    Items = new List<BusShowtimeResponse>(),
+                    Items = new List<BusShowtimeSearchResponse>(),
                     TotalCount = 0,
                     PageNumber = param.PageNumber,
                     PageSize = param.PageSize
@@ -598,10 +598,10 @@ namespace AppGroupCar.Services.Bus.ShowtimeServices
             var items = await query
                 .Skip((param.PageNumber - 1) * param.PageSize)
                 .Take(param.PageSize)
-                .ProjectTo<BusShowtimeResponse>(_mapper.ConfigurationProvider)
+                .ProjectTo<BusShowtimeSearchResponse>(_mapper.ConfigurationProvider)
                 .ToListAsync();
 
-            return new PagedResult<BusShowtimeResponse>
+            return new PagedResult<BusShowtimeSearchResponse>
             {
                 Items = items,
                 TotalCount = totalCount,

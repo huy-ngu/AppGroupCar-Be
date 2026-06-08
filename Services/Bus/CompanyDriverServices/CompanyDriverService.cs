@@ -190,12 +190,24 @@ namespace AppGroupCar.Services.Bus.CompanyDriverServices
                     oldLicensePublicId = _photoService.GetPublicIdFromUrl(entity.LicenseDocumentUrl ?? string.Empty);
                 }
 
-                _mapper.Map(dto, entity);
+                if (dto.LicenseNumber != null)
+                {
+                    entity.LicenseNumber = dto.LicenseNumber;
+                }
+                if (dto.LicenseClass != null)
+                {
+                    entity.LicenseClass = dto.LicenseClass;
+                }
+                if (dto.DriverVerificationStatus != null)
+                {
+                    entity.DriverVerificationStatus = dto.DriverVerificationStatus.Value;
+                }
 
                 if (!string.IsNullOrWhiteSpace(newLicenseUrl))
                     entity.LicenseDocumentUrl = newLicenseUrl;
 
                 entity.LastUpdateAt = DateTime.UtcNow;
+
 
                 _repo.Update(entity);
                 await _repo.SaveChangesAsync();

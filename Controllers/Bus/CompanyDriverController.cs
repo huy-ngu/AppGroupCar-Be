@@ -63,9 +63,19 @@ namespace AppGroupCar.Controllers.Bus
         }
 
         [HttpPut("{id}")]
+
         public async Task<IActionResult> Update(Guid id, [FromForm] UpdateCompanyDriverRequestDto dto)
         {
             var companyId = GetCompanyId();
+            var result = await _service.UpdateAsync(id, companyId, dto);
+
+            return Ok(new ApiResponse<object> { Data = result });
+        }
+        [HttpPut("{id}/status")]
+        [AllowAnonymous]
+
+        public async Task<IActionResult> UpdateStatus(Guid id,Guid companyId, [FromForm] UpdateCompanyDriverRequestDto dto)
+        {
             var result = await _service.UpdateAsync(id, companyId, dto);
 
             return Ok(new ApiResponse<object> { Data = result });
@@ -79,6 +89,16 @@ namespace AppGroupCar.Controllers.Bus
             await _service.DeleteAsync(id, companyId);
 
             return Ok(new ApiResponse<object> { Message = "Company driver deleted (soft)" });
+        }
+
+        [HttpGet("company/{companyId}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetByCompanyForAdmin(
+            [FromRoute] Guid companyId,
+            [FromQuery] CompanyDriverParameters param)
+        {
+            var result = await _service.GetByCompanyAsync(param, companyId);
+            return Ok(new ApiResponse<object> { Data = result });
         }
     }
 }
