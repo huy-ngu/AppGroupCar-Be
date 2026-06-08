@@ -1006,6 +1006,39 @@ namespace AppGroupCar.Migrations
                     b.ToTable("BookingItems", (string)null);
                 });
 
+            modelBuilder.Entity("AppGroupCar.Entities.Market.BookingOffer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BookingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("RideRequestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookingId");
+
+                    b.HasIndex("RideRequestId");
+
+                    b.ToTable("BookingOffers", (string)null);
+                });
+
             modelBuilder.Entity("AppGroupCar.Entities.Market.CargoOfferDetail", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2098,6 +2131,25 @@ namespace AppGroupCar.Migrations
                     b.Navigation("DropoffLocation");
 
                     b.Navigation("PickupLocation");
+                });
+
+            modelBuilder.Entity("AppGroupCar.Entities.Market.BookingOffer", b =>
+                {
+                    b.HasOne("AppGroupCar.Entities.Market.Booking", "Booking")
+                        .WithMany()
+                        .HasForeignKey("BookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AppGroupCar.Entities.Market.RideRequest", "RideRequest")
+                        .WithMany()
+                        .HasForeignKey("RideRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Booking");
+
+                    b.Navigation("RideRequest");
                 });
 
             modelBuilder.Entity("AppGroupCar.Entities.Market.CargoOfferDetail", b =>

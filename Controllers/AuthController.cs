@@ -9,6 +9,7 @@ using Google.Apis.Auth;
 using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Memory;
@@ -96,26 +97,95 @@ namespace AppGroupCar.Controllers
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] string email)
         {
-            if (string.IsNullOrEmpty(email)) return BadRequest(new ApiResponse<string> { Message = "Email không được null" });
-
-            var (shouldSendEmail, encodedToken) = await _userManager.ProcessResetTokenWithCacheAsync(email, _cache);
-            if (shouldSendEmail)
+            if (string.IsNullOrWhiteSpace(email))
             {
-                string resetLink = $"https://huyapp.com/reset-password?email={email}&token={encodedToken}";
-                string body = $"<p>Nhấn vào <a href='{resetLink}'>đây</a> để đổi mật khẩu. Link hết hạn sau 15 phút.</p>";
-
-                _backgroundJobs.Enqueue<IEmailService>(x => x.SendEmailAsync(email, "Reset Password", body));
+                return BadRequest(new ApiResponse<string>
+                {
+                    Message = "Email không được để trống"
+                });
             }
 
-            // LUÔN LUÔN TRẢ VỀ CÂU NÀY, DÙ CÓ THẤY USER HAY LÀ BỊ SPAM ĐI NỮA
-            return Ok(new ApiResponse<string> { Message = "Vui lòng kiểm tra email của bạn." });
+            var (shouldSendEmail, otp) =
+                await _userManager.ProcessResetOtpWithCacheAsync(
+                    email,
+                    _cache);
+
+            if (shouldSendEmail)
+            {
+                string body = $@"
+            <h3>Mã OTP đặt lại mật khẩu</h3>
+            <p>Mã OTP của bạn là:</p>
+            <h2>{otp}</h2>
+            <p>Mã có hiệu lực trong 5 phút.</p>
+        ";
+
+                _backgroundJobs.Enqueue<IEmailService>(
+                    x => x.SendEmailAsync(
+                        email,
+                        "Mã OTP đặt lại mật khẩu",
+                        body));
+            }
+
+            return Ok(new ApiResponse<string>
+            {
+                Message = "Gửi Email thành công"
+            });
         }
 
         [HttpPost("reset-password")]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDTO request)
+        public async Task<IActionResult> ResetPassword(
+        [FromBody] ResetPasswordRequestDTO request)
         {
-            await _authService.ResetPassword(request);
-            return Ok(new ApiResponse<string> { Message = "Đổi mật khẩu thành công" });
+            var user = await _userManager.FindByEmailAsync(request.Email);
+
+            if (user == null)
+            {
+                return BadRequest(new ApiResponse<string>
+                {
+                    Message = "OTP không hợp lệ hoặc đã hết hạn"
+                });
+            }
+
+            string otpKey = $"ResetPassOtp_{request.Email}";
+
+            if (!_cache.TryGetValue(otpKey, out string? cachedOtp))
+            {
+                return BadRequest(new ApiResponse<string>
+                {
+                    Message = "OTP đã hết hạn"
+                });
+            }
+
+            if (cachedOtp != request.Otp)
+            {
+                return BadRequest(new ApiResponse<string>
+                {
+                    Message = "OTP không chính xác"
+                });
+            }
+
+            // Tạo password hash bằng Identity
+            user.PasswordHash = _userManager.PasswordHasher
+                .HashPassword(user, request.NewPassword);
+
+            var result = await _userManager.UpdateAsync(user);
+
+            if (!result.Succeeded)
+            {
+                return BadRequest(new ApiResponse<string>
+                {
+                    Message = string.Join(", ",
+                        result.Errors.Select(x => x.Description))
+                });
+            }
+
+            // OTP chỉ dùng 1 lần
+            _cache.Remove(otpKey);
+
+            return Ok(new ApiResponse<string>
+            {
+                Message = "Đổi mật khẩu thành công"
+            });
         }
     }
 }

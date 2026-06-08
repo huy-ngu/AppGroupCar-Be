@@ -1,3 +1,5 @@
+using AppGroupCar.Entities.Market;
+
 namespace AppGroupCar.DTO.ResponseDTO.Market
 {
     public class GetMarketDriverDetailDTO
@@ -9,5 +11,6 @@ namespace AppGroupCar.DTO.ResponseDTO.Market
         public string? AvatarUrl { get; set; }
         public string? PhoneNumber { get; set; }
         public string FullName { get; set; } = null!;
+        public DriverVerificationStatus status { get; set; }
     }
 }

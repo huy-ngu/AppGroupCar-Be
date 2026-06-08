@@ -17,7 +17,6 @@ namespace AppGroupCar.Entities.Market
 
         [ForeignKey(nameof(ShipmentOfferId))]
         public virtual ShipmentOffer? ShipmentOffer { get; set; }
-
     }
 
     public enum ShipmentStatus

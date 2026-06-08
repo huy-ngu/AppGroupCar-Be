@@ -54,7 +54,7 @@ namespace AppGroupCar.Data
         public DbSet<Vehicle> Vehicles { get; set; }
         public DbSet<Seat> Seats { get; set; }
         public DbSet<SeatStatusHistory> SeatStatusHistories { get; set; }
-
+        public DbSet<BookingOffer> BookingOffers { get; set; }
         // Wallet domain
         public DbSet<Wallet> Wallets { get; set; }
         public DbSet<Deposit> Deposits { get; set; }
@@ -111,6 +111,7 @@ namespace AppGroupCar.Data
             builder.Entity<Withdraw>(b => b.ToTable("Withdrawals"));
             builder.Entity<WalletTransaction>(b => b.ToTable("WalletTransactions"));
             builder.Entity<Payment>(b => b.ToTable("Payments"));
+            builder.Entity<BookingOffer>(b => b.ToTable("BookingOffers"));
 
             // Wallet
             builder.Entity<Wallet>(b =>
@@ -525,6 +526,8 @@ namespace AppGroupCar.Data
                 b.HasQueryFilter(b => b.DeleteAt == null);
 
             });
+
+
 
             // OfferRoutePoint: composite key, route order
             builder.Entity<OfferRoutePoint>(b =>

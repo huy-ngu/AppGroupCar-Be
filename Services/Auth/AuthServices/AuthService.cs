@@ -319,29 +319,34 @@ namespace AppGroupCar.Services.Auth.AuthServices
             }
         }
 
-        public async Task ResetPassword(ResetPasswordRequestDTO request)
+        public Task ResetPassword(ResetPasswordRequestDTO request)
         {
-            var user = await _userRepository.FindByEmailAsync(request.Email);
-
-            var decodedTokenBytes = WebEncoders.Base64UrlDecode(request.Token);
-
-            var normalToken = Encoding.UTF8.GetString(decodedTokenBytes);
-
-            var result = await _userRepository.ResetPasswordAsync(user, normalToken, request.NewPassword);
-
-            if (result.Succeeded)
-            {
-                // Đổi pass thành công rồi thì xóa cái "Cờ" chặn spam đi, 
-                // để lỡ nó có não cá vàng quên tiếp thì còn cho nó xin mail mới!
-                _cache.Remove($"ResetPassWait_{request.Email}");
-            }
-
-            if (!result.Succeeded)
-            {
-                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                throw new AppException(400, "Đổi mật khẩu thất bại: " + errors);
-            }
-            return;
+            throw new NotImplementedException();
         }
+
+        //public async Task ResetPassword(ResetPasswordRequestDTO request)
+        //{
+        //    var user = await _userRepository.FindByEmailAsync(request.Email);
+
+        //    var decodedTokenBytes = WebEncoders.Base64UrlDecode(request.Token);
+
+        //    var normalToken = Encoding.UTF8.GetString(decodedTokenBytes);
+
+        //    var result = await _userRepository.ResetPasswordAsync(user, normalToken, request.NewPassword);
+
+        //    if (result.Succeeded)
+        //    {
+        //        // Đổi pass thành công rồi thì xóa cái "Cờ" chặn spam đi, 
+        //        // để lỡ nó có não cá vàng quên tiếp thì còn cho nó xin mail mới!
+        //        _cache.Remove($"ResetPassWait_{request.Email}");
+        //    }
+
+        //    if (!result.Succeeded)
+        //    {
+        //        var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+        //        throw new AppException(400, "Đổi mật khẩu thất bại: " + errors);
+        //    }
+        //    return;
+        //}
     }
 }
