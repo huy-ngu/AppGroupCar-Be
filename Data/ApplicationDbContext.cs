@@ -1,4 +1,4 @@
-﻿using AppGroupCar.Entities;
+using AppGroupCar.Entities;
 using AppGroupCar.Entities.Bus;
 using AppGroupCar.Entities.Identity;
 using AppGroupCar.Entities.Market;
@@ -685,6 +685,28 @@ namespace AppGroupCar.Data
 
                 b.HasQueryFilter(b => b.DeleteAt == null);
 
+            });
+
+            // BookingOffer
+            builder.Entity<BookingOffer>(b =>
+            {
+                b.HasOne(x => x.Offer)
+                    .WithMany()
+                    .HasForeignKey(x => x.OfferId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasOne(x => x.RideRequest)
+                    .WithMany()
+                    .HasForeignKey(x => x.RideRequestId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                b.HasOne(x => x.Booking)
+                    .WithMany()
+                    .HasForeignKey(x => x.BookingId)
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasQueryFilter(b => b.DeleteAt == null);
             });
 
             // Cấu hình cho bảng Shipment

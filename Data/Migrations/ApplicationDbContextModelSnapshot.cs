@@ -1012,7 +1012,7 @@ namespace AppGroupCar.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("BookingId")
+                    b.Property<Guid?>("BookingId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
@@ -1024,6 +1024,9 @@ namespace AppGroupCar.Migrations
                     b.Property<DateTime?>("LastUpdateAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("OfferId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("RideRequestId")
                         .HasColumnType("uniqueidentifier");
 
@@ -1033,6 +1036,8 @@ namespace AppGroupCar.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("BookingId");
+
+                    b.HasIndex("OfferId");
 
                     b.HasIndex("RideRequestId");
 
@@ -2138,7 +2143,12 @@ namespace AppGroupCar.Migrations
                     b.HasOne("AppGroupCar.Entities.Market.Booking", "Booking")
                         .WithMany()
                         .HasForeignKey("BookingId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("AppGroupCar.Entities.Market.Offer", "Offer")
+                        .WithMany()
+                        .HasForeignKey("OfferId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("AppGroupCar.Entities.Market.RideRequest", "RideRequest")
@@ -2148,6 +2158,8 @@ namespace AppGroupCar.Migrations
                         .IsRequired();
 
                     b.Navigation("Booking");
+
+                    b.Navigation("Offer");
 
                     b.Navigation("RideRequest");
                 });

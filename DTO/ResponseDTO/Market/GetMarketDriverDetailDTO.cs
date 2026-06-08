@@ -6,6 +6,8 @@ namespace AppGroupCar.DTO.ResponseDTO.Market
     {
         public Guid Id { get; set; }
         public string LicenseClass { get; set; } = null!;
+        public string IdentityNumber { get; set; }
+        public string LicenseNumber { get; set; }
         public decimal DriverRatingAverage { get; set; }
         public int DriverRatingCount { get; set; }
         public string? AvatarUrl { get; set; }

@@ -1,4 +1,4 @@
-﻿using AppGroupCar.AutoMapper;
+using AppGroupCar.AutoMapper;
 using AppGroupCar.AutoMapper.Bus;
 using AppGroupCar.Data;
 using AppGroupCar.Entities;
@@ -16,6 +16,7 @@ using AppGroupCar.Services.Auth.UserServices;
 using AppGroupCar.Services.Bus.BusRoute;
 using AppGroupCar.Services.Bus.BookingServices;
 using AppGroupCar.Services.Market.BookingItemServices;
+using AppGroupCar.Services.Market.BookingOfferServices;
 using AppGroupCar.Services.Market.BookingServices;
 using AppGroupCar.Services.Bus.CompanyServices;
 using AppGroupCar.Services.Bus.CompanyVehicleServices;
@@ -217,6 +218,7 @@ namespace AppGroupCar
                 builder.Services.AddScoped<IOfferService, OfferService>();
                 builder.Services.AddScoped<ISharedRideOfferDetailService, SharedRideOfferDetailService>();
                 builder.Services.AddScoped<IBookingService, BookingService>();
+                builder.Services.AddScoped<IBookingOfferService, BookingOfferService>();
                 builder.Services.AddScoped<IBookingItemService, BookingItemService>();
                 builder.Services.AddScoped<IOfferRoutePointService, OfferRoutePointService>();
                 builder.Services.AddScoped<IOfferShipmentSerivce, OfferShipmentService>();
