@@ -102,28 +102,19 @@ namespace AppGroupCar.Services.Mytoys.LocationServices
             var pageNumber = parameters.PageNumber;
             var pageSize = parameters.PageSize;
 
-            if (string.IsNullOrWhiteSpace(keyword))
-            {
-                return new PagedResult<LocationSearchResultDTO>
-                {
-                    Items = new List<LocationSearchResultDTO>(),
-                    TotalCount = 0,
-                    PageNumber = pageNumber,
-                    PageSize = pageSize
-                };
-            }
-
-            var containsPattern = BuildLikePattern(keyword, searchAnywhere: true);
-            var startsWithPattern = BuildLikePattern(keyword, searchAnywhere: false);
-
             var query = _repo.GetQueryable()
                 .AsNoTracking()
                 .Where(x => x.DeleteAt == null)
-                .Where(x => x.IsActive == parameters.IsActive)
-                .Where(x =>
+                .Where(x => x.IsActive == parameters.IsActive);
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                var containsPattern = BuildLikePattern(keyword, searchAnywhere: true);
+                query = query.Where(x =>
                     EF.Functions.Like(EF.Functions.Collate(x.Name, AccentInsensitiveCollation), containsPattern) ||
                     (x.Code != null &&
                      EF.Functions.Like(EF.Functions.Collate(x.Code, AccentInsensitiveCollation), containsPattern)));
+            }
 
             if (allowedTypeCodes != null && allowedTypeCodes.Count > 0)
             {
@@ -132,19 +123,32 @@ namespace AppGroupCar.Services.Mytoys.LocationServices
 
             var totalCount = await query.CountAsync();
 
-            var locations = await query
-                .OrderBy(x =>
-                    EF.Functions.Collate(x.Name, AccentInsensitiveCollation) == keyword
-                        ? 0
-                        : x.Code != null && EF.Functions.Collate(x.Code, AccentInsensitiveCollation) == keyword
-                            ? 1
-                            : EF.Functions.Like(EF.Functions.Collate(x.Name, AccentInsensitiveCollation), startsWithPattern)
-                                ? 2
-                                : 3)
-                .ThenBy(x => x.Name)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+            List<Location> locations;
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                var startsWithPattern = BuildLikePattern(keyword, searchAnywhere: false);
+                locations = await query
+                    .OrderBy(x =>
+                        EF.Functions.Collate(x.Name, AccentInsensitiveCollation) == keyword
+                            ? 0
+                            : x.Code != null && EF.Functions.Collate(x.Code, AccentInsensitiveCollation) == keyword
+                                ? 1
+                                : EF.Functions.Like(EF.Functions.Collate(x.Name, AccentInsensitiveCollation), startsWithPattern)
+                                    ? 2
+                                    : 3)
+                    .ThenBy(x => x.Name)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+            }
+            else
+            {
+                locations = await query
+                    .OrderBy(x => x.Name)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+            }
 
             var locationLookup = await LoadLocationsWithAncestorsAsync(locations);
             var items = locations
