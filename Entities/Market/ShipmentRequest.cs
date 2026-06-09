@@ -59,7 +59,8 @@ namespace AppGroupCar.Entities.Market
     {
         Open = 1,
         Cancelled = 2,
-        Expired = 3
+        Expired = 3,
+        Accepted = 4
     }
 
 }

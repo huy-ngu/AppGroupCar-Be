@@ -66,12 +66,16 @@ namespace AppGroupCar.Services.Market.ShipmentRequestServices
 
         public async Task DeleteAsync(Guid id)
         {
+
             var data = await _repo.GetByIdAsync(id);
             if (data == null && data.DeleteAt != null)
             {
                 throw new AppException(404, "Không tìm thấy bản ghi");
             }
-
+            if (data.Status == ShipmentRequestStatus.Accepted)
+            {
+                throw new AppException(404, "Không thể xóa yêu cầu đã được tạo đơn gửi hàng");
+            }
             _repo.Delete(data);
             await _repo.SaveChangesAsync();
         }

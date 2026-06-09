@@ -120,9 +120,9 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
             return Ok(new ApiResponse<IEnumerable<GetPendingShipmentOfferDTO>> { Code = 200, Data = data });
         }
 
-        [HttpPost("{id}/cancel")]
+        [HttpPost("{id}/driver-reject")]
         [Authorize(Roles = "Driver")]
-        public async Task<IActionResult> CancelShipmentOffer(Guid id)
+        public async Task<IActionResult> DriverRejectShipmentOffer(Guid id)
         {
             var userIdNullable = User.GetUserId();
 
@@ -131,9 +131,23 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
                 return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
             }
 
-            await _shipmentOfferService.CancelAsync(userId, id);
+            await _shipmentOfferService.DriverRejectAsync(userId, id);
             return Ok(new ApiResponse<string> { Code = 200 });
         }
 
+        [HttpPost("{id}/customer-reject")]
+        [Authorize(Roles = "Driver")]
+        public async Task<IActionResult> CustomerRejectShipmentOffer(Guid id)
+        {
+            var userIdNullable = User.GetUserId();
+
+            if (userIdNullable is not Guid userId)
+            {
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
+            }
+
+            await _shipmentOfferService.CustomerReject(userId, id);
+            return Ok(new ApiResponse<string> { Code = 200 });
+        }
     }
 }

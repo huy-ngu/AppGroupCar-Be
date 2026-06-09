@@ -26,6 +26,8 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
             }
             shipmentOffer.Status = ShipmentOfferStatus.Accepted;
             _shipmentOfferRepo.Update(shipmentOffer);
+            shipmentRequest.Status = ShipmentRequestStatus.Accepted;
+            _shipmentRequestRepo.Update(shipmentRequest);
 
             var newShipment = new Shipment
             {
@@ -210,7 +212,7 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
             return shipmentOffers;
         }
 
-        public async Task CancelAsync(Guid driverId, Guid shipmentOfferId)
+        public async Task DriverRejectAsync(Guid driverId, Guid shipmentOfferId)
         {
             var shipmentOffer = await _shipmentOfferRepo.GetByIdAsync(shipmentOfferId)
                 ?? throw new AppException(404, "Không tìm thấy bản ghi");
@@ -222,21 +224,21 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
 
             if (shipmentOffer.Status != ShipmentOfferStatus.Pending)
             {
-                throw new AppException(400, "Chỉ có thể hủy ShipmentOffer ở trạng thái Pending");
+                throw new AppException(400, "Chỉ có thể hủy ShipmentOffer ở trạng thái chờ");
             }
 
             shipmentOffer.Status = ShipmentOfferStatus.Cancelled;
             _shipmentOfferRepo.Update(shipmentOffer);
 
-            var shipments = await _shipmentRepo.GetQueryable()
-                .Where(s => s.ShipmentOfferId == shipmentOfferId && s.DeleteAt == null)
-                .ToListAsync();
+            //var shipments = await _shipmentRepo.GetQueryable()
+            //    .Where(s => s.ShipmentOfferId == shipmentOfferId && s.DeleteAt == null)
+            //    .ToListAsync();
 
-            foreach (var shipment in shipments)
-            {
-                shipment.ShipmentStatus = ShipmentStatus.Cancelled;
-                _shipmentRepo.Update(shipment);
-            }
+            //foreach (var shipment in shipments)
+            //{
+            //    shipment.ShipmentStatus = ShipmentStatus.Cancelled;
+            //    _shipmentRepo.Update(shipment);
+            //}
 
             await _shipmentOfferRepo.SaveChangesAsync();
         }
@@ -270,6 +272,26 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
                                     },
                                 }).ToListAsync();
             return shipmentOffers;
+        }
+
+        public async Task CustomerReject(Guid customerId, Guid shipmentOfferId)
+        {
+            var shipmentRequest = await _shipmentRequestRepo.GetQueryable()
+            .FirstOrDefaultAsync(x => x.CustomerId == customerId); ;
+            if (shipmentRequest == null)
+            {
+                throw new AppException(404, "Không tìm thấy yêu cầu");
+            }
+            var shipmentOffer = await _shipmentOfferRepo.GetByIdAsync(shipmentOfferId)
+               ?? throw new AppException(404, "Không tìm thấy bản ghi");
+
+            if (shipmentOffer.Status != ShipmentOfferStatus.Pending)
+            {
+                throw new AppException(400, "Chỉ có thể hủy ShipmentOffer ở trạng thái chờ");
+            }
+            shipmentOffer.Status = ShipmentOfferStatus.Cancelled;
+            await _shipmentOfferRepo.SaveChangesAsync();
+
         }
     }
 }

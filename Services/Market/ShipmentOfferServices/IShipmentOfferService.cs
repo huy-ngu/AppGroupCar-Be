@@ -14,6 +14,7 @@ namespace AppGroupCar.Services.Market.ShipmentOfferServices
         Task<IEnumerable<GetDetailShipmentOfferDTO>> GetMyShipmentOffersAsync(Guid driverId);
         Task AcceptAsync(Guid shipmentOfferId, Guid UserId);
         Task DriverAcceptAsync(Guid driverId, Guid shipmentOfferId, Guid offerId);
-        Task CancelAsync(Guid driverId, Guid shipmentOfferId);
+        Task DriverRejectAsync(Guid driverId, Guid shipmentOfferId);
+        Task CustomerReject(Guid customerId, Guid shipmentOfferId);
     }
 }

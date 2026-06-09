@@ -37,7 +37,8 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
             var userIdNullable = User.GetUserId();
             if (userIdNullable is not Guid userId)
             {
-                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });            }
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
+            }
 
             var data = await _shipmentRequestServices.GetMyShipmentRequestsAsync(userId);
             return Ok(new ApiResponse<IEnumerable<ShipmentRequestFilterResponseDTO>> { Data = data });
@@ -49,7 +50,8 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
             var userIdNullable = User.GetUserId();
             if (userIdNullable is not Guid userId)
             {
-                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });            }
+                return Unauthorized(new ApiResponse<string> { Message = "Token không hợp lệ" });
+            }
             var data = await _shipmentRequestServices.CreateAsync(userId, request);
             return Ok(new ApiResponse<ShipmentRequest> { Data = data });
         }
@@ -65,6 +67,14 @@ namespace AppGroupCar.Controllers.Market.ShipmentControllers
         public async Task<IActionResult> Update([FromBody] UpdateShipmentRequestDTO request)
         {
             await _shipmentRequestServices.UpdateAsync(request);
+            return Ok(new ApiResponse<ShipmentRequest> { });
+        }
+        [HttpDelete("id")]
+        [Authorize]
+
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            await _shipmentRequestServices.DeleteAsync(id);
             return Ok(new ApiResponse<ShipmentRequest> { });
         }
     }
