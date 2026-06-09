@@ -31,7 +31,7 @@ namespace AppGroupCar.Controllers.Market
         public async Task<IActionResult> GetByRideRequest(Guid rideRequestId)
         {
             var data = await _bookingOfferService.GetByRideRequestAsync(rideRequestId);
-            return Ok(new ApiResponse<IEnumerable<BookingOfferResponseDTO>> { Data = data });
+            return Ok(new ApiResponse<IEnumerable<BookingOfferDetailResponseDTO>> { Data = data });
         }
 
         [HttpPost("{id}/accept")]
